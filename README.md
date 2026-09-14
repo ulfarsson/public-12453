@@ -6,6 +6,8 @@ Companion repository for the paper
 > permutations avoiding a direct sum of an increasing pattern and 231*, 2026.
 > Preprint; arXiv identifier to be inserted.
 
+Repository: <https://github.com/ulfarsson/public-12453>
+
 The paper gives an exact algorithm that counts the permutations avoiding a
 pattern `beta_d = 12...d (+) 231` (direct sum), for every fixed `d`, in
 polynomially many arithmetic operations.  The first members of the family are
@@ -170,4 +172,5 @@ See `CITATION.cff`.  Until the arXiv identifier is available:
 ```text
 H. Ulfarsson, Protected tails and polynomial-time enumeration of permutations
 avoiding a direct sum of an increasing pattern and 231, preprint, 2026.
+Code and data: https://github.com/ulfarsson/public-12453
 ```

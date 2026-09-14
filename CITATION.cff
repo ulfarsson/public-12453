@@ -9,7 +9,7 @@ authors:
 license: Apache-2.0
 version: 1.0.0
 date-released: 2026-09-14
-repository-code: "https://github.com/[to be inserted]/public-12453"
+repository-code: "https://github.com/ulfarsson/public-12453"
 keywords:
   - permutation patterns
   - pattern avoidance
