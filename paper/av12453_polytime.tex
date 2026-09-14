@@ -16,6 +16,7 @@
 \newlength{\permcell}\newlength{\permdot} % cell size and dot radius of the permutation plot
 \usepackage{aliascnt}
 \usepackage{hyperref}
+\usepackage{xurl}
 \usepackage[nameinlink,noabbrev]{cleveref}
 
 \definecolor{pairblue}{RGB}{37,99,154}
@@ -30,7 +31,8 @@
   pdftitle={Protected tails and polynomial-time enumeration of permutations
     avoiding a direct sum of an increasing pattern and 231},
   pdfauthor={Henning Ulfarsson},
-  pdfkeywords={permutation pattern, pattern avoidance, polynomial time
+  pdflang={en},
+  pdfkeywords={permutation pattern, pattern avoidance, polynomial-time
     algorithm, Wilfian formula}
 }
 
@@ -75,7 +77,7 @@
 \address{Department of Computer Science, Reykjav\'ik University,
 Menntavegur 1, 102 Reykjav\'ik, Iceland}
 \email{henningu@ru.is}
-\date{August 2026}
+\date{September 2026}
 
 \begin{document}
 \raggedbottom
@@ -102,13 +104,13 @@ written implementations and exact Chinese-remainder certification determine
 the number of 12453-avoiding permutations of every length up to 150.  The
 previously published series reached length 38.  The same tables also generate uniformly random avoiders in polynomial
 time.  We illustrate this with a heatmap of one million
-12453-avoiding permutations of length 300 drawn with floating-point tables.
+12453-avoiding permutations of length 300 sampled with floating-point tables.
 The counting recurrences for 1342 and 12453 are verified in the Lean~4
 proof assistant.
 \end{abstract}
 
 \subjclass[2020]{05A05, 05A15, 68W40}
-\keywords{permutation pattern, pattern avoidance, polynomial time
+\keywords{permutation pattern, pattern avoidance, polynomial-time
 algorithm, Wilfian formula}
 
 \maketitle
@@ -135,7 +137,7 @@ Here ``polynomial-time enumeration'' means computing this integer, not
 listing the avoiding permutations.  This is the algorithmic notion behind
 Wilfian formulas and systematic methods based on enumeration schemes and
 insertion encodings
-\cite{Zeilberger1998,Vatter2008,AlbertLintonRuskuc2005}.  For a fixed pattern,
+\cite{AlbertLintonRuskuc2005,Vatter2008,Zeilberger1998}.  For a fixed pattern,
 the Marcus--Tardos theorem gives an exponential upper bound
 $a_n(\tau)\leq c(\tau)^n$ on the counting sequence
 \cite{MarcusTardos2004}.  The task is to obtain $a_n(\tau)$ in at most $P(n)$
@@ -181,7 +183,7 @@ The next case is $d=2$, giving $\beta_2 = 12453$.  The counting sequence begins
 
 In the 2022 census, the $12453$ sequence was known through $n=38$ from a
 specialized program of Biers-Ariel
-\cite{ClisbyConwayGuttmannInoue2022,BiersArielA116485}.  The program uses a
+\cite{BiersAriel2019,BiersArielA116485,ClisbyConwayGuttmannInoue2022}.  The program uses a
 composition-valued state of unbounded length, and the number of its states
 grows exponentially.  Our starting point is the same recurrence: for $d=2$
 the literal recurrence developed below coincides with Biers-Ariel's, state
@@ -233,7 +235,8 @@ and $O_d(N^{2d+1})$ stored integers.  All integers involved have
 $O_d(N\log N)$ bits.
 Consequently the bit complexity\footnote{The operation count treats each
 integer addition or multiplication as one step.  The bit complexity counts
-operations on single bits, so the sizes of the integers enter through $M$.}
+operations on single bits, so the sizes of the integers enter through the multiplication cost $M(b)$
+defined below.}
 is polynomial.  More precisely it is
 \[
   O_d\!\left(N^{3d+2} M(N\log N)\right),
@@ -2292,7 +2295,7 @@ $0\leq s<a$ when $a\geq1$.  The exact number of retained entries is
 \end{align}
 Thus the second translation halves the leading storage constant relative to
 the first-coordinate quotient.  Exact polynomials for loop iterations and
-stored entries are recorded in the supplementary computation report.
+stored entries are recorded in the computation report in the supplement.
 
 \begin{corollary}[Sharpened $12453$ bound]\label{cor:d2-complexity}
 The numbers $|\Av_n(12453)|$ for $0\leq n\leq N$ can be computed using
@@ -2325,8 +2328,9 @@ the asserted bit bounds.
 \label{sec:computations}
 
 The reduced recurrence was evaluated modulo pairwise distinct primes and then
-reconstructed over the integers.  The archived programs
-\path{av12453_fast_rns.cpp} and \path{reconstruct_av12453_rns.py} perform the
+reconstructed over the integers.  The programs
+\path{av12453_fast_rns.cpp} and \path{reconstruct_av12453_rns.py} in the
+supplement perform the
 modular recurrence evaluation, verification of the coefficient bound, and
 reconstruction.  Separately written implementations provide
 error-detection checks of the multi-prime program.  They are listed at the
@@ -2336,7 +2340,8 @@ residues, and machine-readable output are included in the supplement.
 
 \begin{proposition}[Computer-assisted certification]
 \label{prop:exact-150}
-The file \texttt{av12453\_terms\_0\_150.txt} contains the exact values
+The file \path{code/data/av12453_terms_0_150.txt} in the supplement contains
+the exact values
 $|\Av_n(12453)|$ for every $0\leq n\leq150$.
 \end{proposition}
 
@@ -2354,7 +2359,7 @@ minima occupy the remaining positions, and their remaining values are forced
 in decreasing order.  Hence $|\Av_N(12453)|\leq B_N$.
 
 The integers $b_m$ are generated exactly from \eqref{eq:bona-1342}.  The
-archived source \path{av12453_fast_rns.cpp} implements
+source \path{av12453_fast_rns.cpp} implements
 \eqref{eq:R-recurrence} and the empty-stack recurrence \eqref{eq:G} modulo
 each selected prime.  By
 \cref{thm:literal,cor:protected-tail,prop:kernel-recurrence,%
@@ -2383,7 +2388,7 @@ for $d=1,2,3,4$.  Separately written Python and C++ implementations of the
 unreduced family recurrence agree with one another through $n=10$.  For
 $d=2$, the coefficients through $n=38$ agree with OEIS A116485 and
 Biers-Ariel's composition recurrence
-\cite{OEISA116485,BiersArielA116485}.  The first-coordinate quotient and the
+\cite{BiersAriel2019,BiersArielA116485,OEISA116485}.  The first-coordinate quotient and the
 unreduced family kernel give identical $d=2$ coefficients through $n=40$.
 The dense modular program, which uses neither the second translation nor the
 storage quotient from \cref{lem:d2-second-translation}, and the
@@ -2391,27 +2396,6 @@ single-modulus program give identical residues modulo $2^{61}-1$ through
 $n=60$.
 
 \subsection{Uniform random generation}\label{sec:sampling}
-
-\begin{figure}[t]
-\centering
-\begin{minipage}[c]{0.47\textwidth}\centering
-\includegraphics[width=\textwidth]{figures/heatmap_n300_1M_permpal}
-\end{minipage}\hfill
-\begin{minipage}[c]{0.47\textwidth}\centering
-\setlength{\permcell}{\textwidth}\divide\permcell by 300\relax
-\setlength{\permdot}{3\permcell}\divide\permdot by 5\relax % dot radius 0.6 cell
-\input{figures/perm_n300_tikz}%
-\end{minipage}
-\caption{Left: position--value heatmap of one million elements of
-$\Av_{300}(12453)$ drawn by the floating-point implementation of the uniform
-sampler of \cref{sec:sampling}.  The cell at position $i$ (left to right) and value $v$
-(bottom to top) is shaded by the square root of the number of samples with
-$\pi_i=v$, from white (no sample) to black (the largest cell count,
-$70\,204$).  Right: one of the samples, with a dot at $(i,\pi_i)$ in the
-same orientation.  Its first letter is $272$ and it has $71$ left-to-right
-minima.}
-\label{fig:heatmap}
-\end{figure}
 
 The transfer tables also generate uniformly random avoiders.  By
 \cref{thm:literal}, the labeled complete paths of \eqref{eq:H} from the
@@ -2497,6 +2481,27 @@ left-to-right minima, whose deletion leaves a $1342$-avoider
 sample shows the same features: a decreasing band of letters with the
 left-to-right minima scattered below it, and above it the letters
 exceeding the first letter, which form a $1342$-avoider.
+
+\begin{figure}[tb]
+\centering
+\begin{minipage}[c]{0.47\textwidth}\centering
+\includegraphics[width=\textwidth]{figures/heatmap_n300_1M_permpal}
+\end{minipage}\hfill
+\begin{minipage}[c]{0.47\textwidth}\centering
+\setlength{\permcell}{\textwidth}\divide\permcell by 300\relax
+\setlength{\permdot}{3\permcell}\divide\permdot by 5\relax % dot radius 0.6 cell
+\input{figures/perm_n300_tikz}%
+\end{minipage}
+\caption{Left: position--value heatmap of one million elements of
+$\Av_{300}(12453)$ drawn by the floating-point implementation of the uniform
+sampler of \cref{sec:sampling}.  The cell at position $i$ (left to right) and value $v$
+(bottom to top) is shaded by the square root of the number of samples with
+$\pi_i=v$, from white (no sample) to black (the largest cell count,
+$70\,204$).  Right: one of the samples, with a dot at $(i,\pi_i)$ in the
+same orientation.  Its first letter is $272$ and it has $71$ left-to-right
+minima.}
+\label{fig:heatmap}
+\end{figure}
 
 \section{Formal verification}\label{sec:formal}
 
@@ -2621,7 +2626,7 @@ $12453=12 \oplus 231 \sim 21 \oplus 231=21453$, whose orbit supplies eight more.
 algorithm, bounds, and certified coefficients apply to all sixteen members
 of the length-five Wilf class represented by $12453$.
 
-Finally, B\'ona determined the Stanley--Wilf limit of every member of the
+B\'ona determined the Stanley--Wilf limit of every member of the
 family \cite{Bona2005}:
 \begin{equation*}
  \lim_{n\to\infty}\bigl(a_n^{(d)}\bigr)^{1/n}=(d-1+\sqrt{8})^2 .
@@ -2645,14 +2650,14 @@ $n\to\infty$,
 The exponents $1/3$ and $-17/4$ were selected using only
 $a_0,\ldots,a_{100}$.  The parameters $\kappa,\log C,h$ were obtained by
 unweighted least squares on $70\leq n\leq100$ for the model
-$\log a_n=n\log\mu-\kappa n^{1/3}-\frac{17}{4}\log n+\log C+h n^{-1/3}$,
+$\log a_n=n\log\mu-\kappa n^{1/3}-\tfrac{17}{4}\log n+\log C+h n^{-1/3}$,
 and were fixed before $a_{101},\ldots,a_{150}$ were computed.  The frozen
 values are $(\kappa,C,h)=(1.34550865,\ 0.82710184,\ 1.36800770)$ to the
 digits shown.
 On those fifty excluded coefficients, the maximum absolute difference
 between the observed and predicted values of $\log a_n$ is below
 $4.3\cdot10^{-7}$.  See the supplement.  From shorter series, the 2022
-analysis estimated the stretched-exponential base $\mu_1=e^{-\kappa}$
+analysis estimated the stretched-exponential base $e^{-\kappa}$ (their $\mu_1$)
 between $0.26$ and $0.29$ and the power-law exponent as $-4.67\pm0.1$
 \cite{ClisbyConwayGuttmannInoue2022}.  The frozen fit gives
 $e^{-\kappa}\approx0.260$, at the lower end of that range.  Its exponent
@@ -2674,12 +2679,12 @@ exponent $7$ in the $12453$ time bound.  The third is to extend the
 certified series beyond $n=150$.  The fourth is to identify other
 length-five classes with protected tails, for instance among
 the classes generated by container machines
-\cite{AlbertHombergerPantoneSharVatter2018}, which by their Theorem~1.1 are
-exactly the classes whose basis elements begin with their largest entry.
+\cite{AlbertHombergerPantoneSharVatter2018}, which by Theorem~1.1 of that paper are
+exactly the classes whose basis elements each begin with their largest entry.
 
 \section*{Data and code availability}
 
-The code, coefficients, residues, reconstruction script and computation
+The code, coefficients, residues, reconstruction script, and computation
 reports used for \cref{prop:exact-150}, the sampler and heatmap tools of
 \cref{sec:sampling}, the Permuta walkthrough with its exhaustive checks for
 length at most $8$, and the Lean development of \cref{sec:formal} are in the
@@ -2688,10 +2693,10 @@ public repository
 \url{https://github.com/ulfarsson/public-12453}
 \end{center}
 \noindent
-which is the supplement referred to throughout the paper.  The code, data and
+which is the supplement referred to throughout the paper.  The code, data, and
 Lean development are released under the Apache License 2.0.  The repository's
 \path{MANIFEST.sha256} records individual file digests, and its README files
-give verification, reconstruction and audit commands.  The version
+give verification, reconstruction, and audit commands.  The version
 accompanying this paper is archived at
 \begin{center}
 \small\texttt{[archive DOI and digest to be inserted at submission]}
@@ -2707,7 +2712,7 @@ formalization of \cref{sec:formal}.  The mathematical content was specified
 and checked by the author.  The computational claims are supported by the
 independent implementations and certificates described in
 \cref{sec:computations}, and the statements of \cref{sec:formal} are verified
-by the Lean kernel.  In addition, the companion walkthrough in the
+by the Lean kernel.  In addition, the Permuta walkthrough in the
 supplement checks every statement of the paper that has finite content
 exhaustively for all permutations of length at most $8$, by comparing the
 paper's constructions and displayed formulas with brute-force computations
