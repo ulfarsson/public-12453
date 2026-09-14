@@ -163,8 +163,6 @@ The code, data and Lean development are released under the Apache License
 2.0 (see `LICENSE`).  The text and figures of the paper in `paper/` are
 copyright the author.
 
-Archived release: [Zenodo DOI to be inserted].
-
 ## Citing
 
 See `CITATION.cff`.  Until the arXiv identifier is available:
