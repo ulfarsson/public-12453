@@ -1,0 +1,17 @@
+__pycache__/
+*.pyc
+*.o
+*.avr
+formal/Av12453/.lake/
+paper/*.aux
+paper/*.log
+paper/*.bbl
+paper/*.blg
+paper/*.out
+paper/*.fls
+paper/*.fdb_latexmk
+paper/*.synctex*
+code/av12453_sampler/tables
+code/av12453_sampler/sampler
+code/av12453_sampler/avoid_check
+code/av12453_sampler/unif_test

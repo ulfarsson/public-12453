@@ -1,0 +1,972 @@
+% speedup_proofs.tex
+% -------------------------------------------------------------------------
+% Draft supplement to
+%   paper/av12453_polytime.tex  (Protected tails and polynomial-time enumeration of permutations avoiding a direct sum of an increasing pattern and 231)
+%
+% Self-contained: it compiles on its own with the preamble below.  That
+% preamble adds only \Chat (= \widehat C) to the paper's, so the body can be
+% pasted into the manuscript (after Section 7, "The two-threshold quotient
+% for 12453") once \newcommand{\Chat}{\widehat C} has been added to the
+% manuscript preamble.  All cross-references to the manuscript are by the
+% manuscript's own labels (lem:d2-exact-support, lem:d2-translation,
+% prop:kernel-recurrence, prop:scalar-kernel-recurrence, eq:R-recurrence,
+% eq:K, eq:G, eq:rho, cor:d2-complexity, thm:main); compiling this file
+% alone leaves those references undefined, which is expected.
+%
+% Every numbered claim below is either proved in full or carries an explicit
+% MEASURED-ONLY flag.  Section 7 lists the machine checks and where they live.
+% -------------------------------------------------------------------------
+\documentclass[11pt,reqno]{amsart}
+\usepackage[T1]{fontenc}
+\usepackage[margin=1.08in]{geometry}
+\usepackage{amsmath,amssymb,mathtools}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage[nameinlink,noabbrev]{cleveref}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\newcommand{\Av}{\operatorname{Av}}
+\newcommand{\supp}{\operatorname{supp}}
+\newcommand{\N}{\mathbb N}
+\newcommand{\one}{\mathbf 1}
+\newcommand{\Chat}{\widehat C}
+
+\title[A faster split for the two-threshold quotient]
+      {A faster split for the two-threshold quotient:\\
+       layer identities, homogeneity, and an $N^6/24$ operation count}
+\date{September 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This note proves three structural facts about the reduced two-threshold
+kernels $R_{\ell,a}(q,s)$ of \eqref{eq:R-recurrence} and derives from the
+third a strictly faster evaluation of the split convolution.  Layer $0$ of
+the reduced table is the one-threshold scalar kernel
+(\cref{lem:layer-zero}); layer $1$ is the scalar kernel multiplied by the
+elementary factor $\ell+q-s$ (\cref{prop:layer-one}, proved twice, once by
+induction and once bijectively).  The split term is homogeneous in the pair
+$(\ell,a)$ (\cref{lem:homogeneity}), so a single evaluation variable marking
+$a$ suffices: evaluating the offset-grade slices at $J=N+1$ points,
+convolving pointwise, and interpolating computes all split terms of a given
+grade at once.  The resulting scheme (S-A$'$) uses exactly
+$N^6/24+O(N^5)$ modular multiplications
+(\cref{prop:sa-count}) in place of the $5\binom N7+O(N^6)$ of the direct
+first-quotient evaluation used for \cref{cor:d2-complexity}, an improvement
+by a factor $\sim N/42$ in the same algorithm family, with the $O(N^4)$
+storage bound of \cref{cor:d2-complexity} unchanged in order and larger by a
+factor $10$ in its leading constant.  A closing section records what
+generalizes to arbitrary $d$, with a proof of the general-$d$ homogeneity
+identity and a numerical verification at $d=3$.
+\end{abstract}
+
+\section{Setting and notation}\label{sec:setting}
+
+We keep the notation of the manuscript.  For $d=2$ the control is
+$\mathbf p=(p,q)$, and \cref{lem:d2-translation} lets one drop the first
+coordinate of the terminal control: with
+\[
+ R_{\ell,a}(q,s):=K_\ell((a,q),(0,s)),\qquad \ell\geq1,\ a,q,s\geq0,
+\]
+every kernel entry is $K_\ell((p,q),(c,s))=R_{\ell,p-c}(q,s)$ for
+$0\leq c\leq p$, and $K_\ell((p,q),(c,s))=0$ for $c>p$.  Throughout, the
+letter $a$ is the reduced first control coordinate and $\ell_1,\ell_2$ are
+block sizes, as in \eqref{eq:R-recurrence}.  We write the reduced
+recurrence as
+\begin{equation}\label{eq:R}
+ R_{\ell,a}(q,s)=
+ B^{(1)}_{\ell,a}(q,s)+B^{(2)}_{\ell,a}(q,s)+D_{\ell,a}(q,s)
+ +S_{\ell,a}(q,s),
+\end{equation}
+where the four terms are, in the order of \eqref{eq:R-recurrence},
+\begin{align}
+ B^{(1)}_{\ell,a}(q,s)&=\sum_{h=0}^{a-1}R_{\ell,h}(a+q-h-1,s),
+ &&\text{(early-band sum)}\label{eq:B1}\\
+ B^{(2)}_{\ell,a}(q,s)&=\sum_{r=0}^{q-1}R_{\ell+q-r-1,a}(r,s),
+ &&\text{(last-band sum)}\label{eq:B2}\\
+ D_{1,a}(q,s)&=\one_{a=0,\,q=s},\quad
+ D_{\ell,a}(q,s)=2R_{\ell-1,a}(q,s)\ (\ell\geq2),
+ &&\text{(endpoint term)}\label{eq:Dred}\\
+ S_{\ell,a}(q,s)&=\sum_{\substack{\ell_1,\ell_2\geq1\\ \ell_1+\ell_2=\ell-1}}
+   \ \sum_{\substack{a_1,a_2\geq0\\ a_1+a_2=a}}\ \sum_{m\geq0}
+   R_{\ell_1,a_1}(q,m)\,R_{\ell_2,a_2}(m,s).
+ &&\text{(split term)}\label{eq:S}
+\end{align}
+By \cref{lem:d2-exact-support}, the exact support of a reduced row is
+\begin{equation}\label{eq:redsupport}
+ \supp R_{\ell,0}(q,\cdot)=\{0,\ldots,q\},\qquad
+ \supp R_{\ell,a}(q,\cdot)=\{0,\ldots,a+q-1\}\quad(a\geq1),
+\end{equation}
+and we put $\sigma(a,q)=q+1$ for $a=0$ and $\sigma(a,q)=a+q$ for $a\geq1$
+for the number of terminal coordinates carried by a row.  The
+\emph{grade} of a reduced source is $w=\ell+a+q$; increasing grade is a
+topological order for \eqref{eq:R}, as recorded after
+\eqref{eq:R-recurrence}.  We shall also use the
+\begin{equation}\label{eq:offset}
+ \textit{offset grade}\qquad g=\ell+a,\qquad\text{so that}\qquad w=g+q .
+\end{equation}
+For $d=1$ we write $K_\ell(p,t)$ for the scalar kernel of
+\cref{prop:scalar-kernel-recurrence} and $C_\ell$ for the Catalan numbers.
+The \emph{padded region} is $\ell\geq1$, $a,q\geq0$, $\ell+a+q\leq N$.
+
+All computations below are in a field $\mathbb F_p$ with $p>N+1$, or in
+$\mathbb Z$; the scheme of \cref{sec:fast} is stated over $\mathbb F_p$
+because that is how the certified computation of
+\cref{prop:exact-150} is organized.
+
+\section{Layer zero: the reduced table contains the scalar kernel}
+\label{sec:layer0}
+
+\begin{lemma}[Layer zero]\label{lem:layer-zero}
+For all $\ell\geq1$ and $q,s\geq0$,
+\[
+ R_{\ell,0}(q,s)=K_\ell(q,s).
+\]
+\end{lemma}
+
+\begin{proof}
+Induct on the grade $w=\ell+q$, which for $a=0$ is the scalar grade $p+\ell$
+(with $p=q$) used in the proof of \cref{thm:scalar-algorithm}.
+
+If $w=1$ then $\ell=1$, $q=0$; \eqref{eq:R} has empty sums
+$B^{(1)},B^{(2)},S$ and gives $R_{1,0}(0,s)=\one_{s=0}$, while
+\eqref{eq:scalar-K}--\eqref{eq:scalar-D} give
+$K_1(0,s)=\one_{s=0}$.
+
+Let $w\geq2$ and assume the statement at every smaller grade.  We compare
+\eqref{eq:R} at $a=0$ with \eqref{eq:scalar-K} at $(p,t)=(q,s)$, term by
+term.
+
+\emph{Early-band sum.}  $B^{(1)}_{\ell,0}$ is an empty sum, and
+\eqref{eq:scalar-K} has no term of this kind: for $d=1$ the early-band sum
+of \eqref{eq:K} is empty by definition.
+
+\emph{Last-band sum.}  Here \eqref{eq:B2} reads, after the substitution
+$h=r$,
+\[
+ B^{(2)}_{\ell,0}(q,s)=\sum_{h=0}^{q-1}R_{\ell+q-1-h,0}(h,s),
+\]
+and each summand has grade
+$(\ell+q-1-h)+h=w-1$.  By the induction hypothesis it equals
+$\sum_{h=0}^{q-1}K_{\ell+q-1-h}(h,s)$, which is the base-move sum of
+\eqref{eq:scalar-K} with $p=q$ and $t=s$.  This is the point at which the
+two recurrences could conceivably differ: the move that lowers the second
+control coordinate is a last-band move in the two-threshold system and a
+base move in the one-threshold system.  The two have the same local
+parameters --- $\delta_h=q-1-h$ values join the active head and $h$ values
+stay below the new threshold --- so the summands agree index by index.
+
+\emph{Endpoint term.}  For $\ell=1$, $D_{1,0}(q,s)=\one_{q=s}$ equals
+$D_1(q,s)$ of \eqref{eq:scalar-D}.  For $\ell\geq2$,
+$D_{\ell,0}(q,s)=2R_{\ell-1,0}(q,s)$, a grade $w-1$ entry, which equals
+$2K_{\ell-1}(q,s)=D_\ell(q,s)$ by induction.
+
+\emph{Split term.}  In \eqref{eq:S} with $a=0$ the constraint
+$a_1+a_2=0$, $a_i\geq0$ forces $a_1=a_2=0$, so
+\[
+ S_{\ell,0}(q,s)=\sum_{\ell_1+\ell_2=\ell-1}\sum_{m\geq0}
+ R_{\ell_1,0}(q,m)R_{\ell_2,0}(m,s).
+\]
+Each first factor has grade $\ell_1+q\leq w-2$.  A nonzero first factor
+forces $m\leq q$ by \eqref{eq:redsupport}, so each second factor has grade
+$\ell_2+m\leq\ell_2+q\leq w-2$.  By induction both factors may be replaced
+by scalar kernels, and the sum becomes the split sum of
+\eqref{eq:scalar-K} with intermediate control $u=m$.
+
+Adding the four comparisons gives $R_{\ell,0}(q,s)=K_\ell(q,s)$.
+\end{proof}
+
+\begin{remark}\label{rem:layer-zero-structural}
+There is a one-line structural reason for \cref{lem:layer-zero}.  No
+transition of \eqref{eq:H} increases $p_0$, and the early-band moves are the
+only ones that can decrease it; hence from a control with $p_0=0$ the
+early-band sum of \eqref{eq:K} is empty at every reachable state.  The
+subgraph of the $d=2$ recurrence graph reachable from
+$((0,q),(\ell)\mid L)$ is therefore isomorphic, edge weight by edge weight,
+to the $d=1$ graph from $(q,(\ell)\mid L)$, with last-band moves
+corresponding to base moves.  Stopped-path weights agree, which is the
+assertion.  We gave the termwise proof because it is the one that can be
+checked directly against \eqref{eq:R-recurrence}.
+\end{remark}
+
+\section{Layer one}\label{sec:layer1}
+
+\begin{proposition}[Layer one]\label{prop:layer-one}
+For all $\ell\geq1$ and $q,s\geq0$,
+\begin{equation}\label{eq:layer-one}
+ R_{\ell,1}(q,s)=(\ell+q-s)\,R_{\ell,0}(q,s)=(\ell+q-s)K_\ell(q,s).
+\end{equation}
+\end{proposition}
+
+Both sides vanish unless $0\leq s\leq q$, consistently with
+\eqref{eq:redsupport}: for $a=1$ the support is $\{0,\ldots,a+q-1\}
+=\{0,\ldots,q\}$, and on that range $\ell+q-s\geq\ell\geq1$, so the two
+sides have the same support.
+
+\begin{proof}[First proof: induction on the grade]
+Write $B,D^{\mathrm{sc}},S^{\mathrm{sc}}$ for the three parts of the scalar
+recurrence \eqref{eq:scalar-K} at $(p,t)=(q,s)$:
+\begin{equation}\label{eq:scalar-parts}
+ B=\sum_{r=0}^{q-1}K_{\ell+q-r-1}(r,s),\qquad
+ S^{\mathrm{sc}}=\sum_{\substack{\ell_1,\ell_2\geq1\\ \ell_1+\ell_2=\ell-1}}
+ \sum_{m\geq0}K_{\ell_1}(q,m)K_{\ell_2}(m,s),
+\end{equation}
+$D^{\mathrm{sc}}=\one_{q=s}$ for $\ell=1$ and $D^{\mathrm{sc}}=2K_{\ell-1}(q,s)$
+for $\ell\geq2$, so that
+\begin{equation}\label{eq:scalar-sum}
+ K_\ell(q,s)=B+D^{\mathrm{sc}}+S^{\mathrm{sc}} .
+\end{equation}
+We induct on the grade $w=\ell+1+q$.  If $w=2$ then $\ell=1$, $q=0$, and
+\eqref{eq:redsupport} allows only $s=0$; \eqref{eq:R} gives
+$R_{1,1}(0,0)=B^{(1)}_{1,1}(0,0)=R_{1,0}(0,0)=1$, while the right-hand side
+of \eqref{eq:layer-one} is $(1+0-0)K_1(0,0)=1$; for $s\geq1$ both sides
+vanish, $R_{1,1}(0,s)=R_{1,0}(0,s)=0$ by \eqref{eq:redsupport} and
+$K_1(0,s)=0$ by \cref{lem:scalar-support}.
+
+Let $w>2$ and assume \eqref{eq:layer-one} at every smaller grade.  We
+evaluate the four terms of \eqref{eq:R} at $a=1$.  Put
+$\lambda=\ell+q-s$.
+
+\emph{Early-band sum.}  The sum \eqref{eq:B1} has the single term $h=0$,
+namely $R_{\ell,0}(1+q-0-1,s)=R_{\ell,0}(q,s)$, which is $K_\ell(q,s)$ by
+\cref{lem:layer-zero}.
+
+\emph{Last-band sum.}  Every summand of \eqref{eq:B2} has grade $w-1$ and
+first coordinate $a=1$, so induction applies:
+\[
+ B^{(2)}_{\ell,1}(q,s)=\sum_{r=0}^{q-1}\bigl((\ell+q-r-1)+r-s\bigr)
+ K_{\ell+q-r-1}(r,s)
+ =(\lambda-1)B,
+\]
+because the weight $(\ell+q-r-1)+r-s=\ell+q-1-s=\lambda-1$ does not depend
+on the summation index $r$.  This cancellation of $r$ is the reason the
+induction closes; no auxiliary scalar identity is needed.
+
+\emph{Endpoint term.}  For $\ell\geq2$ the entry $R_{\ell-1,1}(q,s)$ has
+grade $w-1$, so
+$D_{\ell,1}(q,s)=2(\ell-1+q-s)K_{\ell-1}(q,s)=(\lambda-1)D^{\mathrm{sc}}$.
+For $\ell=1$ we have $D_{1,1}(q,s)=0$ by \eqref{eq:Dred}, while
+$(\lambda-1)D^{\mathrm{sc}}=(q-s)\one_{q=s}=0$.  In both cases
+\begin{equation}\label{eq:Dmatch}
+ D_{\ell,1}(q,s)=(\lambda-1)D^{\mathrm{sc}} .
+\end{equation}
+
+\emph{Split term.}  In \eqref{eq:S} with $a=1$ the inner constraint
+$a_1+a_2=1$ leaves the two options $(a_1,a_2)=(1,0)$ and $(0,1)$, so
+\[
+ S_{\ell,1}(q,s)=\sum_{\ell_1+\ell_2=\ell-1}\sum_{m\geq0}
+ \Bigl(R_{\ell_1,1}(q,m)R_{\ell_2,0}(m,s)
+ +R_{\ell_1,0}(q,m)R_{\ell_2,1}(m,s)\Bigr).
+\]
+Nonzero terms have $m\leq q$ by \eqref{eq:redsupport}, hence
+$\ell_1+1+q\leq w-1$ and $\ell_2+1+m\leq \ell_2+1+q\leq w-1$: both factors
+are at strictly smaller grade, and both are covered by the induction
+hypothesis (for the $a=1$ factors) or by \cref{lem:layer-zero} (for the
+$a=0$ factors).  Since the supports of $R_{\ell_i,1}$ and $R_{\ell_i,0}$
+coincide, the substitution is valid termwise for every $m\geq0$.  Thus the
+bracket equals
+\[
+ \bigl((\ell_1+q-m)+(\ell_2+m-s)\bigr)K_{\ell_1}(q,m)K_{\ell_2}(m,s)
+ =(\ell-1+q-s)K_{\ell_1}(q,m)K_{\ell_2}(m,s),
+\]
+the intermediate coordinate $m$ again cancelling, and
+$S_{\ell,1}(q,s)=(\lambda-1)S^{\mathrm{sc}}$.
+
+Adding the four terms and using \eqref{eq:Dmatch} and
+\eqref{eq:scalar-sum},
+\[
+ R_{\ell,1}(q,s)=K_\ell(q,s)+(\lambda-1)\bigl(B+D^{\mathrm{sc}}
+ +S^{\mathrm{sc}}\bigr)
+ =K_\ell(q,s)+(\lambda-1)K_\ell(q,s)=\lambda K_\ell(q,s).\qedhere
+\]
+\end{proof}
+
+The second proof explains the factor $\ell+q-s$: it is the number of edges
+of a scalar stopped path, that is, the number of moments at which the single
+band-$0$ value can be consumed.
+
+\begin{lemma}[Stopped-path length]\label{lem:path-length}
+Every recurrence path from $H_{\mathbf p}((\ell)\mid L)$ stopped at the
+first exposure of $L$, at $H_{\mathbf t}(\varnothing\mid L)$, has exactly
+$\|\mathbf p\|_1+\ell-\|\mathbf t\|_1$ edges.
+\end{lemma}
+
+\begin{proof}
+By \eqref{eq:rho} the quantity $\rho=\|\mathbf p\|_1+\sum_j\ell_j$ drops by
+exactly one at every transition.  Along a stopped path the blocks of $L$
+never change, so the same holds for the reduced workload
+$\rho^\circ=\|\mathbf p\|_1+(\text{sum of the block sizes before the
+marker})$.  It equals $\|\mathbf p\|_1+\ell$ at the start and
+$\|\mathbf t\|_1$ at the stopping state, whose pre-marker stack is empty.
+\end{proof}
+
+\begin{proof}[Second proof of \cref{prop:layer-one}: insertion of the
+band-$0$ move]
+Fix $\ell\geq1$, $q\geq0$, $0\leq s\leq q$ and an arbitrary suffix $L$.  Let
+$\mathcal P_0$ be the set of paths from $((0,q),(\ell)\mid L)$ stopped at
+the first exposure of $L$ at $((0,s),\varnothing\mid L)$, and let
+$\mathcal P_1$ be the corresponding set of stopped paths from
+$((1,q),(\ell)\mid L)$ ending at $((0,s),\varnothing\mid L)$.  By
+\cref{cor:protected-tail} and \eqref{eq:R-definition}, the total path weight
+of $\mathcal P_0$ is $R_{\ell,0}(q,s)$ and that of $\mathcal P_1$ is
+$R_{\ell,1}(q,s)$.
+
+For $d=2$ the only transition of \eqref{eq:H} that changes $p_0$ is the
+early-band move $T_{0,h}$, which requires $h<p_0$ and sets the control to
+$(h,p_0+p_1-1-h)$; the last-band, endpoint and interior moves neither read
+nor change $p_0$, and their multiplicities depend only on $p_1$ and on the
+blocks before the marker.  Consequently:
+
+\begin{enumerate}
+\item[(i)] Along a path in $\mathcal P_1$ the first coordinate is
+non-increasing and passes from $1$ to $0$, so exactly one edge is an
+early-band edge; it is the move $T_{0,0}$, it has weight $1$, and it maps
+$(1,q')\mapsto(0,q')$ leaving the pre-marker blocks unchanged.
+\item[(ii)] Deleting that edge and lowering the first coordinate from $1$ to
+$0$ on all states preceding it turns a path of $\mathcal P_1$ into a path of
+$\mathcal P_0$: every remaining edge is of one of the three $p_0$-free
+types, hence legal and of the same weight at first coordinate $0$; the
+pre-marker stack sequence is unchanged, so the first exposure occurs at the
+same place and at the same second coordinate $s$.
+\item[(iii)] Conversely, given $\sigma\in\mathcal P_0$ with states
+$v_0,\ldots,v_M$ and an index $k\in\{1,\ldots,M\}$, raising the first
+coordinate to $1$ on $v_0,\ldots,v_{k-1}$ and inserting the weight-$1$
+early-band edge from the raised copy of $v_{k-1}$ to the original $v_{k-1}$
+produces a path of $\mathcal P_1$: it consists of the raised images of the
+first $k-1$ edges of $\sigma$, then that $T_{0,0}$ edge, then the remaining
+edges of $\sigma$ unchanged.  The raised prefix is legal for the same reason
+as in (ii), and no state before the insertion is exposed because the
+pre-marker stacks are those of $\sigma$.  The value $k=M+1$ is excluded: an early-band
+edge does not change the pre-marker stack, so if that stack were already
+empty the path would have been stopped earlier, at terminal control
+$(1,s)$.
+\end{enumerate}
+Operations (ii) and (iii) are mutually inverse and multiply path weights by
+$1$.  By \cref{lem:path-length} each $\sigma\in\mathcal P_0$ has
+$M=\ell+q-s$ edges, so
+\[
+ R_{\ell,1}(q,s)=\sum_{\sigma\in\mathcal P_0}(\ell+q-s)\,w(\sigma)
+ =(\ell+q-s)R_{\ell,0}(q,s).\qedhere
+\]
+\end{proof}
+
+\begin{example}\label{ex:layer-one}
+\Cref{ex:scalar-kernel} lists $K_1(2,\cdot)=(3,1,1)$ and
+$K_2(1,\cdot)=(4,2)$, ordered by terminal control.  \Cref{prop:layer-one}
+gives
+\[
+ R_{1,1}(2,\cdot)=(3\cdot3,\ 2\cdot1,\ 1\cdot1)=(9,2,1),
+ \qquad
+ R_{2,1}(1,\cdot)=(3\cdot4,\ 2\cdot2)=(12,4),
+\]
+which are the values produced by \eqref{eq:R-recurrence}.
+\end{example}
+
+\begin{remark}\label{rem:layers-two}
+The two lemmas remove the two lowest layers of the reduced table from the
+recursion: layer $0$ can be computed by the $O(N^5)$ scalar algorithm of
+\cref{thm:scalar-algorithm} and layer $1$ by $O(N^3)$ further
+multiplications.  This is a lower-order saving for the operation counts
+below --- layers $0$ and $1$ hold $O(N^3)$ of the $\Theta(N^4)$ entries ---
+but it removes two full layers from the certified computation's
+independent-implementation checks, and it is the first instance of a
+displacement-rank phenomenon: the exploration phase found, by machine
+search and without proof, that the rank of the $(q,s)$-matrix of
+$R_{\ell,a}$ under $M\mapsto M-ZMZ^{\mathsf T}$ is exactly $\max(a,1)$.  We
+neither prove nor use that statement here.
+\end{remark}
+
+\section{Homogeneity and the fast split}\label{sec:fast}
+
+\subsection{The homogeneity identity}
+
+\begin{definition}[Offset-grade slice]\label{def:chat}
+For $g\geq1$ and $q,m\geq0$ put
+\begin{equation}\label{eq:chat}
+ \Chat_g(y;q,m)=\sum_{a_1=0}^{g-1}y^{a_1}R_{g-a_1,a_1}(q,m)
+ \ \in\ \mathbb Z[y],
+\end{equation}
+the sum being over the reduced sources of offset grade $g$ and source
+coordinate $q$; the upper limit $g-1$ is exactly the constraint
+$\ell_1=g-a_1\geq1$.  By \eqref{eq:offset} every source contributing to
+$\Chat_g(\cdot;q,\cdot)$ has grade $g+q$.  By \eqref{eq:redsupport},
+$\Chat_g(y;q,m)=0$ unless $0\leq m\leq\mu(g,q)-1$, where
+\begin{equation}\label{eq:mu}
+ \mu(g,q)=\max_{0\leq a_1<g}\sigma(a_1,q)=
+ \begin{cases} q+1,&g=1,\\ g+q-1,&g\geq2,\end{cases}
+\end{equation}
+and $\deg_y\Chat_g(\cdot;q,m)\leq g-1$.
+\end{definition}
+
+\begin{lemma}[Homogeneity]\label{lem:homogeneity}
+Every ordered pair of factors contributing to $S_{\ell,a}(q,s)$ has
+\begin{equation}\label{eq:homog}
+ (\ell_1+a_1)+(\ell_2+a_2)=\ell+a-1,
+\end{equation}
+that is, the offset grades of the two factors sum to $\ell+a-1$,
+independently of $q$, of $s$, and of the intermediate coordinate $m$.
+\end{lemma}
+
+\begin{proof}
+Immediate from the two constraints in \eqref{eq:S}: $\ell_1+\ell_2=\ell-1$
+and $a_1+a_2=a$.
+\end{proof}
+
+\Cref{lem:homogeneity} is what makes one evaluation variable enough.  The
+naive evaluation of \eqref{eq:S} loops over $\ell_1$ and $a_1$
+independently; homogeneity replaces the two loops by the single loop over
+$g_1=\ell_1+a_1$, and --- more importantly --- makes the resulting
+convolution independent of the splitting of $\ell+a$ into $\ell$ and $a$,
+so that one convolution serves all $\Theta(N)$ cells of a given grade and
+source coordinate at once.
+
+\begin{theorem}[Fast split]\label{thm:fast-split}
+Fix $W\geq3$ and $0\leq q\leq W-3$, and put
+\begin{equation}\label{eq:CW}
+ \Phi_W(y;q,s)=\sum_{\substack{g_1,g_2\geq1\\ g_1+g_2=W-q-1}}\ \sum_{m\geq0}
+ \Chat_{g_1}(y;q,m)\,\Chat_{g_2}(y;m,s)\ \in\ \mathbb Z[y].
+\end{equation}
+Then, for every $\ell\geq1$ and $a\geq0$ with $\ell+a=W-q$ and every
+$s\geq0$, the split term \eqref{eq:S} satisfies
+\begin{equation}\label{eq:fast-split}
+ S_{\ell,a}(q,s)=[y^a]\,\Phi_W(y;q,s).
+\end{equation}
+Moreover $\deg_y\Phi_W(\cdot;q,s)\leq W-q-3$, and every reduced entry occurring
+in \eqref{eq:CW} has grade at most $W-2$.  (Cells with $\ell+a\leq2$, that
+is with $q>W-3$, have an empty split sum and are not covered by, nor in need
+of, the identity.)
+\end{theorem}
+
+\begin{proof}
+Expand \eqref{eq:CW} using \eqref{eq:chat}:
+\[
+ \Phi_W(y;q,s)=\sum_{g_1+g_2=W-q-1}\ \sum_{m\geq0}\
+ \sum_{a_1=0}^{g_1-1}\sum_{a_2=0}^{g_2-1}
+ y^{a_1+a_2}R_{g_1-a_1,a_1}(q,m)R_{g_2-a_2,a_2}(m,s).
+\]
+Fix $a\geq0$ and collect the terms with $a_1+a_2=a$.  Writing
+$\ell_1=g_1-a_1\geq1$ and $\ell_2=g_2-a_2\geq1$, the constraint
+$g_1+g_2=W-q-1$ becomes
+\[
+ \ell_1+\ell_2=(W-q-1)-(a_1+a_2)=(W-q-a)-1=\ell-1 ,
+\]
+using $\ell=W-q-a$.  Conversely, every pair $(\ell_1,a_1),(\ell_2,a_2)$ with
+$\ell_i\geq1$, $a_i\geq0$, $\ell_1+\ell_2=\ell-1$ and $a_1+a_2=a$ arises
+from exactly one pair $(g_1,g_2)$ with $g_i\geq1$ and $g_1+g_2=\ell+a-1
+=W-q-1$, namely $g_i=\ell_i+a_i$.  The correspondence is a bijection between
+the index sets of $[y^a]\Phi_W(y;q,s)$ and of $S_{\ell,a}(q,s)$, and it matches
+the summands, which proves \eqref{eq:fast-split}.
+
+For the degree bound, $\deg_y\Chat_{g_i}\leq g_i-1$, so each product has
+degree at most $g_1+g_2-2=W-q-3$.
+
+For the grade bound --- the online-safety statement --- we use the exact
+support \cref{lem:d2-exact-support} in the form \eqref{eq:redsupport}.  A
+factor $\Chat_{g_1}(\cdot;q,\cdot)$ consists of
+entries of grade $\tau_1=g_1+q$, and $\tau_1=(W-q-1-g_2)+q=W-1-g_2\leq W-2$
+since $g_2\geq1$.  A factor $\Chat_{g_2}(\cdot;m,\cdot)$ consists of entries
+of grade $\tau_2=g_2+m$.  If $\Chat_{g_1}(y;q,m)\ne0$ then
+$m\leq\mu(g_1,q)-1\leq g_1+q-1=\tau_1-1$ by \eqref{eq:mu}, whence
+\[
+ \tau_2=g_2+m\leq g_2+g_1+q-1=W-2 . \qedhere
+\]
+\end{proof}
+
+\begin{remark}[Sharpness]\label{rem:readiness-tight}
+Both bounds of \cref{thm:fast-split} are attained.  Taking $g_2=1$ gives
+$\tau_1=W-2$; taking $g_1=1$, $a_1=0$ and $m=q$ (legitimate because
+$R_{1,0}(q,q)=K_1(q,q)=C_1\ne0$ by
+\cref{lem:scalar-support}) gives $\tau_2=W-2$ as well.  So the constant $2$
+cannot be improved: at every output grade some pair of factors has a factor
+of grade exactly $W-2$.  What the bound does guarantee is that no entry of
+grade $W-1$ or $W$ is ever read while grade $W$ is being produced, which is
+what makes the per-grade schedule of \cref{sec:fast} well founded.
+\end{remark}
+
+\subsection{Evaluation and interpolation}
+
+\begin{corollary}[Evaluated form]\label{cor:evaluation}
+Let $p>N+1$ be a prime and let $y_1,\ldots,y_J\in\mathbb F_p$ be distinct,
+$J=N+1$.  For $W\leq N$ the polynomial $\Phi_W(\cdot;q,s)$ has degree at most
+$W-q-3\leq N-3<J$, so it is determined by its values at
+$y_1,\ldots,y_J$, and the coefficient vector is recovered by
+\[
+ \bigl([y^0]\Phi_W,\ldots,[y^{J-1}]\Phi_W\bigr)^{\mathsf T}
+ =V^{-1}\bigl(\Phi_W(y_1;q,s),\ldots,\Phi_W(y_J;q,s)\bigr)^{\mathsf T},
+ \qquad V=\bigl(y_j^{\,i-1}\bigr)_{j,i=1}^{J},
+\]
+the Vandermonde matrix $V$ being invertible over $\mathbb F_p$ because the
+$y_j$ are distinct.  The rows of $V^{-1}$ are the coefficient vectors of the
+Lagrange basis polynomials and are computed once, in $O(N^2)$ operations of
+$\mathbb F_p$.
+\end{corollary}
+
+\begin{proof}
+A nonzero polynomial of degree $<J$ has fewer than $J$ roots, so evaluation
+at $J$ distinct points is injective on that space; $\det V=\prod_{i<j}
+(y_j-y_i)\ne0$.  The rest is the definition of interpolation.
+\end{proof}
+
+\subsection{The scheme S-A$'$}
+
+\begin{quote}\small
+\textbf{Scheme S-A$'$.}  Input $N$ and a prime $p>N+1$; fix distinct
+$y_1,\ldots,y_J\in\mathbb F_p$, $J=N+1$, and precompute $V^{-1}$ and the
+powers $y_j^{\,a}$ for $a\leq N$.  Maintain the reduced table
+$R_{\ell,a}(q,\cdot)$ and the evaluated table
+$\Chat_g(y_j;q,m)$.  For $W=1,2,\ldots,N$:
+\begin{enumerate}
+\item[(1)] \emph{Band and endpoint terms.}  For every cell of grade $W$ set
+$\mathrm{Row}_{\ell,a,q}:=B^{(1)}+B^{(2)}+D$, using the prefix sweep over
+$h$ at fixed $(\ell,a+q)$ for $B^{(1)}$ and the suffix sweep over $r$ at
+fixed $(a,\ell+q)$ for $B^{(2)}$, so that each cell costs $O(1)$ row
+additions.
+\item[(2)] \emph{Convolution.}  For $q=0,\ldots,W-3$ and $j=1,\ldots,J$
+compute $\Phi_W(y_j;q,s)$ for all $s$ by \eqref{eq:CW}.
+\item[(3)] \emph{Interpolation.}  For $q=0,\ldots,W-3$ and all $s$ apply
+$V^{-1}$ and add the coefficient of $y^a$ to
+$\mathrm{Row}_{W-q-a,\,a,\,q}$ at position $s$.  Store the completed rows.
+\item[(4)] \emph{Absorption.}  For $q=0,\ldots,W-1$ and $g=W-q$ compute
+$\Chat_g(y_j;q,m)$ for all $j,m$ by \eqref{eq:chat}.
+\end{enumerate}
+Finally run the empty-stack phase \eqref{eq:G} in the reduced variables and
+return $a_n=G_{(n,0)}$ for $n\leq N$.
+\end{quote}
+
+\begin{theorem}[Correctness]\label{thm:sa-correct}
+Scheme S-A$'$ returns $|\Av_n(12453)|\bmod p$ for $0\leq n\leq N$.
+\end{theorem}
+
+\begin{proof}
+Steps (1)--(3) evaluate \eqref{eq:R} at every cell of grade $W$: step (1)
+computes $B^{(1)}+B^{(2)}+D$, and steps (2)--(3) compute $S_{\ell,a}(q,s)$
+by \cref{thm:fast-split} and \cref{cor:evaluation}.  All entries read in
+step (1) have grade $W-1$, and all entries read in step (2) have grade at
+most $W-2$ by \cref{thm:fast-split}; by step (4) of the previous rounds the
+required slices $\Chat_g(\cdot;u,\cdot)$ with $g+u\leq W-2$ are available.
+Hence the per-grade schedule is well founded and the reduced table is
+exactly the one defined by \eqref{eq:R-recurrence}.  The empty-stack phase
+is \eqref{eq:G} rewritten with \cref{lem:d2-translation}, and
+$a_n=G_{(n,0)}$ is \eqref{eq:answer-G}.
+\end{proof}
+
+\subsection{Operation count}
+
+We count multiplications in $\mathbb F_p$; every multiplication in steps
+(2)--(4) is paired with one addition.  The counting model is:
+\begin{itemize}
+\item[(E)] step (4): one multiplication $y_j^{\,a_1}\cdot
+R_{g-a_1,a_1}(q,m)$ per stored entry and per point, i.e.\ $J\cdot E(N)$ with
+$E(N)$ the number of stored reduced entries;
+\item[(C)] step (2): one multiplication per triple
+$(g_1,m,s)$ with $m<\mu(g_1,q)$ and $s<\mu(g_2,m)$, per $(W,q)$ and per
+point;
+\item[(I)] step (3): one multiplication per (coefficient index $a$,
+evaluation point) per output $(W,q,s)$;
+\item[(G)] the empty-stack phase: one multiplication per term of
+\eqref{eq:G}.
+\end{itemize}
+Step (1) uses no multiplications (the factor $2$ in $D$ is a doubling).
+
+\begin{lemma}[Polynomiality of the counts]\label{lem:polynomiality}
+Let $k\geq1$, let $f\in\mathbb Q[x_1,\ldots,x_k]$ and let
+$\alpha_1,\ldots,\alpha_k\in\N$.  Then
+\[
+ n\longmapsto
+ \sum_{\substack{x_i\geq\alpha_i\ (1\leq i\leq k)\\ x_1+\cdots+x_k\leq n}}
+ f(x_1,\ldots,x_k)
+\]
+agrees, for $n\geq\alpha_1+\cdots+\alpha_k$, with a polynomial in $n$ of
+degree at most $\deg f+k$; the same holds with any subset of the $k$
+variables frozen at a constant, the bound dropping by one for each frozen
+variable.
+\end{lemma}
+
+\begin{proof}
+Substituting $x_i=x_i'+\alpha_i$ and expanding reduces the claim to
+sums of $x_1^{i_1}\cdots x_k^{i_k}$ over $x\in\N^k$ with $|x|\leq M$, where
+$M=n-\alpha_1-\cdots-\alpha_k$.  Iterating Faulhaber's formula $k$ times
+shows that this is a polynomial in $M$ of degree $i_1+\cdots+i_k+k$, and $M$
+is an affine function of $n$.  Cancellation between the monomials of $f$ can
+lower the total degree, which is why only the upper bound is asserted.
+\end{proof}
+
+\begin{proposition}[Exact multiplication count of S-A$'$]\label{prop:sa-count}
+With $J=N+1$, the counts of the model above are, for $N\geq4$,
+\begin{align}
+ E(N)&=\tfrac{N(N+1)(N^2+N+4)}{12},\label{eq:countE}\\
+ C(N)&=\tfrac1{24}N^5-\tfrac5{12}N^4+\tfrac{17}8N^3-\tfrac{73}{12}N^2
+      +\tfrac{28}3N-6,\label{eq:countC}\\
+ I(N)&=\tfrac18N^4+\tfrac14N^3-\tfrac{13}8N^2+\tfrac54N,\label{eq:countI}\\
+ G(N)&=\tfrac1{60}N^5+\tfrac1{12}N^3-\tfrac1{10}N,\label{eq:countG}
+\end{align}
+where $C(N)$ and $I(N)$ are per evaluation point, and the total is
+\begin{equation}\label{eq:sa-total}
+ T_{\mathrm{S\text-A}'}(N)=J\bigl(C(N)+I(N)+E(N)\bigr)+G(N)
+ =\tfrac{1}{24}N^6-\tfrac3{20}N^5+\tfrac73N^4-\tfrac{14}3N^3
+ +\tfrac{29}8N^2+\tfrac{289}{60}N-6 .
+\end{equation}
+In particular S-A$'$ uses $N^6/24+O(N^5)$ multiplications, and the same
+number of additions up to $O(N^4)$.
+\end{proposition}
+
+\begin{proof}
+Formula \eqref{eq:countE} is \eqref{eq:d2-first-reduced-counts}.  For
+\eqref{eq:countC}, the model gives the explicit sum
+\begin{equation}\label{eq:convsum}
+ C(N)=\sum_{W=3}^{N}\ \sum_{q=0}^{W-3}\
+ \sum_{\substack{g_1,g_2\geq1\\ g_1+g_2=W-q-1}}\
+ \sum_{m=0}^{\mu(g_1,q)-1}\mu(g_2,m).
+\end{equation}
+Reindex by $(u,v,w)=(g_1,g_2,q)$, so that $W=u+v+w+1$ ranges over
+$3,\ldots,N$ exactly when $u+v+w\leq N-1$ with $u,v\geq1$, $w\geq0$.  By
+\eqref{eq:mu},
+\[
+ \sum_{m=0}^{\mu(u,w)-1}\mu(v,m)=A(v-1)+\tbinom A2+\one_{v=1}A,
+ \qquad A=\mu(u,w)=u+w-1+\one_{u=1},
+\]
+a piecewise polynomial of degree $2$ in $(u,v,w)$ whose four pieces are cut
+out by $u=1$ or $u\geq2$ and $v=1$ or $v\geq2$.  Applying
+\cref{lem:polynomiality} with $k=3$ to each of the four pieces (freezing
+$u$, or $v$, or neither) shows that $C(N)$ agrees with a polynomial of
+degree at most $5$ for
+$N$ large.  A polynomial of degree at most $5$ is determined by six values, and the
+displayed one interpolates \eqref{eq:convsum} at $N=10,\ldots,15$; it was
+then checked against direct evaluation of \eqref{eq:convsum} for every
+$4\leq N\leq60$, which also fixes the range of validity.  Formulas
+\eqref{eq:countI} and \eqref{eq:countG} are obtained the same way from
+\[
+ I(N)=\sum_{W=3}^{N}\sum_{q=0}^{W-3}(W-q)(W-1),\qquad
+ G(N)=\sum_{m=1}^{N}\sum_{p+q=m}\ \sum_{\substack{h=0\\ q-1-h\ne0}}^{q-1}
+ \ \sum_{c=0}^{p}\sigma(p-c,h),
+\]
+by \cref{lem:polynomiality} with $k=2$ and $k=4$ respectively, of degrees at
+most $4$ and $5$; they were verified for $3\leq N\leq60$.  Summing
+gives \eqref{eq:sa-total}, verified for $3\leq N\leq50$.
+\end{proof}
+
+\begin{remark}[Where $1/24$ comes from]\label{rem:volume}
+Discarding lower-order terms, \eqref{eq:convsum} is
+$\sum(u+w)v+\tfrac12(u+w)^2$ over the simplex $u,v\geq1$, $w\geq0$,
+$u+v+w\leq n$ with $n=N-1$.  Using
+$\int_{x_1+x_2+x_3\leq n}x^{\alpha}=n^{|\alpha|+3}\alpha!/(|\alpha|+3)!$,
+the first summand contributes $2\cdot n^5/120=n^5/60$ and the second
+$\tfrac12(n^5/60+2n^5/120+n^5/60)=n^5/40$, for a total of $n^5/24$; the
+factor $J=N+1$ then gives $N^6/24$.  Structurally: the two loops over
+$\ell_1$ and $a_1$ of \eqref{eq:S} collapse into the single loop over
+$g_1$, and one convolution serves all $\Theta(N)$ cells sharing a grade and
+a source coordinate, saving two factors of $N$; the $J=N+1$ evaluation
+points pay one back.
+\end{remark}
+
+\section{Consequences}\label{sec:consequences}
+
+\begin{proposition}[Baseline: the direct first-quotient
+split]\label{prop:baseline-count}
+Evaluating \eqref{eq:S} directly over the padded region, as in the proof of
+\cref{cor:d2-complexity} and in the reference implementation
+\texttt{av12453\_reduced.py} of the supplement, uses exactly
+\begin{equation}\label{eq:baseline}
+ T_{\mathrm{direct}}(N)=\binom N3+4\binom N4+9\binom N5+10\binom N6
+ +5\binom N7=\frac{N^7}{1008}+O(N^6)
+\end{equation}
+multiplications for the split terms, plus $G(N)$ for the empty-stack phase.
+\end{proposition}
+
+\begin{proof}
+The count is
+$\sum(\ell-2)_+\sum_{a_1=0}^{a}\sum_{m=0}^{\sigma(a_1,q)-1}
+\sigma(a-a_1,m)$ over the padded region, the factor $(\ell-2)_+$ being the
+number of admissible block splits $\ell_1$, a sum of a piecewise polynomial of
+degree $4$ over a $3$-dimensional simplex, hence a polynomial of degree at
+most $7$
+by \cref{lem:polynomiality} with $k=3$.  The displayed form interpolates it and was
+checked against direct summation for $1\leq N\leq25$.
+\end{proof}
+
+\begin{corollary}[Sharpened operation count for
+$\Av(12453)$]\label{cor:sa-complexity}
+For every $N$ and every prime $p>N+1$, the residues
+$|\Av_n(12453)|\bmod p$ for $0\leq n\leq N$ can be computed with
+\[
+ \frac{N^6}{24}+O(N^5)
+\]
+multiplications in $\mathbb F_p$, the same number of additions up to
+$O(N^4)$, and
+\[
+ \frac{5N^4}{12}+\frac{N^3}{2}+\frac{13N^2}{12}+N
+\]
+stored table elements of $\mathbb F_p$ (the reduced table together with the
+evaluated table), plus $2(N+1)^2$ precomputed elements --- the inverse
+Vandermonde $V^{-1}$ and the point powers $y_j^{\,a}$ --- and $O(N^3)$
+transient scratch per grade.  Exact integers are recovered by the
+Chinese remainder scheme of \cref{prop:exact-150}: the exact entries, and
+hence the number of primes, are unchanged, so the bit time improves over
+\cref{cor:d2-complexity} by the same asymptotic factor $N/42$ as the
+arithmetic count.
+\end{corollary}
+
+\begin{proof}
+Correctness is \cref{thm:sa-correct}; the operation count is
+\cref{prop:sa-count}.  For the storage, the reduced table holds $E(N)$
+entries by \eqref{eq:countE} and the evaluated table holds, for each of the
+$J=N+1$ points, one element for each triple $(g,u,v)$ with $g\geq1$,
+$u\geq0$, $g+u\leq N$ and $v<\mu(g,u)$; by \eqref{eq:mu} the number of such
+triples is $\sum_{g+u\leq N}\mu(g,u)=\frac13N(N^2+2)$
+(\cref{lem:polynomiality}, checked for $N\leq60$), and
+\[
+ E(N)+(N+1)\cdot\tfrac13N(N^2+2)
+ =\tfrac5{12}N^4+\tfrac12N^3+\tfrac{13}{12}N^2+N .
+\]
+Steps (2)--(3) use $O(N^3)$ scratch per grade for the values
+$\Phi_W(y_j;q,\cdot)$, and the precomputation of \cref{cor:evaluation}
+stores the $(N+1)^2$ entries of $V^{-1}$ and the $(N+1)^2$ powers
+$y_j^{\,a}$, $a\leq N$.  Each entry of each table is
+one element of $\mathbb F_p$, and the number of CRT primes is the one used
+in \cref{prop:exact-150}, since the exact entries and their bit lengths are
+unchanged.
+\end{proof}
+
+\begin{remark}[Position relative to \cref{cor:d2-complexity}]
+\label{rem:position}
+\Cref{cor:sa-complexity} does not change the asymptotic shape of the
+$O(N^7)$/$O(N^4)$ statement of \cref{cor:d2-complexity} into a new exponent
+pair by improving the underlying combinatorics: it improves the
+\emph{operation count of the same algorithm family}, replacing the direct
+evaluation of the split \eqref{eq:S} by an evaluation--interpolation
+evaluation of the same sum.  Three honest qualifications:
+\begin{enumerate}
+\item[(a)] The gain is one factor of $N$: by \eqref{eq:sa-total} and
+\eqref{eq:baseline} the ratio $T_{\mathrm{direct}}/T_{\mathrm{S\text-A}'}$
+tends to $24/1008\cdot N=N/42$.  The exact ratios are $1.34$ at $N=60$,
+$3.49$ at $N=150$, $7.06$ at $N=300$ and $23.7$ at $N=1000$; the crossover
+is at $N=46$.  Below that size the direct evaluation is faster, because of
+the $J=N+1$ evaluation points.
+\item[(b)] The storage bound $O(N^4)$ is unchanged in order, but its leading
+constant grows from $\frac1{24}N^4$ (the retained-entry count
+\eqref{eq:d2-reduced-counts} after the second translation) to
+$\frac5{12}N^4$, a factor of $10$; against the first-coordinate quotient
+alone, \eqref{eq:d2-first-reduced-counts}, the factor is $5$.  The
+increase is the $J=N+1$ copies of the $\Theta(N^3)$ evaluated table, and it
+cannot be avoided by processing one evaluation point at a time, because
+interpolation at each grade needs all $J$ copies simultaneously.  The
+second-coordinate translation \eqref{eq:d2-second-translation} compresses
+the reduced table but does not act coefficientwise on the slices
+\eqref{eq:chat}, and we make no claim about compressing the evaluated table.
+\item[(c)] \textsc{Two baselines.}  The manuscript's algorithm family has two
+instrumented split counts, and they differ by a factor $5/4$ in the leading
+term.  The direct first-quotient evaluation --- the reference implementation
+\texttt{av12453\_reduced.py} of the supplement, and the count behind
+\cref{cor:d2-complexity} --- uses \eqref{eq:baseline},
+\[
+ \binom N3+4\binom N4+9\binom N5+10\binom N6+5\binom N7
+ =\frac{N^7}{1008}+O(N^6),
+\]
+that is $1\,618\,924\,645\,920$ multiply--adds at $N=150$; against it the
+crossover with S-A$'$ is at $N=46$ and the ratios are $1.34$, $3.49$, $7.06$
+and $23.7$ at $N=60$, $150$, $300$ and $1000$, as in (a).  The certified
+production engines (\texttt{av12453\_fast.cpp},
+\texttt{av12453\_fast\_rns.cpp}) evaluate the split on the
+second-translation-reduced outputs and use exactly
+\[
+ \binom N3+3\binom N4+6\binom N5+8\binom N6+4\binom N7
+ =\frac{N^7}{1260}+O(N^6),
+\]
+that is $1\,294\,425\,854\,905$ multiply--adds at $N=150$, as recorded in
+\texttt{notes/av12453\_150\_computation\_report.md}, section~1.  Measured
+against that count the crossover is at $N=57$ and the ratios are $2.79$ at
+$N=150$ and $5.65$ at $N=300$.  All statements in this note use
+\eqref{eq:baseline}, which we verified.
+\end{enumerate}
+\end{remark}
+
+\begin{proposition}[MEASURED ONLY --- online block
+ladder]\label{prop:ladder}
+\textsc{This statement is not proved here.}  Replacing the per-grade
+recomputation of \eqref{eq:CW} by a per-$m$ dyadic online-multiplication
+ladder (relaxed/online products in the pair $(\tau_1,\tau_2)$, with
+$\mathrm{NTT}$ products inside a block once the block is large enough)
+appears to reduce the multiplication count to $O(N^5\log^2N)$.  What we can
+report is the following, from the exploration prototype's cost model
+(exploratory scripts \texttt{graded.py} and \texttt{counts.py}, not part of the release), \emph{not} from a
+proof and \emph{not} from a timed implementation at the relevant sizes:
+the ladder count first falls below the prototype's own per-grade S-A$'$ cost
+model at $N=65$ (below the closed form \eqref{eq:sa-total} only at $N=94$);
+the ratio against that model
+is $1.03$ at $N=96$, $1.08$ at $N=128$ and $1.37$ at $N=256$; and the local
+growth exponent decreases from $6.01$ at $N=48$ to $5.59$ at $N=256$,
+consistent with, but far from confirming, a $N^5\log^2N$ law.  The
+prototype's ladder mode reproduces the certified terms for $N\leq24$, but at
+those sizes every block product is evaluated naively (the cost model selects
+its first $\mathrm{NTT}$ block at $N=65$), so that check does not exercise
+the distinctive relaxed/NTT blocks.  Any use of this claim
+in the manuscript should be conditional.
+\end{proposition}
+
+\section{The general-\texorpdfstring{$d$}{d} analogue}\label{sec:general-d}
+
+Homogeneity is not a two-threshold accident: \eqref{eq:homog} uses only the
+two constraints $\ell_1+\ell_2=\ell-1$ and $a_1+a_2=a$, and $a$ is the
+reduced \emph{first} band coordinate, which exists for every $d$.  We record
+what this gives, separating what is proved from what is verified.
+
+\begin{proposition}[First-coordinate quotient at general
+$d$]\label{prop:general-translation}
+Let $d\geq2$, $\mathbf p=(p_0,\mathbf q)$ with $\mathbf q\in\N^{d-1}$, and
+$0\leq c\leq p_0$.  Then
+\[
+ K_\ell\bigl((p_0,\mathbf q),(c,\mathbf s)\bigr)
+ =K_\ell\bigl((p_0-c,\mathbf q),(0,\mathbf s)\bigr)
+ =:R_{\ell,p_0-c}(\mathbf q,\mathbf s),
+\]
+and $K_\ell((p_0,\mathbf q),(c,\mathbf s))=0$ for $c>p_0$.  Writing
+$a=p_0-c$, the split term of \eqref{eq:K} becomes
+\begin{equation}\label{eq:general-split}
+ \sum_{\substack{\ell_1,\ell_2\geq1\\ \ell_1+\ell_2=\ell-1}}
+ \ \sum_{a_1+a_2=a}\ \sum_{\mathbf m}
+ R_{\ell_1,a_1}(\mathbf q,\mathbf m)R_{\ell_2,a_2}(\mathbf m,\mathbf s).
+\end{equation}
+\end{proposition}
+
+\begin{proof}
+By \eqref{eq:T} the only transition that changes $p_0$ is the early-band
+move with $i=0$, which sets $p_0$ to some $h<p_0$; the moves $T_{i,h}$ with
+$i\geq1$, the last-band moves $U_h$, and the endpoint and interior moves
+leave $p_0$ untouched.  Hence $p_0$ is non-increasing along a kernel path,
+and a path ending at first coordinate $c$ has $p_0\geq c$ throughout, so it
+uses only $i=0$ moves with $h\geq c$.  Deleting the $c$ lowest unread values
+of band $0$ from every state replaces $p_0$ by $p_0-c$ and, on $i=0$ moves,
+$h$ by $h-c$; since
+$T_{0,h}(p_0,p_1,\ldots)=(h,p_1+p_0-1-h,p_2,\ldots)$, the second coordinate
+of the target is unchanged, and so are all other coordinates, all block
+sizes, and all transition multiplicities.  The inverse operation adjoins $c$
+unread values below every value used by the path; they are never selected
+because the terminal first coordinate is $c$.  The two operations are
+inverse weight-preserving bijections between the stopped paths counted by
+the two sides.  The vanishing statement follows from the monotonicity just
+established: only the $i=0$ early-band move changes $p_0$ and it strictly
+decreases it, so $p_0$ is non-increasing along every kernel path and a
+terminal control with $t_0>p_0$ is unreachable.  For
+\eqref{eq:general-split}, apply the
+translation to both factors of the split of \eqref{eq:K}, with intermediate
+control $(c,\mathbf m)$; the first factor vanishes unless $c\leq a$, and
+$a_1=a-c$, $a_2=c$.
+\end{proof}
+
+\begin{proposition}[Homogeneity and readiness at general
+$d$]\label{prop:general-homogeneity}
+Let $d\geq2$ and let the grade of a reduced source be
+$w=\ell+a+\|\mathbf q\|_1$ and its offset grade $g=\ell+a$.  Put
+$\Chat_g(y;\mathbf q,\mathbf m)=\sum_{a_1<g}y^{a_1}
+R_{g-a_1,a_1}(\mathbf q,\mathbf m)$.  Then for $\ell\geq1$, $a\geq0$,
+\begin{equation}\label{eq:general-fast-split}
+ S_{\ell,a}(\mathbf q,\mathbf s)=[y^a]
+ \sum_{\substack{g_1,g_2\geq1\\ g_1+g_2=\ell+a-1}}\sum_{\mathbf m}
+ \Chat_{g_1}(y;\mathbf q,\mathbf m)\Chat_{g_2}(y;\mathbf m,\mathbf s),
+\end{equation}
+and every entry occurring on the right has grade at most $w-2$.
+\end{proposition}
+
+\begin{proof}
+Identical to the proofs of \cref{lem:homogeneity} and
+\cref{thm:fast-split}, with $q,m,s$ replaced by vectors: the reindexing uses
+only $\ell_1+\ell_2=\ell-1$ and $a_1+a_2=a$.  For readiness,
+$\tau_1=g_1+\|\mathbf q\|_1=w-1-g_2\leq w-2$; and by \cref{lem:support} a
+nonzero $R_{\ell_1,a_1}(\mathbf q,\mathbf m)$ has either
+$a_1=0,\ \mathbf m=\mathbf q$ or $\|\mathbf m\|_1\leq a_1+\|\mathbf
+q\|_1-1$, so in both cases $\tau_2=g_2+\|\mathbf m\|_1\leq w-2$.
+\end{proof}
+
+\begin{remark}[What this buys, and what is only
+verified]\label{rem:general-d}
+Counting loops as in \cref{sec:consequences}: with
+\cref{prop:general-translation} alone, the reduced table has $O_d(N^{d+1})$
+rows and $O_d(N^{2d})$ entries, and the direct split costs $O_d(N)$ choices
+of $\ell_1$, $O_d(N)$ of $a_1$, $O_d(N^{d-1})$ intermediate coordinates and
+$O_d(N^{d-1})$ terminal coordinates per source row, that is $O_d(N^{3d+1})$
+overall.  With \cref{prop:general-homogeneity}, one convolution per pair
+$(w,\mathbf q)$ --- there are $O_d(N^{d})$ of them --- costs $O_d(N)$
+choices of $g_1$ times $O_d(N^{2d-2})$ coordinate pairs, times $J=N+1$
+points, i.e.\ $O_d(N^{3d})$; every other phase (bands, absorption,
+interpolation, empty stack) is $O_d(N^{2d+1})$.  So homogeneity saves one
+factor of $N$ at every $d$, and the storage becomes $O_d(N^{2d})$.  These
+counts are proved.  What is \emph{verified but not proved} is that the
+resulting scheme runs correctly at $d=3$: we implemented \eqref{eq:K} and
+\eqref{eq:G} for $d=3$ ($\beta_3=123564$), checked the terms against
+brute-force enumeration of $\Av_n(123564)$ for $n\leq8$
+$(1,1,2,6,24,120,719,5003,39428)$, checked
+\cref{prop:general-translation} on all $21736$ nonzero kernel entries of
+grade $\leq10$, checked \eqref{eq:general-fast-split} and the readiness
+bound on all $495$ reduced cells of grade $\leq11$ with $\ell\geq3$ (for
+$\ell\leq2$ both sides vanish: the split range is empty and the $y$-degree
+bound excludes the coefficient), the bound $w-2$ being
+attained, and ran the $d=3$ analogue of S-A$'$ --- evaluation at $J=N+1$
+points, pointwise convolution with vector coordinates, interpolation --- to
+reproduce $|\Av_n(123564)|$ for $n\leq11$.  We have not attempted the exact
+constant in the $d=3$ operation count, and we have not looked for the
+$d\geq3$ analogue of the second-coordinate translation
+\eqref{eq:d2-second-translation}.
+\end{remark}
+
+\section{Machine checks}\label{sec:checks}
+
+All checks below were run in this session; the checking scripts were
+exploratory prototypes that are not part of the release.  ``Exact'' means Python
+integer arithmetic; ``mod $p$'' means $p=2^{61}-1$.
+
+\begin{center}\footnotesize
+\begin{tabular}{@{}p{0.20\textwidth}p{0.46\textwidth}p{0.28\textwidth}@{}}
+\toprule
+Claim & Check & Result\\
+\midrule
+\eqref{eq:R}, \eqref{eq:G} & \texttt{core2.py}: terms vs
+ \texttt{data/av12453\_terms\_0\_150.txt}, $N\leq30$, exact & agree\\
+\eqref{eq:scalar-K} & \texttt{core2.py}: $|\Av_n(1342)|$ vs
+ \eqref{eq:bona-1342}, $n\leq16$, exact & agree\\
+\cref{lem:layer-zero} & \texttt{check\_T1\_T2.py}: all $4960$ layer-$0$
+ entries, $N=30$, exact & $0$ mismatches\\
+\cref{prop:layer-one} & \texttt{check\_T1\_T2.py}: all $4495$ layer-$1$
+ entries, $N=30$, exact & $0$ mismatches\\
+\eqref{eq:redsupport} & \texttt{check\_T1\_T2.py}: no vanishing entry
+ inside the stated range & confirmed\\
+\cref{lem:scalar-support} & $K_\ell(p,p)=C_\ell$ on every row, $N=30$ &
+ confirmed\\
+\cref{lem:path-length} & \texttt{paths.py}: $d=2$ path enumeration,
+ grade $\leq12$ & lengths as claimed\\
+\ \ and second proof & \ \ (weights, lengths, insertion count) & factor
+ confirmed\\
+\cref{thm:fast-split} & \texttt{check\_T3.py}: exact polynomial identity,
+ $N=16$ & $0$/816 cells wrong\\
+ & \ \ with the degree and grade bounds & both bounds tight\\
+S-A$'$ & \texttt{saprime.py}: whole scheme mod $p$, $N=40$ & terms and
+ counts agree\\
+\cref{prop:sa-count}, & \texttt{count.py}, \texttt{report\_counts.py}:
+ closed & agree on the stated\\
+\ \ \cref{prop:baseline-count} & \ \ forms vs.\ direct summation & ranges\\
+\cref{rem:general-d} & \texttt{d3.py}, \texttt{check\_d3\_split.py},
+ \texttt{d3fast.py} & as described there\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent
+The production count $4\binom N7+8\binom N6+6\binom N5+3\binom N4+\binom N3$
+quoted in the exploration phase was correct for the production engine, and
+\cref{rem:position}(c) now ties each of the two baselines to its variant.
+One number quoted in the exploration phase is corrected here: the storage
+factor, which is $10\times$ the retained-entry count for the single-copy layout of
+\cref{cor:sa-complexity} (the prototype's layout, which keeps two copies of
+the evaluated table and, in ladder mode, the accumulators, measures
+$17.7\times$ and $25.5\times$ at $N=150$).
+
+\end{document}

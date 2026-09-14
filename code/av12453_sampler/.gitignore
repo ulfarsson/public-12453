@@ -1,0 +1,9 @@
+tables
+sampler
+avoid_check
+unif_test
+avr_check
+*.avr
+__pycache__/
+*.txt
+!examples/*

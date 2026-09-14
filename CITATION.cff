@@ -1,0 +1,27 @@
+cff-version: 1.2.0
+message: "If you use this software or data, please cite the paper below and this repository."
+type: software
+title: "Protected tails and polynomial-time enumeration: companion code, data and Lean development"
+authors:
+  - family-names: Ulfarsson
+    given-names: Henning
+    affiliation: Reykjavik University
+license: Apache-2.0
+version: 1.0.0
+date-released: 2026-09-14
+repository-code: "https://github.com/[to be inserted]/public-12453"
+keywords:
+  - permutation patterns
+  - pattern avoidance
+  - polynomial-time enumeration
+  - Wilfian formula
+  - Lean 4
+preferred-citation:
+  type: unpublished
+  title: "Protected tails and polynomial-time enumeration of permutations avoiding a direct sum of an increasing pattern and 231"
+  authors:
+    - family-names: Ulfarsson
+      given-names: Henning
+      affiliation: Reykjavik University
+  year: 2026
+  notes: "Preprint; arXiv identifier to be inserted."
