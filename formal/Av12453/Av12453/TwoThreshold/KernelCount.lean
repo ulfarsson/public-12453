@@ -103,7 +103,9 @@ as delivered.
 namespace Av12453
 namespace TwoThreshold
 
-open OneThreshold (nz nz_singleton avoiders)
+open PermPatterns
+
+open OneThreshold (nz nz_singleton)
 
 /-! ### The hypothesis
 
@@ -202,14 +204,14 @@ recurrence `H` counts the avoiders -- is `Av12453.TwoThreshold.av12453_count`, t
 component 3b.
 -/
 theorem av12453_count_kernel_of (hF : TwoThresholdFactorization) (n : ℕ) :
-    G (n, 0) = (avoiders n (beta 2)).card :=
+    G (n, 0) = (avoiders n {beta 2}).card :=
   (G_eq_H_of hF (n, 0)).trans (av12453_count n)
 
 /-- The frozen signature of theorem 5 is met verbatim. -/
 example
     (hF : ∀ (ℓ : ℕ) (p : ℕ × ℕ) (L : List ℕ), 1 ≤ ℓ →
       H p (ℓ :: L) = ∑ t ∈ S p, K ℓ p t * H t L) (n : ℕ) :
-    G (n, 0) = (avoiders n (beta 2)).card :=
+    G (n, 0) = (avoiders n {beta 2}).card :=
   av12453_count_kernel_of hF n
 
 /--
@@ -219,7 +221,7 @@ of \eqref{eq:K}--\eqref{eq:G} is the number of `12453`-avoiding permutations of
 `{0, …, n-1}`.  The hypothesis `hF` of `av12453_count_kernel_of` is
 \eqref{eq:factorization}, discharged with `KernelFactor.H_factor`.
 -/
-theorem av12453_count_kernel (n : ℕ) : G (n, 0) = (avoiders n (beta 2)).card :=
+theorem av12453_count_kernel (n : ℕ) : G (n, 0) = (avoiders n {beta 2}).card :=
   av12453_count_kernel_of (fun _ℓ p L hℓ => H_factor hℓ p L) n
 
 /-! ### Cross-checks
@@ -234,7 +236,7 @@ avoiders, and which `Counting.lean` itself cross-checks against a brute-force en
 
 The `decide`s are kernel evaluations and add no axiom; the `#eval`s are guarded by
 `#guard_msgs`, so the build fails if any value ever changes.  Note that
-`(avoiders k (beta 2)).card` cannot be `decide`d: `perms` goes through `List.permutations`,
+`(avoiders k {beta 2}).card` cannot be `decide`d: `perms` goes through `List.permutations`,
 which the kernel does not reduce. -/
 
 set_option maxRecDepth 1000000 in
@@ -252,7 +254,7 @@ example : ∀ p ∈ [((1 : ℕ), (2 : ℕ)), (2, 1), (2, 2), (1, 3), (3, 1)], G 
 /-! **Theorem 5 checked numerically** for `n ≤ 7`: the kernel algorithm's output
 `G_{(n,0)}`, and its agreement with a brute-force enumeration of `Av_n(12453)`.  The first
 `#eval` prints the first eight terms of \eqref{eq:first-terms}; the second compares them,
-term by term, with `(avoiders k (beta 2)).card`.  (The comparison is printed as a list of
+term by term, with `(avoiders k {beta 2}).card`.  (The comparison is printed as a list of
 booleans rather than as a list of pairs so that the enumeration is run only once: filtering
 `7! = 5040` words by `Contains _ (beta 2)` is by far the most expensive line of this
 file.) -/
@@ -265,7 +267,7 @@ set_option linter.hashCommand false in
 set_option linter.hashCommand false in
 /-- info: [true, true, true, true, true, true, true, true] -/
 #guard_msgs in
-#eval (List.range 8).map (fun k => G (k, 0) == (avoiders k (beta 2)).card)
+#eval (List.range 8).map (fun k => G (k, 0) == (avoiders k {beta 2}).card)
 
 /-! The same comparison against the literal recurrence `H`, to `n = 9`: the ten terms
 `1, 1, 2, 6, 24, 119, 694, 4581, 33286, 260927` of \eqref{eq:first-terms}, computed once
@@ -304,7 +306,7 @@ example {ℓ : ℕ} (hℓ : 1 ≤ ℓ) (p : ℕ × ℕ) (L : List ℕ) :
 example (p : ℕ × ℕ) : G p = H p [] := G_eq_H p
 
 /-- Theorem 5, the goal of component 4b, \eqref{eq:answer-G} at `d = 2`. -/
-example (n : ℕ) : G (n, 0) = (avoiders n (beta 2)).card := av12453_count_kernel n
+example (n : ℕ) : G (n, 0) = (avoiders n {beta 2}).card := av12453_count_kernel n
 
 end TwoThreshold
 end Av12453

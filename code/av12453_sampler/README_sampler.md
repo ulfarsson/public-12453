@@ -307,5 +307,6 @@ on 8 cores — is met with a wide margin: 100 000 samples at `n = 100` take
 * The `--check` weight-sum assertion uses a 1e-9 relative tolerance as the
   brief specifies; the observed deviations are 4–5 orders of magnitude
   smaller, so a much tighter tolerance would also pass at `N <= 150`.
-* Sampling is uniform up to ~1e-11 total variation at `n = 150`, not exactly
-  uniform; see "Exactness" above.
+* Sampling is not exactly uniform.  The paper's Proposition A.2 proves a
+  total-variation distance below 3.5e-5 for `n <= 300`; the observed table
+  error suggests about 1e-11 at `n = 150`.  See "Exactness" in `README.md`.

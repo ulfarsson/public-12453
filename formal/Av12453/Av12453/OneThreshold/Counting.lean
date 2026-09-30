@@ -45,7 +45,7 @@ and `CompleteHyp`; `A_eq_W_of` is stated relative to them, so that it is axiom-c
 
 Both sides of `av1342_count` are computable, and evaluating them independently with
 
-    #eval (List.range 8).map (fun k => ((avoiders k (beta 1)).card, W k []))
+    #eval (List.range 8).map (fun k => ((avoiders k {beta 1}).card, W k []))
 
 returns `[(1, 1), (1, 1), (2, 2), (6, 6), (23, 23), (103, 103), (512, 512), (2740, 2740)]`,
 the first terms of `|Av_n(1342)|` (Bona's sequence; the paper's \eqref{eq:first-terms} is
@@ -55,6 +55,8 @@ through `List.permutations`, which the kernel does not reduce.)
 
 namespace Av12453
 namespace OneThreshold
+
+open PermPatterns
 
 variable {n : ℕ} {σ : List ℕ} {x : ℕ}
 
@@ -308,7 +310,7 @@ theorem A_eq_W (hleg : Legal n σ) : A n σ = W (p n σ) (L n σ) :=
     (fun _ _ h hl => legal_complete_avoids h hl) σ hleg
 
 /-- **The goal of component 3a**: the recurrence `W` counts `1342`-avoiding permutations. -/
-theorem av1342_count (n : ℕ) : W n [] = (avoiders n (beta 1)).card := by
+theorem av1342_count (n : ℕ) : W n [] = (avoiders n {beta 1}).card := by
   have h := A_eq_W (n := n) (σ := []) Legal_nil
   rw [p_nil, L_nil] at h
   rw [← h, A_nil]

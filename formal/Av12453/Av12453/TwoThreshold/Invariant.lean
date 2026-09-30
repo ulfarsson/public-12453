@@ -47,6 +47,8 @@ beginning "For (i) implies (ii)"), in the three cases of the two-threshold scan:
 namespace Av12453
 namespace TwoThreshold
 
+open PermPatterns
+
 open OneThreshold (unread mem_unread unread_append_singleton IsWord nzI mem_nzI
   stackUnion mem_stackUnion Adjacent)
 
@@ -62,7 +64,7 @@ theorem idxOf_append_last (hxτ : x ∉ τ) : (τ ++ [x]).idxOf x = τ.length :=
 /--
 **The `2`-triggers of `τ ++ [x]`.**  Reading one more letter creates at most one new
 `2`-trigger value, namely `x` itself, and only when some earlier letter is smaller.  This is
-`mem_trigVals_append_singleton` in the vocabulary of `Av12453.IsTrigger`.
+`mem_trigVals_append_singleton` in the vocabulary of `PermPatterns.IsTrigger`.
 -/
 theorem isTrigger_two_append_singleton {y : ℕ} :
     IsTrigger (τ ++ [x]) 2 y ↔ (IsTrigger τ 2 y ∨ (y = x ∧ ∃ z ∈ τ, z < x)) := by

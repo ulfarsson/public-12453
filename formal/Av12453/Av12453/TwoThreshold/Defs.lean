@@ -72,10 +72,12 @@ the measure `ρ(𝐩, L) = p₀ + p₁ + L.sum` of \eqref{eq:rho} (`rho_eq`) and
 namespace Av12453
 namespace TwoThreshold
 
+open PermPatterns
+
 open OneThreshold (unread mem_unread unread_append_singleton IsWord nzI mem_nzI nzI_sublist
   nz nz_nil nz_singleton nz_singleton_sum map_card_nzI stackUnion mem_stackUnion
-  stackUnion_cons stackUnion_append stackUnion_nzI card_stackUnion Adjacent perms mem_perms
-  avoiders sum_rank_eq card_filter_lt_add_card_filter_gt rank_lt_card rank_inj card_unread
+  stackUnion_cons stackUnion_append stackUnion_nzI card_stackUnion Adjacent
+  sum_rank_eq card_filter_lt_add_card_filter_gt rank_lt_card rank_inj card_unread
   isPermOf_of_isWord prefix_append_singleton_iff getD_mem_unread
   exists_adjacent_above exists_adjacent_around)
 
@@ -1098,7 +1100,7 @@ the prefix `σ`. -/
 def A (n : ℕ) (σ : List ℕ) : ℕ :=
   ((perms n).filter fun w => σ <+: w ∧ Avoids w (beta 2)).card
 
-theorem A_nil (n : ℕ) : A n [] = (avoiders n (beta 2)).card := by
+theorem A_nil (n : ℕ) : A n [] = (avoiders n {beta 2}).card := by
   rw [A, avoiders]
   exact congrArg _ (Finset.filter_congr fun w _ => by simp)
 

@@ -70,6 +70,8 @@ For a prefix `σ` of a word on `{0, …, n-1}`:
 namespace Av12453
 namespace TwoThreshold
 
+open PermPatterns
+
 open OneThreshold (unread mem_unread unread_append_singleton IsWord sum_rank_eq
   card_filter_lt_add_card_filter_gt)
 
@@ -78,7 +80,7 @@ variable {n : ℕ} {σ : List ℕ} {a c x y : ℕ}
 /-! ### `2`-triggers -/
 
 /-- `Trig2At σ j` : the letter of `σ` in position `j` ends an increasing `2`-subsequence,
-i.e. some earlier letter of `σ` is strictly smaller.  This is `Av12453.IsTriggerAt σ 2 j`
+i.e. some earlier letter of `σ` is strictly smaller.  This is `PermPatterns.IsTriggerAt σ 2 j`
 written out; see `trig2At_iff`. -/
 def Trig2At (σ : List ℕ) (j : ℕ) : Prop :=
   j < σ.length ∧ ∃ i < j, σ.getD i 0 < σ.getD j 0
@@ -147,7 +149,7 @@ theorem mem_trigVals_iff_trig2At : y ∈ trigVals σ ↔ ∃ j, Trig2At σ j ∧
         exact Or.inr ⟨k, ⟨hk, i', by omega, by simpa using hval⟩, by simpa using hgy⟩
 
 /-- **`trigVals` lists exactly the `2`-trigger values**, in the vocabulary of
-`Av12453.IsTrigger`. -/
+`PermPatterns.IsTrigger`. -/
 theorem mem_trigVals_iff : y ∈ trigVals σ ↔ IsTrigger σ 2 y := by
   rw [mem_trigVals_iff_trig2At, IsTrigger]
   exact exists_congr fun j => and_congr_left fun _ => trig2At_iff

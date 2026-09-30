@@ -1,6 +1,6 @@
 # `av12453_sampler/` — uniform random 12453-avoiding permutations and heatmaps
 
-Date: 3 September 2026.  Companion tooling, not part of the certified computation; the paper's Section 8.1 states the sampling result (Proposition 8.2) and shows the heatmap of `examples/ex_n300_1M` (Figure 2).
+Date: 3 September 2026.  Companion tooling, not part of the certified computation; the paper's Section 8.1 states the sampling result (Proposition 8.1) and shows the heatmap of `examples/ex_n300_1M` (Figure 4); its Appendix A describes this implementation and bounds the distance of its output from uniformity.
 
 Given the tables of the counting algorithm, a permutation of length `n` can
 be drawn uniformly at random from `Av_n(12453)` by the recursive method:
@@ -61,10 +61,14 @@ reads both formats.
 
 The weights are binary64 approximations of the exact counts (tables
 accurate to about 3e-13 relative at N=150; every decision's candidate
-weights re-sum to the stored count within 8e-14).  The output is therefore
-uniform up to a total-variation distance of order 1e-11 at n=150, far below
-anything a heatmap or a statistic can resolve, but this is not an
-exact-arithmetic sampler.  An exact variant would use big-integer tables.
+weights re-sum to the stored count within 8e-14).  This is not an
+exact-arithmetic sampler.  Appendix A of the paper proves, for the scaled
+tables with N = 300 and assuming ideal random bits, that the output is within
+total-variation distance n(g/(1-g) + 7 nu u) < 3.5e-5 of uniform for every
+n <= 300 (Proposition A.2; nu = 3,352,801, u = 2^-53, g = gamma_{nu N}).  The
+proved bound is pessimistic: the observed table errors suggest a distance of
+order 1e-11 at n = 150, far below anything a heatmap or a statistic can
+resolve, but that figure is an estimate, not a theorem.  An exact variant would use big-integer tables.
 
 ## Validation performed (details in `README_sampler.md` and the audit report)
 

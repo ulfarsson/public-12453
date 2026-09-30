@@ -96,7 +96,9 @@ discharged.
 namespace Av12453
 namespace TwoThreshold
 
-open OneThreshold (unread mem_unread IsWord Adjacent avoiders take_succ_eq
+open PermPatterns
+
+open OneThreshold (unread mem_unread IsWord Adjacent take_succ_eq
   isPermOf_of_isWord getElem_notMem_take prefix_getElem_idxOf
   exists_adjacent_above exists_adjacent_around)
 

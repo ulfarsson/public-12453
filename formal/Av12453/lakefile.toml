@@ -1,7 +1,7 @@
 name = "Av12453"
 version = "0.1.0"
 keywords = ["math"]
-defaultTargets = ["Av12453"]
+defaultTargets = ["PermPatterns", "Av12453"]
 
 [leanOptions]
 pp.unicode.fun = true # pretty-prints `fun a ↦ b`
@@ -13,6 +13,9 @@ maxSynthPendingDepth = 3
 name = "mathlib"
 scope = "leanprover-community"
 rev = "v4.33.1"
+
+[[lean_lib]]
+name = "PermPatterns"
 
 [[lean_lib]]
 name = "Av12453"

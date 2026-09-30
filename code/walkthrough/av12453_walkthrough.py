@@ -613,7 +613,7 @@ assert S(sigma, 15, 1) == [(12, 13), (15,)] and is_faithful(sigma, S(sigma, 15, 
 # (b) If sigma has a d-trigger q, let E be the unread letters strictly between
 #     x and q; then E is empty or an interval, E < I_1 and E u I_1 is an
 #     interval when s >= 1, and the merged stack (E u I_1, I_2, ..., I_s) is
-#     faithful to sigma x.  Only the active head changes (Figure 1).
+#     faithful to sigma x.  Only the active head changes (Figure 2).
 # Faithfulness is exercised in the Proposition 2.10(a) cell below, where the
 # prefix 9 11 10 14 5 with stack {6,7,8,12,13} | {15} has 42 = C_5 C_1 allowed
 # orders.
@@ -794,7 +794,7 @@ assert labels == ["new minimum, merger", "interior choice", "head exhausted", "i
 assert state_d1(running_list[:6], stacks[6]) == (4, (3, 1, 1))
 
 # %% [markdown]
-# ### 2.3  The exact one-threshold recurrence
+# ### 2.3  The one-threshold recurrence
 #
 # **Proposition 2.13 (one-threshold recurrence).**  W_p(L) is the number of
 # 1342-avoiding completions of a legal prefix with data (p, L); by

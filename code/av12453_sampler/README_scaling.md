@@ -511,7 +511,9 @@ The weights are binary64 approximations of exact integer counts.  With the
 scaled tables the *relative* accuracy is exactly what it was before -- the
 scaling is a change of exponent only -- so the table error is about `3e-13`
 at `N = 150` and `1.5e-12` at `N = 200`, growing like `n^2 * 2^-53`, and the
-output is uniform up to a total-variation distance of that order times the
+observed error suggests a total-variation distance of that order times the
 number of decisions.  That is far below what a heatmap or a sample statistic
-can resolve, but this is not an exact-arithmetic sampler; an exact variant
+can resolve.  The proved bound is weaker: Proposition A.2 of the paper gives
+a total-variation distance below 3.5e-5 for `n <= 300`.  This is not an
+exact-arithmetic sampler; an exact variant
 would need big-integer tables.

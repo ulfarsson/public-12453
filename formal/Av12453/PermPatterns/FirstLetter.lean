@@ -3,7 +3,8 @@ Copyright (c) 2026 Henning Ulfarsson. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Henning Ulfarsson
 -/
-import Av12453.Basic
+import PermPatterns.Patterns
+import PermPatterns.Standardize
 
 /-!
 # Lemma 2.2: the first-letter lemma for `Av(231)`
@@ -21,8 +22,8 @@ increasing pattern and 231*:
 ## Modelling decisions
 
 Values and positions are `0`-based; see the translation table at the top of
-`Av12453/Basic.lean`.  In particular `231` is `pat231 = [1, 2, 0]`, and the paper's local
-rank `r = |{y ∈ I : y ≤ x}|` is `Av12453.rank x w + 1`, where `rank x w = |{y ∈ I : y < x}|`
+`PermPatterns.lean`.  In particular `231` is `pat231 = [1, 2, 0]`, and the paper's local
+rank `r = |{y ∈ I : y ≤ x}|` is `PermPatterns.rank x w + 1`, where `rank x w = |{y ∈ I : y < x}|`
 counts the values *strictly* below `x`.  The two block sizes `r - 1` and `ℓ - r` of the
 paper are therefore `rank x w` and `ℓ - 1 - rank x w`.
 
@@ -34,28 +35,28 @@ paper are therefore `rank x w` and `ℓ - 1 - rank x w`.
   `4 1 4 0` contains `231`.
 * Working with a word on a finite subset of `ℕ` rather than an abstract finite totally
   ordered set `I` is no loss of generality: every notion involved is invariant under order
-  isomorphism (`Av12453.contains_congr_word`), and every finite totally ordered set is
+  isomorphism (`PermPatterns.contains_congr_word`), and every finite totally ordered set is
   order-isomorphic to a finite set of naturals.
 * "All values below `x` occur before all values above `x`" is `BelowBeforeAbove x w` below.
   The paper's "in that order" is `belowBeforeAbove_iff_append`: the condition holds exactly
   when `w` is literally the concatenation of its lower block and its upper block.
 * "The two induced subwords" are `w.filter (· < x)` and `w.filter (· > x)`; these are the
-  paper's `w|_{y < x}` and `w|_{y > x}`, i.e. `Av12453.restrict w (· < x)` and
-  `Av12453.restrict w (· > x)` unfolded.
+  paper's `w|_{y < x}` and `w|_{y > x}`, i.e. `PermPatterns.restrict w (· < x)` and
+  `PermPatterns.restrict w (· > x)` unfolded.
 
 ## Main results
 
-* `Av12453.avoids_231_cons_iff` : the first-letter lemma itself.
-* `Av12453.belowBeforeAbove_iff_append` : the block form of the ordering condition.
-* `Av12453.length_filter_of_localRank` : the cardinality statement, i.e. the two blocks
+* `PermPatterns.avoids_231_cons_iff` : the first-letter lemma itself.
+* `PermPatterns.belowBeforeAbove_iff_append` : the block form of the ordering condition.
+* `PermPatterns.length_filter_of_localRank` : the cardinality statement, i.e. the two blocks
   have sizes `rank x w` and `ℓ - 1 - rank x w` (the paper's `r - 1` and `ℓ - r`).
-* `Av12453.length_filter_of_localRank_paper` : the same statement in the paper's own
+* `PermPatterns.length_filter_of_localRank_paper` : the same statement in the paper's own
   variables, with `r = |{y ∈ I : y ≤ x}|` and block sizes literally `r - 1` and `ℓ - r`.
-* `Av12453.filter_lt_eq_restrict`, `Av12453.filter_gt_eq_restrict` : the two blocks are the
-  paper's restrictions `w|_X`.
+* `PermPatterns.filter_lt_eq_restrict`, `PermPatterns.filter_gt_eq_restrict` : the two
+  blocks are the paper's restrictions `w|_X`.
 -/
 
-namespace Av12453
+namespace PermPatterns
 
 open List
 
@@ -138,11 +139,11 @@ theorem belowBeforeAbove_iff_append (hx : x ∉ w) :
 /-! ### Auxiliary constructions of `231` occurrences -/
 
 /-- The two blocks of the first-letter lemma are the paper's restrictions `w|_{y < x}` and
-`w|_{y > x}`, i.e. `Av12453.restrict` for the two value sets. -/
+`w|_{y > x}`, i.e. `PermPatterns.restrict` for the two value sets. -/
 theorem filter_lt_eq_restrict : w.filter (· < x) = restrict w (· < x) := rfl
 
 /-- The two blocks of the first-letter lemma are the paper's restrictions `w|_{y < x}` and
-`w|_{y > x}`, i.e. `Av12453.restrict` for the two value sets. -/
+`w|_{y > x}`, i.e. `PermPatterns.restrict` for the two value sets. -/
 theorem filter_gt_eq_restrict : w.filter (· > x) = restrict w (· > x) := rfl
 
 /-- A `231` occurrence all of whose letters satisfy `p` is a `231` occurrence in the
@@ -154,7 +155,7 @@ private theorem contains_231_filter_of_triple {i j k : ℕ} (hi : i < w.length)
   have hsub : [w[i], w[j], w[k]] <+ w.filter p :=
     sublist_filter_of_forall (triple_sublist hi hj hk hij hjk) (by
       intro a ha; fin_cases ha <;> assumption)
-  exact ⟨_, hsub, (orderIso_triple_iff (x := 1) (y := 2) (z := 0) (by norm_num)
+  exact ⟨_, hsub, (orderIsomorphic_triple_iff (x := 1) (y := 2) (z := 0) (by norm_num)
     (by norm_num)).mpr ⟨h1, h2⟩⟩
 
 /-! ### The first-letter lemma -/
@@ -236,7 +237,7 @@ theorem avoids_231_cons_iff (hnd : (x :: w).Nodup) :
 **Cardinality corollary of the first-letter lemma.**  Among the `ℓ = |I|` entries of the
 word `x :: w`, the lower block has `rank x w` letters and the upper block has
 `ℓ - 1 - rank x w` letters, where `rank x w = |{y ∈ I : y < x}|` is the `0`-based local rank
-(`Av12453.rank`, `Av12453.rank_eq_card`).  The paper's local rank is
+(`PermPatterns.rank`, `PermPatterns.rank_eq_card`).  The paper's local rank is
 `r = |{y ∈ I : y ≤ x}| = rank x w + 1`, so these are the paper's block sizes `r - 1` and
 `ℓ - r`, i.e. "reading `x` replaces an interval of size `ℓ` by intervals of sizes `r - 1`,
 `ℓ - r`".
@@ -266,7 +267,7 @@ theorem length_filter_of_localRank (hnd : (x :: w).Nodup) {ℓ : ℕ}
 block has `r - 1` letters and the upper block has `ℓ - r` letters.  This is the paper's
 sentence "reading `x` replaces an interval of size `ℓ` by intervals of sizes `r - 1`,
 `ℓ - r`" verbatim, with `r` the paper's `1`-based local rank rather than
-`Av12453.rank`; the two are related by `Av12453.card_filter_le_eq_rank_succ`.
+`PermPatterns.rank`; the two are related by `PermPatterns.card_filter_le_eq_rank_succ`.
 -/
 theorem length_filter_of_localRank_paper (hnd : (x :: w).Nodup) {r ℓ : ℕ}
     (hℓ : ℓ = (x :: w).length)
@@ -348,4 +349,4 @@ example : (([0, 3, 1, 4] : List ℕ).filter (· < 2)).length = 3 - 1 ∧
   length_filter_of_localRank_paper (w := [0, 3, 1, 4]) (x := 2) (by decide) (by decide)
     (by decide)
 
-end Av12453
+end PermPatterns

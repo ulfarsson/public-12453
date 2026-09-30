@@ -358,15 +358,16 @@ def enumeration(d, n):
 # =====================================================================
 
 def check_lemma_31(nmax, dims, verbose=False):
-    """Lemma 3.1 (least-trigger threshold).  'After a prefix has been read, let
-    b_j be the smallest final entry of an increasing subsequence of length j
-    contained in that prefix, for 1 <= j <= d; when the prefix contains no such
-    subsequence, use the virtual value b_j = n + j.  Then b_1 < b_2 < ... < b_d.
-    ...  Either b_d is virtual and no d-trigger has been read, or b_d is the
-    smallest value of a d-trigger in the prefix.  Consequently, every unread
-    value below b_d belongs to none of the projections onto larger values
-    created by earlier triggers.  When b_d is nonvirtual, every unread value
-    above b_d belongs to the projection created by the trigger b_d.'
+    """Lemma 3.1 (least-trigger threshold).  'After a prefix has been read,
+    either b_d is virtual and no d-trigger has been read, or b_d is the
+    smallest value of a d-trigger in the prefix.  In particular, no unread
+    value below b_d belongs to the projection of any earlier trigger, so none is
+    constrained by an obligation created so far.  When b_d is nonvirtual, every
+    unread value above b_d belongs to the projection created by the trigger
+    b_d.'  Here, as defined before the lemma, b_j is the smallest final entry
+    of an increasing subsequence of length j contained in the prefix, for
+    1 <= j <= d, and b_j = n + j (virtual) when there is none; then
+    b_1 < b_2 < ... < b_d.
 
     Also tested: the criterion used throughout Sections 3 and 4 (paragraph
     before the lemma, and after Definition 2.4) that an unread x is a
@@ -433,13 +434,11 @@ def check_lemma_31(nmax, dims, verbose=False):
 
 
 def check_prop41a(nmax, d, verbose=False):
-    """Proposition 4.1(a) (state invariant).  'The ordered layout
-    B_0 < b_1 < B_1 < ... < b_d < I_1 < ... < I_s holds: the unread values below
-    b_d form the d bands, and I_1 u ... u I_s is the set of unread values above
-    b_d.  A completion w of sigma satisfies the residual obligations of all
-    d-triggers of sigma exactly when w|_{I_1 u ... u I_s} lies in
-    Av(231)(I_1) (+) ... (+) Av(231)(I_s); the base values are unrestricted by
-    these obligations.'
+    """Proposition 4.1(a) (state invariant).  'The stack consists of the
+    unread values above b_d, so the ordered layout
+    B_0 < b_1 < B_1 < ... < b_d < I_1 < ... < I_s holds, and a completion w of
+    sigma satisfies the residual obligations of all d-triggers of sigma exactly
+    when w|_{I_1 u ... u I_s} lies in Av(231)(I_1) (+) ... (+) Av(231)(I_s).'
 
     Compared: the stack of a legal prefix, computed from Definition 2.4, against
     the thresholds and bands computed from their definition (layout), and, for
@@ -566,9 +565,8 @@ def check_prop41b(nmax, d, verbose=False):
 
 
 def check_prop41c(nmax, d, verbose=False):
-    """Proposition 4.1(c) (state invariant).  'Consequently, the set of
-    beta_d-avoiding completions of sigma is determined, up to order isomorphism,
-    by (p, L).'
+    """Proposition 4.1(c) (state invariant).  'The set of beta_d-avoiding
+    completions of sigma is determined, up to standardization, by (p, L).'
 
     Compared: for every legal prefix of every avoider of length <= nmax, the SET
     of standardizations of its beta_d-avoiding completions (taken from permuta's
@@ -779,7 +777,8 @@ def check_cor44(nmax, d, verbose=False):
     equivalent: (i) u and v lie in different intervals of the stack; (ii) some
     letter x with u < x < v was read after a d-trigger smaller than u; (iii) u
     precedes v in every beta_d-avoiding completion.  In particular, the stack is
-    determined by the scanned prefix ...'  Also the remark after the proof: for
+    determined by the scanned prefix: it consists of the unread values above
+    b_d, cut exactly at the adjacent pairs that satisfy (ii).'  Also the remark after the proof: for
     arbitrary unread u < v above b_d, (i) and (iii) remain equivalent and hold
     exactly when some adjacent pair a < c with u <= a < c <= v satisfies (ii).
 
@@ -852,8 +851,8 @@ def check_cor44(nmax, d, verbose=False):
 
 def check_prop45(d, nmax, verbose=False):
     """Proposition 4.5.  'For fixed d >= 1 and n >= d+1, literal memoization of
-    eq:H has at least F_{n-d} reachable composition keys when computing
-    a_n^{(d)}, where F_{n-d} is the (n-d)th Fibonacci number.'  Its proof
+    eq:H has at least F_{n-d} distinct composition arguments when computing
+    a_n^{(d)}, where F_{n-d} is the (n-d)th Fibonacci number, F_1 = F_2 = 1.'  Its proof
     asserts that from H_{(n,0,...,0)}(empty) one reaches H_0((n-d)) and from
     there every positive composition L with |L| + len(L) = n - d + 1, of which
     there are sum_s binom(n-d-s, s-1) = F_{n-d}.
@@ -925,8 +924,8 @@ def _binom(a, b):
 
 def check_cor51(d, wmax, tails, nreal=8, verbose=False):
     """Corollary 5.1 (permutation-stack factorization).  'The number
-    K_l^L(p, t) is independent of L; denote it by K_l(p, t).  Then
-    H_p((l)L) = sum_t K_l(p, t) H_t(L), and for L = (l_1,...,l_s),
+    K_l^L(p, t) is independent of L.  We write K_l(p, t) for it.  Then
+    H_p((l)L) = sum_t K_l(p, t) H_t(L).  In particular, for L = (l_1,...,l_s),
     H_p(L) = sum_t (K_{l_1} K_{l_2} ... K_{l_s})(p, t) H_t(empty).'
 
     Compared: K_l^L(p, .) computed by explicit enumeration of stopped paths in

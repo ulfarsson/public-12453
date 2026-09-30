@@ -17,21 +17,22 @@ avoiding a direct sum of an increasing pattern and 231*:
 
 ## Rendering of the statement
 
-Values and positions are `0`-based throughout; see the translation table at the top of
-`Av12453/Basic.lean`.  In particular `β_1` is `[0, 2, 3, 1]` (the paper's `1342`), `β_2` is
-`[0, 1, 3, 4, 2]` (the paper's `12453`) and `231` is `pat231 = [1, 2, 0]`.
+Values and positions are `0`-based throughout; see the translation tables at the top of
+`PermPatterns.lean` and `Av12453/Basic.lean`.  In particular `β_1` is `[0, 2, 3, 1]` (the
+paper's `1342`), `β_2` is `[0, 1, 3, 4, 2]` (the paper's `12453`) and `231` is
+`pat231 = [1, 2, 0]`.
 
-* "Increasing `d`-subsequence ending at `π_j`" is `Av12453.IsTriggerAt w d j`: there is a list
+* "Increasing `d`-subsequence ending at `π_j`" is `PermPatterns.IsTriggerAt w d j`: there is a list
   of positions `ps` with `IncrSubseq w d ps` and `ps.getLast? = some j`.  Because the paper's
   `d`-subsequences are nonempty this forces `d ≥ 1`; the theorem carries `1 ≤ d` explicitly.
 * The letters after the trigger, `π_{j+1} ⋯ π_n` in the paper, are `w.drop (j + 1)` where `j`
   is the 0-based index of the trigger (the paper's 1-based position `j` is the index `j - 1`;
   Lean quantifies over the 0-based index directly, so the trigger letter is `w[j]`).
-* `w|_{x : x > π_j}` is `Av12453.restrict _ (fun x => w.getD j 0 < x)`, and `w.getD j 0 = w[j]`
+* `w|_{x : x > π_j}` is `PermPatterns.restrict _ (fun x => w.getD j 0 < x)`, and `w.getD j 0 = w[j]`
   because `j < w.length` (`IsTriggerAt.lt_length`, `List.getD_eq_getElem`).
 * "avoids `231` after standardization" is `Avoids _ pat231`: containment is invariant under
-  order isomorphism (`Av12453.contains_congr_word`), so standardizing changes nothing.  The
-  paper's phrase is also available literally, with `Av12453.standardize` applied to the
+  order isomorphism (`PermPatterns.contains_congr_word`), so standardizing changes nothing.  The
+  paper's phrase is also available literally, with `PermPatterns.standardize` applied to the
   projected tail, in `Av12453.trigger_lemma_standardized`.
 
 ## Generality
@@ -55,6 +56,8 @@ to a permutation of `[n]`, which is the paper's sentence verbatim.
 namespace Av12453
 
 open List
+
+open PermPatterns
 
 variable {w s ps : List ℕ}
 
@@ -92,16 +95,17 @@ theorem contains_beta_of_trigger {d j : ℕ} (htrig : IsTriggerAt w d j)
   have hs3 : s.length = 3 := by rw [hiso.length_eq]; rfl
   obtain ⟨a, b, c, rfl⟩ := List.length_eq_three.mp hs3
   obtain ⟨hca, hab⟩ :=
-    (orderIso_triple_iff (p := a) (q := b) (r := c) (x := 1) (y := 2) (z := 0)
+    (orderIsomorphic_triple_iff (p := a) (q := b) (r := c) (x := 1) (y := 2) (z := 0)
       (by norm_num) (by norm_num)).mp hiso
   -- Glue the two pieces: they sit in this order, and the first is below the second.
   refine ⟨(ps' ++ [j]).map (fun i => w.getD i 0) ++ [a, b, c], ?_, ?_⟩
   · have hsub := husub.append hsw
     rwa [List.take_append_drop] at hsub
   · rw [beta]
-    refine OrderIso.append (orderIso_iota_iff.mpr ⟨by rw [List.length_map]; exact hps.length,
-      hvalP⟩) ?_ ?_ beta_lt
-    · exact (orderIso_triple_iff (p := a) (q := b) (r := c) (x := d + 1) (y := d + 2)
+    refine OrderIsomorphic.append
+      (orderIsomorphic_iota_iff.mpr ⟨by rw [List.length_map]; exact hps.length, hvalP⟩) ?_ ?_
+      beta_lt
+    · exact (orderIsomorphic_triple_iff (p := a) (q := b) (r := c) (x := d + 1) (y := d + 2)
         (z := d) (by omega) (by omega)).mpr ⟨hca, hab⟩
     · intro x hx y hy
       have hxle : x ≤ w.getD j 0 := by
@@ -158,8 +162,8 @@ theorem exists_trigger_of_contains_beta {d : ℕ} (hd : 1 ≤ d) (h : Contains w
     · exact hvalC _ hfj _ (by simp)
   refine ⟨[b, c, e].map (fun i => w.getD i 0), sublist_restrict_of_forall hsub hgt, ?_⟩
   obtain ⟨heb, hbc⟩ := pairwise_triple_iff.mp hvalR
-  change OrderIso [w.getD b 0, w.getD c 0, w.getD e 0] pat231
-  exact (orderIso_triple_iff (p := w.getD b 0) (q := w.getD c 0) (r := w.getD e 0)
+  change OrderIsomorphic [w.getD b 0, w.getD c 0, w.getD e 0] pat231
+  exact (orderIsomorphic_triple_iff (p := w.getD b 0) (q := w.getD c 0) (r := w.getD e 0)
     (x := 1) (y := 2) (z := 0) (by norm_num) (by norm_num)).mpr ⟨heb, hbc⟩
 
 /-! ### Lemma 2.1 -/
@@ -202,14 +206,14 @@ theorem trigger_lemma {n d : ℕ} {π : List ℕ} (hπ : IsPermOf n π) (hd : 1 
 /--
 **Lemma 2.1 (trigger lemma), the paper's literal form.**  The same statement as
 `Av12453.trigger_lemma`, with "avoids `231` *after standardization*" taken literally: the
-projected tail `π_{j+1} ⋯ π_n |_{x : x > π_j}` is standardized (`Av12453.standardize`) before
+projected tail `π_{j+1} ⋯ π_n |_{x : x > π_j}` is standardized (`PermPatterns.standardize`) before
 `231`-avoidance is asserted.
 
 This is a corollary of `Av12453.trigger_lemma`.  The projected tail is a subword of the
 permutation `π`, so it has distinct entries — dropping a prefix preserves `Nodup`, and so
-does restriction (`Av12453.restrict_nodup`) — and standardization preserves avoidance for
-such words (`Av12453.avoids_standardize_iff`).  Here the permutation hypothesis `hπ` is
-genuinely used, through `Av12453.IsPermOf.nodup`.
+does restriction (`PermPatterns.restrict_nodup`) — and standardization preserves avoidance for
+such words (`PermPatterns.avoids_standardize_iff`).  Here the permutation hypothesis `hπ` is
+genuinely used, through `PermPatterns.IsPermOf.nodup`.
 -/
 theorem trigger_lemma_standardized {n d : ℕ} {π : List ℕ} (hπ : IsPermOf n π) (hd : 1 ≤ d) :
     Avoids π (beta d) ↔

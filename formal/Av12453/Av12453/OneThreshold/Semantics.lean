@@ -57,6 +57,8 @@ from `v` -- a contradiction.
 namespace Av12453
 namespace OneThreshold
 
+open PermPatterns
+
 variable {n : ℕ} {σ w : List ℕ} {x : ℕ}
 
 /-! ### The index form of `1342`-containment -/

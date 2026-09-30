@@ -46,8 +46,9 @@ equations `W_eq_nil`, `W_eq_cons` and `W_endpoint`.
 * `Layout` : the ordered-layout invariant \eqref{eq:ordered-layout} for `d = 1`.
 * `Adjacent`, `Sep`, `DiffIntervals` : the vocabulary of \cref{lem:1342-separators}.
 * `W`, `Eend`, `nz` : the one-threshold recurrence.
-* `perms`, `avoiders`, `A` : the permutations of `{0, …, n-1}`, the `τ`-avoiding ones, and
-  the number of `1342`-avoiders with a given prefix.
+* `A` : the number of `1342`-avoiders with a given prefix (the permutations of
+  `{0, …, n-1}` and the `Av(B)`-members among them are `PermPatterns.perms` and
+  `PermPatterns.avoiders`, the latter taken at the singleton basis `B = {β₁}`).
 
 ## Main results
 
@@ -63,6 +64,8 @@ equations `W_eq_nil`, `W_eq_cons` and `W_endpoint`.
 
 namespace Av12453
 namespace OneThreshold
+
+open PermPatterns
 
 variable {n : ℕ} {σ τ : List ℕ} {x u v : ℕ}
 
@@ -485,58 +488,14 @@ theorem W_zero_head (q : ℕ) (L' : List ℕ) : W q (0 :: L') = 0 := by
   | zero => rw [Waux_zero]
   | succ k => rw [Waux_zero]
 
-/-! ### Decidability of containment
-
-These instances make `A` and `avoiders` computable; they are also what the `decide` sanity
-checks at the end of the file use. -/
-
-theorem orderIso_iff_getD (u v : List ℕ) :
-    OrderIso u v ↔ u.length = v.length ∧
-      ∀ i < u.length, ∀ j < u.length,
-        (u.getD i 0 < u.getD j 0 ↔ v.getD i 0 < v.getD j 0) := by
-  constructor
-  · rintro ⟨hlen, hiso⟩
-    refine ⟨hlen, fun i hi j hj => ?_⟩
-    have hiv : i < v.length := hlen ▸ hi
-    have hjv : j < v.length := hlen ▸ hj
-    rw [List.getD_eq_getElem _ _ hi, List.getD_eq_getElem _ _ hj,
-      List.getD_eq_getElem _ _ hiv, List.getD_eq_getElem _ _ hjv]
-    exact hiso i j hi hj hiv hjv
-  · rintro ⟨hlen, hiso⟩
-    refine ⟨hlen, fun i j hiu hju hiv hjv => ?_⟩
-    have h := hiso i hiu j hju
-    rwa [List.getD_eq_getElem _ _ hiu, List.getD_eq_getElem _ _ hju,
-      List.getD_eq_getElem _ _ hiv, List.getD_eq_getElem _ _ hjv] at h
-
-instance decidableOrderIso (u v : List ℕ) : Decidable (OrderIso u v) :=
-  decidable_of_iff _ (orderIso_iff_getD u v).symm
-
-theorem contains_iff_sublists (w τ : List ℕ) : Contains w τ ↔ ∃ s ∈ w.sublists, OrderIso s τ := by
-  simp only [Contains, List.mem_sublists]
-
-instance decidableContains (w τ : List ℕ) : Decidable (Contains w τ) :=
-  decidable_of_iff _ (contains_iff_sublists w τ).symm
-
-instance decidableAvoids (w τ : List ℕ) : Decidable (Avoids w τ) :=
-  decidable_of_iff _ (avoids_iff (w := w) (τ := τ)).symm
-
 /-! ### Counting avoiders with a given prefix -/
-
-/-- The permutations of `{0, …, n-1}`, written as words. -/
-def perms (n : ℕ) : Finset (List ℕ) := (List.range n).permutations.toFinset
-
-@[simp] theorem mem_perms {w : List ℕ} : w ∈ perms n ↔ IsPermOf n w := by
-  simp [perms, IsPermOf, List.mem_permutations]
-
-/-- The `τ`-avoiding permutations of `{0, …, n-1}`. -/
-def avoiders (n : ℕ) (τ : List ℕ) : Finset (List ℕ) := (perms n).filter fun w => Avoids w τ
 
 /-- `A n σ` is the number of `1342`-avoiding permutations of `{0, …, n-1}` that begin with
 the prefix `σ`. -/
 def A (n : ℕ) (σ : List ℕ) : ℕ :=
   ((perms n).filter fun w => σ <+: w ∧ Avoids w (beta 1)).card
 
-theorem A_nil (n : ℕ) : A n [] = (avoiders n (beta 1)).card := by
+theorem A_nil (n : ℕ) : A n [] = (avoiders n {beta 1}).card := by
   rw [A, avoiders]
   exact congrArg _ (Finset.filter_congr fun w _ => by simp)
 

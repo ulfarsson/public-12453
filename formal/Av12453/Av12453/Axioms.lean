@@ -1,61 +1,47 @@
 /-
 Scratch axiom check for components 1, 2, 3a, 4a, 3b and 4b.
 
-NOT part of the library: `Av12453.lean` does not import this file, and the Lake
-`lean_lib Av12453` target does not glob it.  Run it with
+NOT part of either library: neither `PermPatterns.lean` nor `Av12453.lean` imports this file,
+and the Lake `lean_lib` targets do not glob it.  Run it with
 
     lake env lean Av12453/Axioms.lean
 
-The `#axioms_of` command below walks *every* constant declared in the twenty
-modules `Av12453.Basic`, `Av12453.Trigger`, `Av12453.FirstLetter`,
-`Av12453.OneThreshold.Defs`, `Av12453.OneThreshold.Invariant`,
-`Av12453.OneThreshold.Semantics`, `Av12453.OneThreshold.Counting`,
-`Av12453.OneThreshold.Kernel`, `Av12453.OneThreshold.KernelSupport`,
-`Av12453.OneThreshold.KernelFactor`, `Av12453.OneThreshold.KernelCount`,
-`Av12453.TwoThreshold.Thresholds`, `Av12453.TwoThreshold.Defs`,
-`Av12453.TwoThreshold.Invariant`, `Av12453.TwoThreshold.Semantics`,
-`Av12453.TwoThreshold.Counting`, `Av12453.TwoThreshold.Kernel`,
-`Av12453.TwoThreshold.KernelSupport`, `Av12453.TwoThreshold.KernelFactor`,
-`Av12453.TwoThreshold.KernelCount`
--- including
-`private` declarations and every auto-generated declaration (`example`s declare no
-constant and are outside the sweep; no theorem can depend on them)
-(structure projections, equation lemmas, compiler stages) -- and reports the axioms it depends
-on.  It throws an
-error if any of them depends on `sorryAx` or on any axiom outside
-`{propext, Classical.choice, Quot.sound}`.
+The `#axioms_sweep` command below is *self-checking*: rather than reading a hand-maintained
+list of modules, it sweeps **every** imported module whose name begins with `PermPatterns` or
+with `Av12453` (except this file itself), so a module that is added, renamed or moved between
+the two libraries can never silently drop out of the check.  It aborts if either prefix
+matches no imported module, and it prints the list of modules it swept.
+
+For every constant declared in those modules -- including `private` declarations and every
+auto-generated declaration (`example`s declare no constant and are outside the sweep; no
+theorem can depend on them) (structure projections, equation lemmas, compiler stages) -- it
+reports the axioms the constant depends on, and it throws an error if any of them depends on
+`sorryAx` or on any axiom outside `{propext, Classical.choice, Quot.sound}`.
 -/
-import Av12453.Basic
-import Av12453.Trigger
-import Av12453.FirstLetter
-import Av12453.OneThreshold.Defs
-import Av12453.OneThreshold.Invariant
-import Av12453.OneThreshold.Semantics
-import Av12453.OneThreshold.Counting
-import Av12453.OneThreshold.Kernel
-import Av12453.OneThreshold.KernelSupport
-import Av12453.OneThreshold.KernelFactor
-import Av12453.OneThreshold.KernelCount
-import Av12453.TwoThreshold.Thresholds
-import Av12453.TwoThreshold.Defs
-import Av12453.TwoThreshold.Invariant
-import Av12453.TwoThreshold.Semantics
-import Av12453.TwoThreshold.Counting
-import Av12453.TwoThreshold.Kernel
-import Av12453.TwoThreshold.KernelSupport
-import Av12453.TwoThreshold.KernelFactor
-import Av12453.TwoThreshold.KernelCount
+import PermPatterns
+import Av12453
 
 open Lean Elab Command
 
-/-- Print, for every constant declared in the listed modules, the axioms it uses. -/
-syntax (name := axiomsOf) "#axioms_of " ident+ : command
+/-- Sweep every imported `PermPatterns.*` and `Av12453.*` module and print, for every
+constant declared in them, the axioms it uses. -/
+syntax (name := axiomsSweep) "#axioms_sweep" : command
 
-@[command_elab axiomsOf]
-def elabAxiomsOf : CommandElab := fun stx => do
-  let mods : Array Name := stx[1].getArgs.map (·.getId)
+@[command_elab axiomsSweep]
+def elabAxiomsSweep : CommandElab := fun _ => do
   let env ← getEnv
+  let prefixes : Array Name := #[`PermPatterns, `Av12453]
+  let self : Name := `Av12453.Axioms
   let allowed : Array Name := #[``propext, ``Classical.choice, ``Quot.sound]
+  let mut mods : Array Name := #[]
+  for i in [:env.header.moduleNames.size] do
+    let m := env.header.moduleNames[i]!
+    if m != self && prefixes.any (fun p => p.isPrefixOf m) then
+      mods := mods.push m
+  for p in prefixes do
+    if !mods.any (fun m => p.isPrefixOf m) then
+      throwError m!"EMPTY SWEEP: no imported module has the prefix '{p}'"
+  logInfo m!"sweeping {mods.size} modules: {mods.toList}"
   let mut bad : Array Name := #[]
   let mut count : Nat := 0
   for i in [:env.header.moduleNames.size] do
@@ -74,13 +60,4 @@ def elabAxiomsOf : CommandElab := fun stx => do
   if !bad.isEmpty then
     throwError m!"NON-STANDARD AXIOM(S) used by: {bad.toList}"
 
-#axioms_of Av12453.Basic Av12453.Trigger Av12453.FirstLetter
-  Av12453.OneThreshold.Defs Av12453.OneThreshold.Invariant
-  Av12453.OneThreshold.Semantics Av12453.OneThreshold.Counting
-  Av12453.OneThreshold.Kernel Av12453.OneThreshold.KernelSupport
-  Av12453.OneThreshold.KernelFactor Av12453.OneThreshold.KernelCount
-  Av12453.TwoThreshold.Thresholds Av12453.TwoThreshold.Defs
-  Av12453.TwoThreshold.Invariant Av12453.TwoThreshold.Semantics
-  Av12453.TwoThreshold.Counting
-  Av12453.TwoThreshold.Kernel Av12453.TwoThreshold.KernelSupport
-  Av12453.TwoThreshold.KernelFactor Av12453.TwoThreshold.KernelCount
+#axioms_sweep

@@ -79,8 +79,10 @@ goes through `List.permutations`, which the kernel does not reduce.
 namespace Av12453
 namespace TwoThreshold
 
+open PermPatterns
+
 open OneThreshold (unread mem_unread IsWord card_unread nz nz_singleton stackUnion
-  mem_stackUnion perms mem_perms avoiders sum_rank_eq)
+  mem_stackUnion sum_rank_eq)
 
 variable {n : ℕ} {σ : List ℕ} {x : ℕ}
 
@@ -341,7 +343,7 @@ theorem A_eq_H_of (hDef : DeferredHyp) (hCplt : CompleteHyp) {n : ℕ} :
 the initial state `((n, 0), ∅)` of \eqref{eq:initial-terminal} counts the `12453`-avoiding
 permutations of `{0, …, n-1}`. -/
 theorem av12453_count_of (hDef : DeferredHyp) (hCplt : CompleteHyp) (n : ℕ) :
-    H (n, 0) [] = (avoiders n (beta 2)).card := by
+    H (n, 0) [] = (avoiders n {beta 2}).card := by
   have h := A_eq_H_of hDef hCplt (n := n) [] Legal_nil
   rw [p_nil, L_nil] at h
   rw [← h, A_nil]
@@ -540,7 +542,7 @@ theorem A_eq_H (hleg : Legal n σ) : A n σ = H (p n σ) (L n σ) :=
 /-- **The goal of component 3b**: the literal recurrence \eqref{eq:H} at `d = 2`, started
 from the initial state `𝐩 = (n, 0)` with the empty stack (\eqref{eq:initial-terminal}),
 counts the `12453`-avoiding permutations of `{0, …, n-1}`. -/
-theorem av12453_count (n : ℕ) : H (n, 0) [] = (avoiders n (beta 2)).card :=
+theorem av12453_count (n : ℕ) : H (n, 0) [] = (avoiders n {beta 2}).card :=
   av12453_count_of (fun _ _ _ h _ hI hx _ hw hpre => deferred_no_completion h hI hx hw hpre)
     (fun _ _ h hl => legal_complete_avoids h hl) n
 
@@ -583,7 +585,7 @@ ever changes, which makes it a live regression check on both implementations at 
 set_option linter.hashCommand false in
 /-- info: [(1, 1), (1, 1), (2, 2), (6, 6), (24, 24), (119, 119), (694, 694), (4581, 4581)] -/
 #guard_msgs in
-#eval (List.range 8).map (fun k => ((avoiders k (beta 2)).card, H (k, 0) []))
+#eval (List.range 8).map (fun k => ((avoiders k {beta 2}).card, H (k, 0) []))
 
 end TwoThreshold
 end Av12453

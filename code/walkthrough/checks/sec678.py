@@ -357,7 +357,7 @@ def reduced_counts_stored_only(N):
 
 
 # ======================================================================
-# Section 8.2: the recursive method on the literal recurrence eq:H
+# Section 8.1: the recursive method on the literal recurrence eq:H
 # ======================================================================
 
 def _sampler_moves(bands, stack):
@@ -496,7 +496,7 @@ def _factorial(n):
 
 
 # ======================================================================
-# Section 8.1 helpers: Bona's 1342 generating function and the CRT bound
+# Section 8 helpers: Bona's 1342 generating function and the CRT bound
 # ======================================================================
 
 def bona_1342(N):
@@ -867,7 +867,7 @@ def _binom(n, k):
 
 
 def check_exact_150(nmax, verbose=False):
-    """Proposition 8.1 (prop:exact-150) and the steps of its proof.
+    """Table 1 (tab:terms-150) and the steps of the computation behind it.
 
     "The file av12453_terms_0_150.txt contains the exact values |Av_n(12453)|
     for every 0 <= n <= 150."
@@ -978,7 +978,7 @@ def check_exact_150(nmax, verbose=False):
 
 
 def check_sampling(nmax, verbose=False):
-    """Proposition 8.2 (prop:sampling) -- its uniformity content.
+    """Proposition 8.1 (prop:sampling) -- its uniformity content.
 
     "By the recursive method, such a path is uniformly random when every
     transition is chosen with probability proportional to the number of
@@ -1101,7 +1101,7 @@ def check_asymptotic_holdout(nmax, verbose=False):
 
     Compared: for every n in 101..150, log a_n with a_n read from the certified
     file code/data/av12453_terms_0_150.txt (whose first eleven entries are
-    checked against permuta in prop:exact-150 above), against the model
+    checked against permuta in tab:terms-150 above), against the model
     log a_n = n log mu - kappa n^{1/3} - (17/4) log n + log C + h n^{-1/3}
     with mu = 9 + 4 sqrt 2 and the three frozen constants as printed.  Nothing
     is refitted here: the constants come from the paper.
@@ -1241,7 +1241,7 @@ def run(nmax=8, verbose=False):
         "formulas hold for N <= 12",
         check_d2_complexity(nmax, verbose))
 
-    add("Proposition 8.1 (computer-assisted certification)", "prop:exact-150",
+    add("Table 1 (the first 151 terms)", "tab:terms-150",
         "the multi-prime computation is not reproduced here; finite content "
         "checked: the 151 entries of code/data/av12453_terms_0_150.txt against "
         "permuta for n <= 10 and eq:first-terms for n <= 11; the left-to-right "
@@ -1251,7 +1251,7 @@ def run(nmax=8, verbose=False):
         "modulus",
         check_exact_150(nmax, verbose))
 
-    add("Proposition 8.2 (uniform random generation)", "prop:sampling",
+    add("Proposition 8.1 (uniform random generation)", "prop:sampling",
         "d = 2; every complete path of eq:H from H_{(n,0)}(empty) and every "
         "state on it, for 0 <= n <= 8 (33286 paths at n=8), with exact "
         "Fraction probabilities.  This checks the uniformity argument on the "

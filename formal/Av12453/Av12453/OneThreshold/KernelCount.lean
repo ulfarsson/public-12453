@@ -87,6 +87,8 @@ deleted.
 namespace Av12453
 namespace OneThreshold
 
+open PermPatterns
+
 /-! ### The hypotheses
 
 `ScalarFactorization` is \eqref{eq:scalar-factorization} and `KernelSupportUpper` is the
@@ -179,7 +181,7 @@ Relative to the factorization `hF` (theorem 4) and, unused, the support bound `h
 of component 3a.
 -/
 theorem av1342_count_kernel_of (hF : ScalarFactorization) (hK0 : KernelSupportUpper)
-    (n : ℕ) : G n = (avoiders n (beta 1)).card :=
+    (n : ℕ) : G n = (avoiders n {beta 1}).card :=
   (G_eq_W_of hF hK0 n).trans (av1342_count n)
 
 /--
@@ -193,7 +195,7 @@ rows `K_ℓ(p, ·)` are supported in `{0, …, p}` (`KernelSupport.K_eq_zero_of_
 recurrence factors through them (`KernelFactor.W_factor`), and `W` counts the avoiders
 (`Counting.av1342_count`, component 3a).
 -/
-theorem av1342_count_kernel (n : ℕ) : G n = (avoiders n (beta 1)).card :=
+theorem av1342_count_kernel (n : ℕ) : G n = (avoiders n {beta 1}).card :=
   av1342_count_kernel_of (fun _ℓ p L hℓ => W_factor hℓ p L)
     (fun _ _ _ h => K_eq_zero_of_lt h) n
 

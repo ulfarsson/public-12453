@@ -1,6 +1,6 @@
+import PermPatterns
 import Av12453.Basic
 import Av12453.Trigger
-import Av12453.FirstLetter
 import Av12453.OneThreshold.Defs
 import Av12453.OneThreshold.Invariant
 import Av12453.OneThreshold.Semantics
@@ -18,3 +18,4 @@ import Av12453.TwoThreshold.Kernel
 import Av12453.TwoThreshold.KernelSupport
 import Av12453.TwoThreshold.KernelFactor
 import Av12453.TwoThreshold.KernelCount
+import Av12453.Perm

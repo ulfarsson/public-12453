@@ -2,7 +2,7 @@
 
 Date: 2 to 3 September 2026.  This directory is a computation-only
 supplement; nothing in it is part of the paper `paper/av12453_polytime.tex`,
-whose certified series ends at n = 150 (Proposition 8.1).  The result is
+whose series ends at n = 150 (Table 1 and Section 8).  The result is
 `../data/av12453_terms_0_300.txt` (301 lines `n a_n`, SHA-256
 `5c79bf6d8a281afec7374ff1b9029fc5a4dddfd7cc286b5e16a47a03c3dc5a7d`); its
 first 151 lines coincide with the certified file `../data/av12453_terms_0_150.txt`.
@@ -22,7 +22,7 @@ OpenMP over evaluation points.  Residues of a_n modulo 77 primes below 2^16
 time, and the integers were recovered by the Chinese remainder theorem from
 the 71 largest primes, whose product exceeds the exact injection bound
 B_300 = sum_m C(300,m)^2 |Av_m(1342)| (1136 bits; the same bound as in the
-paper's Proposition 8.1); the 6 remaining primes were withheld and agree
+paper's Section 8); the 6 remaining primes were withheld and agree
 with every reconstructed value.
 
 ## Layout

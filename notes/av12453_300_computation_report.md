@@ -1,7 +1,7 @@
 # Exact coefficients of `Av(12453)` through length 300
 
 Date: 3 September 2026.  Status: computation only; not part of the paper,
-whose certified series ends at n = 150 (Proposition 8.1).  Author decision
+whose series ends at n = 150 (Table 1 and Section 8).  Author decision
 (2 September 2026): extend the series with the fast engine, nothing to be
 added to the manuscript.
 

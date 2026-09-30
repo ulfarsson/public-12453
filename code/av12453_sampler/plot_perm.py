@@ -15,7 +15,7 @@ With --tikz FILE the permutation is also written as a TikZ picture for LaTeX:
 the picture uses the lengths \permcell (cell size) and \permdot (dot
 radius), which the including document must define, and its bounding box is
 exactly n by n cells, so that it fits a box of width n * \permcell.  The
-paper's Figure 2 includes such a file.
+paper's Figure 4 includes such a file.
 """
 import argparse
 import os

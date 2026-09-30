@@ -2,9 +2,9 @@
 
 Companion repository for the paper
 
-> Henning Ulfarsson, *Protected tails and polynomial-time enumeration of
+> Henning Arnór Skeggi Úlfarsson, *Protected tails and polynomial-time enumeration of
 > permutations avoiding a direct sum of an increasing pattern and 231*, 2026.
-> Preprint; arXiv identifier to be inserted.
+> Preprint, [arXiv:2609.15642](https://arxiv.org/abs/2609.15642).
 
 Repository: <https://github.com/ulfarsson/public-12453>
 
@@ -15,7 +15,8 @@ polynomially many arithmetic operations.  The first members of the family are
 with `O(N^4)` stored integers, and the repository contains the programs that
 implement it, a certified computation of the counting sequence through
 `n = 150` (extended to `n = 300` by a faster engine), a uniform random
-sampler with the heatmap of the paper, a walkthrough of the paper with
+sampler with the heatmap of the paper and a proved bound on the distance of
+its output from uniformity (Appendix A), a walkthrough of the paper with
 exhaustive checks of its statements for length at most 8, and a Lean 4
 development that machine-checks the counting recurrences for `d <= 2`.
 
@@ -143,9 +144,12 @@ export PATH="$HOME/.elan/bin:$PATH"
 sh formal/check.sh
 ```
 
-This builds the twenty modules (about nine minutes cold), runs the axiom
-sweep over every declared constant, and rejects any `sorry`, `native_decide`
-or non-standard axiom; it ends with `CERTIFICATE CHECK PASSED`.  The four
+This builds the two libraries, `PermPatterns` (the reusable pattern core,
+ten modules) and `Av12453` (the paper-specific development, twenty
+modules), in about nine minutes cold, runs the axiom sweep over every
+declared constant of both, checks that the sweep covered every module, and
+rejects any `sorry`, `native_decide` or non-standard axiom; it ends with
+`CERTIFICATE CHECK PASSED`.  The four
 main theorems, the definitions a reader should check by eye against the
 paper, and the trusted base are listed in `formal/README.md` and
 `formal/AUDIT_2026-09-05.md`.  The toolchain and the Mathlib revision are
@@ -165,10 +169,11 @@ copyright the author.
 
 ## Citing
 
-See `CITATION.cff`.  Until the arXiv identifier is available:
+See `CITATION.cff`.
 
 ```text
-H. Ulfarsson, Protected tails and polynomial-time enumeration of permutations
-avoiding a direct sum of an increasing pattern and 231, preprint, 2026.
+H. A. S. Úlfarsson, Protected tails and polynomial-time enumeration of permutations
+avoiding a direct sum of an increasing pattern and 231, preprint, 2026,
+arXiv:2609.15642.
 Code and data: https://github.com/ulfarsson/public-12453
 ```

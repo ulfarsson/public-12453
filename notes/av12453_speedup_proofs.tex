@@ -114,8 +114,8 @@ The \emph{padded region} is $\ell\geq1$, $a,q\geq0$, $\ell+a+q\leq N$.
 
 All computations below are in a field $\mathbb F_p$ with $p>N+1$, or in
 $\mathbb Z$; the scheme of \cref{sec:fast} is stated over $\mathbb F_p$
-because that is how the certified computation of
-\cref{prop:exact-150} is organized.
+because that is how the computation of the terms in
+\cref{tab:terms-150} is organized.
 
 \section{Layer zero: the reduced table contains the scalar kernel}
 \label{sec:layer0}
@@ -703,7 +703,7 @@ stored table elements of $\mathbb F_p$ (the reduced table together with the
 evaluated table), plus $2(N+1)^2$ precomputed elements --- the inverse
 Vandermonde $V^{-1}$ and the point powers $y_j^{\,a}$ --- and $O(N^3)$
 transient scratch per grade.  Exact integers are recovered by the
-Chinese remainder scheme of \cref{prop:exact-150}: the exact entries, and
+Chinese remainder scheme of the computation of \cref{tab:terms-150}: the exact entries, and
 hence the number of primes, are unchanged, so the bit time improves over
 \cref{cor:d2-complexity} by the same asymptotic factor $N/42$ as the
 arithmetic count.
@@ -726,7 +726,7 @@ $\Phi_W(y_j;q,\cdot)$, and the precomputation of \cref{cor:evaluation}
 stores the $(N+1)^2$ entries of $V^{-1}$ and the $(N+1)^2$ powers
 $y_j^{\,a}$, $a\leq N$.  Each entry of each table is
 one element of $\mathbb F_p$, and the number of CRT primes is the one used
-in \cref{prop:exact-150}, since the exact entries and their bit lengths are
+in the computation of \cref{tab:terms-150}, since the exact entries and their bit lengths are
 unchanged.
 \end{proof}
 
