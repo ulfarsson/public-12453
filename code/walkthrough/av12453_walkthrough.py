@@ -624,12 +624,30 @@ for d in (1, 2):
 # a merger (Definition 2.4(a)), with q = 9 and E = {6,7,8}, the unread values
 # between 5 and 9 (Figure 2).  The merged stack is {6,7,8,12,13} | {15}.  The
 # read letters 9, 10, 11 lie between 6, 7, 8 and 12 in value but create no
-# separation.
+# separation.  They must, however, precede 15: if 15 came before some y' in
+# {6,7,8}, then either 15 precedes some y in {12,13} and 9,14,15,y is an
+# occurrence of 1342, or 12 precedes 15 and 5,12,15,y' is one.
 
 # %%
 kind, merged = legal_move("9 11 10 14", S("9 11 10 14", 15, 1), 5, 15, 1)
 print("reading 5 after 9 11 10 14:", kind, "->", show_stack(merged))
 assert merged == [(6, 7, 8, 12, 13), (15,)]
+
+# The argument by brute force: after the prefix 9,11,10,14,5, every order of
+# the letters 6,7,8,12,13,15 in which 15 precedes one of 6,7,8 contains 1342
+# already, whatever happens to the letters 1,2,3,4 (an occurrence in a subword
+# is one in the word).
+prefix = word("9 11 10 14 5")
+patt = P("1342")
+bad_orders = 0
+for order in permutations((6, 7, 8, 12, 13, 15)):
+    if order.index(15) > max(order.index(y) for y in (6, 7, 8)):
+        continue                                  # 6, 7, 8 all before 15
+    w = prefix + order
+    if not Perm.to_standard(w).contains(patt):
+        bad_orders += 1
+print("orders with 15 before some of 6, 7, 8 that avoid 1342:", bad_orders)
+assert bad_orders == 0
 
 # %% [markdown]
 # Two unread letters are *adjacent* if no unread letter lies strictly between

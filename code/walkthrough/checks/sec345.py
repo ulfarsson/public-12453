@@ -15,6 +15,8 @@ Statements checked (paper numbering):
     eq. b_d = q    eq:bd-q
     Prop. 4.1      prop:state-invariant (a), (b)
     Theorem 4.3    thm:literal                    (eq:H, eq:initial-terminal)
+    after eq:rho   eq:H counts the maximal transition sequences from every state
+    after Thm 4.3  the dictionary to Biers-Ariel's program (OEIS A116485)
     Cor. 4.4       cor:separators
     Prop. 4.5      prop:exponential
     Cor. 5.1       cor:protected-tail             (eq:factorization, eq:matrix-product)
@@ -615,6 +617,137 @@ def check_thm43_states(nmax, d, verbose=False):
                   "H_{(%d,0,...,0)}(empty)" % (sum(len(H_children(*st)) for st in seen), nmax)), checks, time.time() - t0
 
 
+def check_H_every_state(rmax, d, verbose=False):
+    """The sentences after eq:rho: 'The zero state (0, empty) is the only state
+    without transitions: a nonzero control allows a base move and a nonempty
+    stack a letter of the head.  Therefore eq:H and H_0(empty) = 1 define
+    H_p(L), and by induction on rho it is the number of maximal transition
+    sequences from (p, L), all of which end at the zero state.'  This is
+    claimed for every state, not only for the states of legal prefixes.
+
+    Compared, for every state (p, L) with rho(p, L) <= rmax: H_p(L) from eq:H
+    against the number of maximal transition sequences from (p, L), walked one
+    by one through the transitions of eq:H (H_children, the two endpoint
+    transitions of a head of size >= 2 carried as a weight 2), and the set of
+    states at which they end, which must be the zero state alone.
+    """
+    t0 = time.time()
+    checks, nstates, npaths = 0, 0, 0
+    zero = ((0,) * d, ())
+    comps = [()]
+    frontier = [()]
+    while frontier:
+        nxt = [L + (a,) for L in frontier for a in range(1, rmax - sum(L) + 1)]
+        comps.extend(nxt)
+        frontier = nxt
+    for p in _controls(d, rmax):
+        for L in comps:
+            if sum(p) + sum(L) > rmax:
+                continue
+            count, ends = 0, set()
+            stack = [((p, L), 1)]
+            while stack:
+                (q, comp), w = stack.pop()
+                kids = H_children(q, comp)
+                if not kids:
+                    count += w
+                    ends.add((q, comp))
+                    continue
+                for q2, comp2, m in kids:
+                    stack.append(((q2, comp2), w * m))
+            nstates += 1
+            npaths += count
+            checks += 1
+            if count != H(p, L) or ends != {zero}:
+                return False, ("state %s: H = %d, %d maximal sequences ending at %s"
+                               % ((p, L), H(p, L), count, sorted(ends))), checks, time.time() - t0
+    return True, ("for each of the %d states with rho <= %d, H_p(L) from eq:H equals the "
+                  "number of maximal transition sequences from (p, L) (%d in total), and "
+                  "all of them end at the zero state" % (nstates, rmax, npaths)), checks, time.time() - t0
+
+
+def _ba_r(L):
+    """The function r of Biers-Ariel's program: drop zero parts, [0] if empty."""
+    Lp = tuple(e for e in L if e != 0)
+    return Lp if Lp else (0,)
+
+
+@lru_cache(maxsize=None)
+def ba_helper(i, j, L):
+    """Avoid12453_helper(i, j, L) of Biers-Ariel's Julia program posted with OEIS
+    A116485 (a116485_1.txt), transcribed line by line (Julia's 1-based L[1] is
+    L[0] here, and the ranges a:b are inclusive).  Returns the total and the
+    four contributions to `output`, in the order of the program."""
+    if L == (0,) and i == 1 and j == 2:
+        return 1, (0, 0, 0, 0)
+    c1 = sum(ba_helper(k, j - 1, L)[0] for k in range(1, i))
+    c2 = 0
+    for k in range(i + 1, j):
+        Lp = list(L)
+        Lp[0] = Lp[0] + (j - k - 1)
+        c2 += ba_helper(i, k, _ba_r(Lp))[0]
+    c3 = 0
+    if L[0] > 0:
+        Lp = list(L)
+        Lp[0] = L[0] - 1
+        c3 = min(2, L[0]) * ba_helper(i, j, _ba_r(Lp))[0]
+    c4 = 0
+    for k in range(2, L[0]):
+        c4 += ba_helper(i, j, _ba_r((k - 1, L[0] - k) + L[1:]))[0]
+    return c1 + c2 + c3 + c4, (c1, c2, c3, c4)
+
+
+def check_biers_ariel_dictionary(rmax, verbose=False):
+    """The sentence after Theorem 4.3: 'For d = 2, eq:H is the recurrence
+    evaluated by Biers-Ariel's program.  Its function Avoid12453_helper(i,j,L)
+    is H_{(i-1,j-i-1)}(L), with the list [0] for the empty stack, and its four
+    contributions to the output are, in order, the early-band, last-band,
+    endpoint and interior terms of eq:H.'
+
+    Compared: for every i >= 1, j >= i + 1 and composition L with
+    (i - 1) + (j - i - 1) + |L| <= rmax, the transcribed program against eq:H,
+    in total and contribution by contribution; and the program's initial call
+    Avoid12453_helper(n+1, n+2, [0]) against permuta's |Av_n(12453)|.
+    """
+    t0 = time.time()
+    checks = 0
+    comps = [()]
+    frontier = [()]
+    while frontier:
+        nxt = [L + (a,) for L in frontier for a in range(1, rmax - sum(L) + 1)]
+        comps.extend(nxt)
+        frontier = nxt
+    for p0 in range(rmax + 1):
+        for p1 in range(rmax + 1 - p0):
+            p = (p0, p1)
+            for L in comps:
+                if p0 + p1 + sum(L) > rmax:
+                    continue
+                i, j = p0 + 1, p0 + p1 + 2
+                total, (c1, c2, c3, c4) = ba_helper(i, j, L if L else (0,))
+                early = sum(H(T(0, h, p), L) for h in range(p0))
+                last = sum(H(U(h, p), nz(((L[0] if L else 0) + p1 - 1 - h,) + L[1:]))
+                           for h in range(p1))
+                endpoint = (min(2, L[0]) * H(p, nz((L[0] - 1,) + L[1:]))) if L else 0
+                interior = (sum(H(p, (a, L[0] - 1 - a) + L[1:]) for a in range(1, L[0] - 1))
+                            if L else 0)
+                checks += 1
+                if (total, c1, c2, c3, c4) != (H(p, L), early, last, endpoint, interior):
+                    return False, ("Avoid12453_helper(%d,%d,%s) = %d with contributions %s, "
+                                   "but H_%s(%s) = %d with terms %s"
+                                   % (i, j, list(L) or [0], total, (c1, c2, c3, c4), p, L,
+                                      H(p, L), (early, last, endpoint, interior))), checks, time.time() - t0
+    counts = enumeration(2, min(rmax, 10))
+    for n in range(len(counts)):
+        checks += 1
+        if ba_helper(n + 1, n + 2, (0,))[0] != counts[n]:
+            return False, ("Avoid12453_helper(%d,%d,[0]) = %d but |Av_%d(12453)| = %d"
+                           % (n + 1, n + 2, ba_helper(n + 1, n + 2, (0,))[0], n, counts[n])), checks, time.time() - t0
+    return True, ("the transcribed program equals H_{(i-1,j-i-1)}(L) term group by term "
+                  "group on all %d arguments with rho <= %d, and its initial call gives "
+                  "|Av_n(12453)| for n <= %d" % (checks - len(counts), rmax, len(counts) - 1)), checks, time.time() - t0
+
+
 def check_thm43_counts(d, nmax, verbose=False):
     """Theorem 4.3 (literal recurrence), enumeration form: eq:initial-terminal,
     a_n^{(d)} = |Av_n(beta_d)| = H_{(n,0,...,0)}(empty).
@@ -743,7 +876,7 @@ def check_ex42(verbose=False):
 
 
 def check_cor44(nmax, d, verbose=False):
-    """Corollary 4.4 (separations of the stack).  'After a legal prefix has been
+    """Corollary 4.4 (separations and completions).  'After a legal prefix has been
     read, let u < v be adjacent unread values above b_d.  The following are
     equivalent: (i) u and v lie in different intervals of the stack; (ii) some
     letter x with u < x < v was read after a d-trigger smaller than u; (iii) u
@@ -895,7 +1028,7 @@ def _binom(a, b):
 
 
 def check_cor51(d, wmax, tails, nreal=8, verbose=False):
-    """Corollary 5.1 (permutation-stack factorization).  'The number
+    """Corollary 5.1 (protected-tail factorization for beta_d).  'The number
     K_l^L(p, t) is independent of L.  We write K_l(p, t) for it.  Then
     H_p((l)L) = sum_t K_l(p, t) H_t(L).  In particular, for L = (l_1,...,l_s),
     H_p(L) = sum_t (K_{l_1} K_{l_2} ... K_{l_s})(p, t) H_t(empty).'
@@ -1153,15 +1286,25 @@ def run(nmax=8, verbose=False):
         record("Theorem 4.3 (literal recurrence eq:H at every state), d = %d" % d, "thm:literal",
                "every legal prefix of every %s-avoider of length <= %d" % (pat, n),
                check_thm43_states(n, d, verbose))
+        rmax_every = {2: n, 3: n - 1}[d]
+        record("eq:H at every state (the sentences after eq:rho), d = %d" % d, "eq:rho",
+               "every state (p, L) with rho(p, L) <= %d, including the states of no legal "
+               "prefix" % rmax_every,
+               check_H_every_state(rmax_every, d, verbose))
         record("Theorem 4.3 (initial condition, eq:initial-terminal), d = %d" % d, "thm:literal",
                "H_{(k,0,...,0)}(empty) vs. permuta's |Av_k(%s)| for k <= %d" % (pat, n_enum[d]),
                check_thm43_counts(d, n_enum[d], verbose))
         if d == 2:
+            record("Section 4, the dictionary to Biers-Ariel's program", "thm:literal",
+                   "every argument (i, j, L) with rho = (i-1)+(j-i-1)+|L| <= 10 of the "
+                   "transcribed Avoid12453_helper, against eq:H term group by term group; "
+                   "the initial call against permuta for n <= 10",
+                   check_biers_ariel_dictionary(10, verbose))
             record("Example 4.2 (what the second threshold adds)", "ex:full-state",
                    "the printed table and successor list of the running example "
                    "pi = 9,11,10,14,5,12,6,2,3,8,4,7,1,13,15, d = 2, pattern 12453",
                    check_ex42(verbose))
-        record("Corollary 4.4 (separations of the stack), d = %d" % d, "cor:separators",
+        record("Corollary 4.4 (separations and completions), d = %d" % d, "cor:separators",
                "every adjacent and every non-adjacent unread pair above b_d, for every legal "
                "prefix of every %s-avoider of length <= %d" % (pat, n),
                check_cor44(n, d, verbose))
@@ -1170,7 +1313,8 @@ def run(nmax=8, verbose=False):
                "(the asymptotic statement itself is not finitely checkable; the finite instance "
                "'at least F_{k-d} reachable composition keys' is)" % (14 - d),
                check_prop45(d, 14 - d, verbose))
-        record("Corollary 5.1 (permutation-stack factorization), d = %d" % d, "cor:protected-tail",
+        record("Corollary 5.1 (protected-tail factorization for beta_d), d = %d" % d,
+               "cor:protected-tail",
                "every kernel source (p, l) of grade ||p||_1 + l <= 8, five protected tails L, "
                "and every state realized by a legal prefix of a %s-avoider of length <= %d"
                % (pat, n),

@@ -77,8 +77,9 @@ remains `data/av12453_terms_0_150.txt`; the two files agree on `n <= 150`.
 - `av12453_dense_mod_verify.cpp`: dense verifier that omits the second
   quotient and prefix-scan optimization.
 - `av12453_bound_certificate.cpp`: standalone exact audit of the CRT bound.
-- `av12453_asymptotic_holdout.py`: dependency-free reproduction of the frozen
-  fit on `n=70,...,100` and its `n=101,...,150` holdout diagnostics.
+- `av12453_asymptotic_holdout.py`: dependency-free reproduction of the fit on
+  `n=70,...,100` with the power-law exponent free (`gamma = -4.251`) and of the
+  frozen fit with `gamma = -17/4`, with its `n=101,...,150` holdout diagnostics.
 - `av12453_n300/`: the faster GEMM-structured engine, harness and independent
   reference for the `n <= 300` computation.
 - `walkthrough/`: a permuta-based walkthrough of the paper's definitions and

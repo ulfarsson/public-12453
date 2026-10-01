@@ -157,6 +157,34 @@ def G(p):
     return total
 
 
+def W_children(p, L):
+    """The states indexed by the summands of (eq:W), or of (eq:W-boundary) when
+    L is empty, one entry per transition: the endpoint terms a = 0 and b = 0
+    of a head of size >= 2 are two transitions."""
+    if not L:
+        return [(h, nz(p - 1 - h)) for h in range(p)]
+    ell, Lp = L[0], L[1:]
+    out = [(h, (ell + p - 1 - h,) + Lp) for h in range(p)]
+    out += [(p, nz(a, ell - 1 - a) + Lp) for a in range(ell)]
+    return out
+
+
+def maximal_sequences(p, L):
+    """Walk every maximal transition sequence from (p, L) explicitly (no
+    memoization); return their number and the set of states where they end."""
+    count, ends = 0, set()
+    stack = [(p, L)]
+    while stack:
+        st = stack.pop()
+        kids = W_children(*st)
+        if kids:
+            stack.extend(kids)
+        else:
+            count += 1
+            ends.add(st)
+    return count, ends
+
+
 def kernel_by_paths(ell, p, L):
     """K_ell(p, .) by brute force: enumerate the paths of the recurrence graph
     of (eq:W) that start at (p, (ell)|L) and are stopped at the first exposure
@@ -587,6 +615,13 @@ def check_scalar_literal(nmax):
     Every legal prefix of every length is used, so every state (p, L) that
     occurs in a scan is tested.  (eq:W-initial) is tested separately at the
     empty prefix.
+
+    Also compared, for the first claim of the proposition, 'for every p and L,
+    W_p(L) is the number of maximal transition sequences from (p, L), all of
+    which end at (0, empty)': for every state (p, L) with p + |L| <= nmax,
+    including the states of no legal prefix, W_p(L) against the number of
+    maximal transition sequences from (p, L), every one walked separately, and
+    the set of states at which they end, which must be {(0, empty)}.
     """
     t0 = time.time()
     checks, bad = 0, None
@@ -606,14 +641,27 @@ def check_scalar_literal(nmax):
         if bad is None and W(n, ()) != len(avoiders_cached(n, 1)):
             bad = "n=%d: W_n(empty)=%d, |Av_n(1342)|=%d" % (
                 n, W(n, ()), len(avoiders_cached(n, 1)))
+    nstates, npaths = 0, 0
+    for p in range(nmax + 1):
+        for L in compositions_upto(nmax - p):
+            count, ends = maximal_sequences(p, L)
+            nstates += 1
+            npaths += count
+            checks += 1
+            if bad is None and (count != W(p, L) or ends != {(0, ())}):
+                bad = "(p,L)=(%d,%s): W=%d, %d maximal sequences ending at %s" % (
+                    p, L, W(p, L), count, sorted(ends))
     return result(
         "Proposition 2.10 (one-threshold recurrence)", "prop:scalar-literal",
         "d = 1; every legal prefix of every 1342-avoider of length n, for n <= %d "
-        "(%d distinct states (p, L) occur), plus (eq:W-initial) for each n" % (nmax, len(seen)),
+        "(%d distinct states (p, L) occur), plus (eq:W-initial) for each n, plus "
+        "every state (p, L) with p + |L| <= %d (%d states, %d maximal transition "
+        "sequences walked)" % (nmax, len(seen), nmax, nstates, npaths),
         checks, bad is None,
         bad or "W_p(L) from (eq:W)-(eq:W-boundary) equals the number of 1342-avoiding "
-               "completions of every legal prefix with data (p, L), and "
-               "W_n(empty) = |Av_n(1342)|",
+               "completions of every legal prefix with data (p, L), "
+               "W_n(empty) = |Av_n(1342)|, and for every state W_p(L) is the number "
+               "of maximal transition sequences from (p, L), all ending at (0, empty)",
         time.time() - t0)
 
 

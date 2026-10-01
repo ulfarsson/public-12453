@@ -3,7 +3,7 @@
 | file | contents |
 |---|---|
 | `ex_n300_1M.csv` | the 300 x 300 position/value count matrix of 1,000,000 uniform random permutations in `Av_300(12453)`, as written by `heatmap.py` (the header comment gives the orientation: row 0 is value 300, column 0 is position 1); every row and every column sums to 1,000,000 |
-| `ex_n300_1M_permpal.png` | the heatmap of that matrix drawn by `vince-heatmaps.py`, the script used for the heatmaps on PermPAL, through `permpal_heatmap.py`: 300 x 300 pixels, one per cell, 8-bit grayscale, white for an empty cell and black for the largest count, gray level linear in the square root of the count (`jay_adjust_mat`) |
+| `ex_n300_1M_permpal.png` | the heatmap of that matrix drawn by `vince-heatmaps.py`, the script used for the heatmaps on PermPAL (written by Jay Pantone and Vince Vatter, and not distributed here), through `permpal_heatmap.py`: 300 x 300 pixels, one per cell, 8-bit grayscale, white for an empty cell and black for the largest count, gray level linear in the square root of the count (`jay_adjust_mat`) |
 | `perm_n300.txt` | one of these permutations, the dot plot of the figure |
 
 The paper's `figures/heatmap_n300_1M_permpal.png` is `ex_n300_1M_permpal.png`
@@ -35,8 +35,8 @@ To redraw the figure from a sample file:
     python3 permpal_heatmap.py ex_n300_1M.csv -o ex_n300_1M_permpal
     python3 plot_perm.py perm_n300.txt -o perm_n300 --tikz perm_n300_tikz.tex
 
-(`permpal_heatmap.py` needs `numpy` and `pypng`, and it also writes a
-cube-root variant, `*_cuberoot.png`.)
+(`permpal_heatmap.py` needs `numpy`, `pypng` and a copy of `vince-heatmaps.py`
+in its directory, and it also writes a cube-root variant, `*_cuberoot.png`.)
 
 ## Statistics of the sample
 

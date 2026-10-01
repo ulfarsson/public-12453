@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Reproduce the frozen n=70..100 asymptotic holdout test for Av(12453)."""
+"""Reproduce the frozen n=70..100 asymptotic holdout test for Av(12453).
+
+It also prints the fit with the power-law exponent gamma free, which gives the
+value gamma = -4.251 near which the frozen value -17/4 was chosen.
+"""
 
 from __future__ import annotations
 
@@ -22,13 +26,14 @@ def read_terms(path: Path) -> list[int]:
     return terms
 
 
-def least_squares_three(
+def least_squares(
     columns: list[list[float]], response: list[float]
-) -> tuple[float, float, float]:
-    """Solve a three-column least-squares problem by modified Gram--Schmidt."""
+) -> list[float]:
+    """Solve a least-squares problem by modified Gram--Schmidt."""
 
+    k = len(columns)
     orthonormal: list[list[float]] = []
-    upper = [[0.0] * 3 for _ in range(3)]
+    upper = [[0.0] * k for _ in range(k)]
     for column_index, original in enumerate(columns):
         work = original.copy()
         for previous, basis in enumerate(orthonormal):
@@ -50,14 +55,14 @@ def least_squares_three(
         math.fsum(left * right for left, right in zip(basis, response))
         for basis in orthonormal
     ]
-    solution = [0.0] * 3
-    for row in range(2, -1, -1):
+    solution = [0.0] * k
+    for row in range(k - 1, -1, -1):
         remainder = math.fsum(
             upper[row][column] * solution[column]
-            for column in range(row + 1, 3)
+            for column in range(row + 1, k)
         )
         solution[row] = (transformed[row] - remainder) / upper[row][row]
-    return solution[0], solution[1], solution[2]
+    return solution
 
 
 def main() -> None:
@@ -71,6 +76,22 @@ def main() -> None:
     mu = 9.0 + 4.0 * math.sqrt(2.0)
     gamma = -17.0 / 4.0
     training = [float(n) for n in range(70, 101)]
+
+    # The same model with the exponent free gives the value near which -17/4 was
+    # chosen.  This four-column fit is ill-conditioned in binary64 (it agrees with
+    # a 60-digit fit, gamma = -4.25125, to about four decimals), so only three
+    # decimals of gamma are printed.
+    free_response = [
+        math.log(terms[int(n)]) - n * math.log(mu) for n in training
+    ]
+    free_columns = [
+        [-n ** (1.0 / 3.0) for n in training],
+        [math.log(n) for n in training],
+        [1.0 for _ in training],
+        [n ** (-1.0 / 3.0) for n in training],
+    ]
+    free_gamma = least_squares(free_columns, free_response)[1]
+    print(f"free fit on 70..100: gamma={free_gamma:.3f}")
     response = [
         math.log(terms[int(n)])
         - n * math.log(mu)
@@ -82,9 +103,7 @@ def main() -> None:
         [1.0 for _ in training],
         [n ** (-1.0 / 3.0) for n in training],
     ]
-    kappa, log_c, correction = least_squares_three(
-        design_columns, response
-    )
+    kappa, log_c, correction = least_squares(design_columns, response)
 
     errors: list[float] = []
     for n in range(101, 151):

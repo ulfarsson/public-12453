@@ -529,7 +529,8 @@ def bona_1342(N):
 
 
 def crt_bound(N, b):
-    """eq:exact-crt-bound -- B_N = sum_m binom(N,m)^2 b_m."""
+    """eq:exact-crt-bound -- B_N = sum_m binom(N,m)^2 a_m^(1), with
+    a_m^(1) = |Av_m(1342)| in b[m] (the paper writes B_N in calligraphic)."""
     return sum(_binom(N, m) ** 2 * b[m] for m in range(N + 1))
 
 
@@ -728,6 +729,58 @@ def check_d2_translation(nmax, verbose=False):
                        "entry" % W)
 
 
+def check_translation_every_d(nmax, verbose=False):
+    """The remark after Lemma 7.2: the proof uses only that no transition
+    increases the first control coordinate and that lowering the first
+    coordinate of a source (and the parameter of a move that reads a value of
+    B_0) lowers only the first coordinate of the target.  "Both facts hold for
+    every d, so that K_ell(p,t) = K_ell(p - t_0 e_0, t - t_0 e_0) whenever
+    t_0 <= p_0, where e_0 = (1,0,...,0)."
+
+    Compared: for d = 1, 2, 3 and every kernel source (ell, p) of grade <= 12,
+    10, 8, and every terminal control t with t_0 <= p_0 and ||t||_1 <= ||p||_1
+    (zero entries included), the brute-force stopped-path count K_ell(p,t) in
+    the graph of eq:H against K_ell(p - t_0 e_0, t - t_0 e_0); and the same
+    identity on the eq:K table, which is also compared with the brute force.
+    """
+    t0 = time.time()
+    checks = 0
+    for d, W in ((1, 12), (2, 10), (3, 8)):
+        BF = bf_kernels(d, W)
+        KT = kernel_table(d, W)
+        for (ell, p), row in BF.items():
+            checks += 1
+            if KT[(ell, p)] != row:
+                return dict(ok=False, checks=checks, seconds=time.time() - t0,
+                            detail="d=%d: eq:K row K_%d(%s,.) differs from the "
+                                   "stopped-path count" % (d, ell, p))
+            for t in controls_upto(d, sum(p)):
+                if t[0] > p[0]:
+                    continue
+                shift = t[0]
+                src = (p[0] - shift,) + tuple(p[1:])
+                tgt = (0,) + tuple(t[1:])
+                lhs = row.get(t, 0)
+                rhs = BF[(ell, src)].get(tgt, 0)
+                checks += 1
+                if lhs != rhs:
+                    return dict(ok=False, checks=checks, seconds=time.time() - t0,
+                                detail="d=%d: K_%d(%s,%s)=%d but K_%d(%s,%s)=%d"
+                                       % (d, ell, p, t, lhs, ell, src, tgt, rhs))
+    return dict(ok=True, checks=checks, seconds=time.time() - t0,
+                detail="K_ell(p,t) = K_ell(p - t_0 e_0, t - t_0 e_0) for every t with "
+                       "t_0 <= p_0, d = 1, 2, 3, on the brute-force stopped-path "
+                       "tables, which agree with eq:K")
+
+
+def controls_upto(d, m):
+    """All t in N^d with ||t||_1 <= m."""
+    out = []
+    for k in range(m + 1):
+        out.extend(controls(d, k))
+    return out
+
+
 def check_d2_second_translation(nmax, verbose=False):
     """Lemma 7.3 (lem:d2-second-translation).
 
@@ -881,7 +934,7 @@ def check_exact_150(nmax, verbose=False):
           1342-avoider": verified by brute force for every element of
           Av_n(12453), n <= 8;
       (3) the resulting bound |Av_N(12453)| <= B_N of eq:exact-crt-bound,
-          verified for N <= 10 against permuta, with b_m taken from the series
+          verified for N <= 10 against permuta, with a_m^(1) taken from the series
           expansion of Bona's generating function eq:bona-1342 (whose
           coefficients are also checked against permuta's |Av_m(1342)| for
           m <= 8), and the monotonicity of B_N used in the proof, for N <= 150;
@@ -1089,23 +1142,28 @@ def check_asymptotic_holdout(nmax, verbose=False):
     """Conjecture 10.1 (conj:12453-asymptotic) -- its finite, checkable content.
 
     The conjecture itself, an asymptotic expansion as n -> infinity with
-    undetermined constants C, kappa, h, is not finitely checkable.  Section 10
-    does, however, make one finite claim about the frozen fit:
+    undetermined constants C, kappa, g, h, is not finitely checkable.  Section
+    10 does, however, make finite claims about the fits:
 
-      "The parameters kappa, log C, h were obtained by unweighted least squares
-       on 70 <= n <= 100 ... the frozen values are
-       (kappa, C, h) = (1.34550865, 0.82710184, 1.36800770) to the digits shown.
-       On those fifty excluded coefficients, the maximum absolute difference
-       between the observed and predicted values of log a_n is below
-       4.3 * 10^{-7}."
+      "Unweighted least squares on 70 <= n <= 100 for the model
+       log a_n = n log mu - kappa n^{1/3} + g log n + log C + h n^{-1/3}
+       gives g approx -4.251, and we fixed the nearby value g = -17/4 ...
+       With g = -17/4, the same fit gave the parameters kappa, log C, h ...
+       The frozen values are kappa = 1.34550865, C = 0.82710184 and
+       h = 1.36800770, to the digits shown.  On those fifty excluded
+       coefficients, the maximum absolute difference between the observed and
+       predicted values of log a_n is below 4.3 * 10^{-7}."
       "The frozen fit gives e^{-kappa} approx 0.260."
 
     Compared: for every n in 101..150, log a_n with a_n read from the certified
     file code/data/av12453_terms_0_150.txt (whose first eleven entries are
     checked against permuta in tab:terms-150 above), against the model
     log a_n = n log mu - kappa n^{1/3} - (17/4) log n + log C + h n^{-1/3}
-    with mu = 9 + 4 sqrt 2 and the three frozen constants as printed.  Nothing
-    is refitted here: the constants come from the paper.
+    with mu = 9 + 4 sqrt 2 and the three frozen constants as printed (nothing
+    is refitted for this part: the constants come from the paper); and the
+    fit with g free on 70 <= n <= 100, computed here by modified Gram-Schmidt
+    in binary64, against g = -4.251 (the four-column fit is ill-conditioned in
+    binary64, so the comparison allows 5e-4).
     """
     import math
     t0 = time.time()
@@ -1133,6 +1191,31 @@ def check_asymptotic_holdout(nmax, verbose=False):
         return dict(ok=False, checks=checks, seconds=time.time() - t0,
                     detail="the frozen fit misses log a_%d by %.3e, the paper "
                            "claims a maximum below 4.3e-7" % (argworst, worst))
+    # the fit with the exponent free
+    ns = list(range(70, 101))
+    cols = [[-n ** (1.0 / 3.0) for n in ns], [math.log(n) for n in ns],
+            [1.0 for n in ns], [n ** (-1.0 / 3.0) for n in ns]]
+    y = [math.log(terms[n]) - n * math.log(mu) for n in ns]
+    basis, upper = [], [[0.0] * 4 for _ in range(4)]
+    for j, col in enumerate(cols):
+        v = list(col)
+        for i, qv in enumerate(basis):
+            r = math.fsum(a * b for a, b in zip(qv, v))
+            upper[i][j] = r
+            v = [a - r * b for a, b in zip(v, qv)]
+        nrm = math.sqrt(math.fsum(a * a for a in v))
+        upper[j][j] = nrm
+        basis.append([a / nrm for a in v])
+    rhs = [math.fsum(a * b for a, b in zip(qv, y)) for qv in basis]
+    sol = [0.0] * 4
+    for i in range(3, -1, -1):
+        sol[i] = (rhs[i] - math.fsum(upper[i][j] * sol[j] for j in range(i + 1, 4))) / upper[i][i]
+    g_free = sol[1]
+    checks += 1
+    if abs(g_free - (-4.251)) > 5e-4:
+        return dict(ok=False, checks=checks, seconds=time.time() - t0,
+                    detail="the free fit gives g = %.5f, the paper says approx -4.251"
+                           % g_free)
     checks += 1
     if abs(math.exp(-kappa) - 0.260) > 5e-4:
         return dict(ok=False, checks=checks, seconds=time.time() - t0,
@@ -1142,8 +1225,9 @@ def check_asymptotic_holdout(nmax, verbose=False):
                 detail="the asymptotic expansion itself is not finitely "
                        "checkable; its frozen fit, held out on n = 101..150, "
                        "misses log a_n by at most %.3e (worst at n=%d), below "
-                       "the paper's 4.3e-7, and e^{-kappa} = %.4f"
-                       % (worst, argworst, math.exp(-kappa)))
+                       "the paper's 4.3e-7, e^{-kappa} = %.4f, and the fit with g "
+                       "free gives g = %.4f"
+                       % (worst, argworst, math.exp(-kappa), g_free))
 
 
 def check_main_theorem(nmax, verbose=False):
@@ -1228,6 +1312,12 @@ def run(nmax=8, verbose=False):
         "brute-force value of K_ell((a,q),(0,s))",
         check_d2_translation(nmax, verbose))
 
+    add("Remark after Lemma 7.2 (the translation for every d)", "lem:d2-translation",
+        "d = 1, 2, 3; every kernel source of grade <= 12, 10, 8 and every terminal "
+        "control t with t_0 <= p_0 and ||t||_1 <= ||p||_1, on the brute-force "
+        "stopped-path tables (compared with eq:K)",
+        check_translation_every_d(nmax, verbose))
+
     add("Lemma 7.3 (second-coordinate translation)", "lem:d2-second-translation",
         "d = 2; every brute-force reduced entry R_{ell,a}(q,s) with s >= a-1 "
         "and both grades <= 12, plus the paper's sharpness example and a census "
@@ -1277,10 +1367,11 @@ def run(nmax=8, verbose=False):
 
     add("Conjecture 10.1 (asymptotics of |Av_n(12453)|)",
         "conj:12453-asymptotic",
-        "the asymptotic expansion as n -> infinity, with constants C, kappa, h, "
-        "is not finitely checkable; the finite claim attached to it is: with the "
+        "the asymptotic expansion as n -> infinity, with constants C, kappa, g, h, "
+        "is not finitely checkable; the finite claims attached to it are: the fit "
+        "with g free on 70 <= n <= 100 gives g = -4.251; with g = -17/4 and the "
         "constants frozen on 70 <= n <= 100, the model reproduces log a_n on the "
-        "held-out range 101 <= n <= 150 to better than 4.3e-7, and "
+        "held-out range 101 <= n <= 150 to better than 4.3e-7; and "
         "e^{-kappa} = 0.260",
         check_asymptotic_holdout(nmax, verbose))
 

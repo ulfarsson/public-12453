@@ -14,6 +14,10 @@ applied unchanged.  `adjust_mat` (cube-root, piecewise-linear) gives a second
 file OUT_PREFIX_cuberoot.png.  Requires numpy and pypng.  vince-heatmaps.py
 runs `pngcrush` after writing, which only recompresses losslessly; if it is
 not installed, a stand-in on PATH copies the file instead.
+
+vince-heatmaps.py was written by Jay Pantone and Vince Vatter for PermPAL
+(https://permpal.com) and is not distributed with this repository; place a
+copy of it in this directory.
 """
 import argparse
 import json
@@ -28,7 +32,12 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 
 def load_vince():
     """Execute vince-heatmaps.py without its final do_all() call."""
-    src = open(os.path.join(HERE, "vince-heatmaps.py")).read()
+    path = os.path.join(HERE, "vince-heatmaps.py")
+    if not os.path.exists(path):
+        sys.exit("permpal_heatmap.py: %s not found.  It is the heatmap script of PermPAL, "
+                 "by Jay Pantone and Vince Vatter, and is not distributed with this "
+                 "repository; place a copy of it in this directory." % path)
+    src = open(path).read()
     body, sep, tail = src.rpartition("\ndo_all()")
     assert sep, "expected a trailing do_all() call in vince-heatmaps.py"
     ns = {}

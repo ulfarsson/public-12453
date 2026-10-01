@@ -1,5 +1,5 @@
 /-
-Scratch axiom check for components 1, 2, 3a, 4a, 3b and 4b.
+Axiom check for the two libraries `PermPatterns` and `Av12453`.
 
 NOT part of either library: neither `PermPatterns.lean` nor `Av12453.lean` imports this file,
 and the Lake `lean_lib` targets do not glob it.  Run it with
@@ -12,11 +12,11 @@ with `Av12453` (except this file itself), so a module that is added, renamed or 
 the two libraries can never silently drop out of the check.  It aborts if either prefix
 matches no imported module, and it prints the list of modules it swept.
 
-For every constant declared in those modules -- including `private` declarations and every
-auto-generated declaration (`example`s declare no constant and are outside the sweep; no
-theorem can depend on them) (structure projections, equation lemmas, compiler stages) -- it
+For every constant declared in those modules, including `private` declarations and every
+auto-generated declaration (structure projections, equation lemmas, compiler stages), it
 reports the axioms the constant depends on, and it throws an error if any of them depends on
-`sorryAx` or on any axiom outside `{propext, Classical.choice, Quot.sound}`.
+`sorryAx` or on any axiom outside `{propext, Classical.choice, Quot.sound}`.  An `example`
+declares no constant, so it is outside the sweep, and no theorem can depend on it.
 -/
 module
 

@@ -18,7 +18,7 @@ project:
 
 classification:
   arxiv: ["math.CO"]
-  msc2020: ["05A05", "05A15", "68W40"]
+  msc2020: ["05A05", "05A15", "68W40", "68V15"]
 
 sources:
   - title: "Protected tails and polynomial-time enumeration of permutations avoiding a direct sum of an increasing pattern and 231"

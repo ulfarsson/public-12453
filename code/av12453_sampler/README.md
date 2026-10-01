@@ -59,7 +59,7 @@ trigger lemma (Lemma 2.1) that shares no code with the sampler.
 | `unif_test.cpp`, `firstletter_test.py`, `pair_law.py`, `prefix_law.py`, `law_test.py`, `validate_sampler.sh` | uniformity tests: chi-square against the list of all avoiders (`n <= 10`), the exact first-letter law, and the exact laws of the first two and the first `m` letters (`law_test.py` compares a law written by `pair_law.py` or `prefix_law.py` with a sample file) |
 | `validate_scaling.sh`, `build_all.sh` | the checks of the scaled tables, and the build of every table they need |
 | `perms_io.py` | reader and writer for the text and binary sample formats |
-| `heatmap.py`, `permpal_heatmap.py`, `vince-heatmaps.py` | the position/value count matrix of a sample file (CSV and PNG), and its PermPAL rendering by the PermPAL script `vince-heatmaps.py` |
+| `heatmap.py`, `permpal_heatmap.py` | the position/value count matrix of a sample file (CSV and PNG), and its rendering by `vince-heatmaps.py`, the heatmap script of the PermPAL database by Jay Pantone and Vince Vatter, which is not distributed here: `permpal_heatmap.py` uses a copy placed next to it |
 | `plot_perm.py` | dot plot of one permutation (PNG, and with `--tikz` a TikZ picture) |
 | `bench_speed.sh` | sampling speed with the scaled tables |
 | `examples/` | the data behind Figure 4, see `examples/README.md` |

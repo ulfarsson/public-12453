@@ -31,7 +31,10 @@ finite content are covered by the exhaustive checks below.
 
 `av12453_exhaustive_checks.py` checks every numbered statement of the paper
 that has finite content for all permutations of length at most 8 (option
-`--nmax`), by comparing the paper's constructions and displayed formulas
+`--nmax`), together with the unnumbered claims of that kind (the path counts
+for every state after `eq:rho` and in Proposition 2.10, the dictionary to
+Biers-Ariel's program after Theorem 4.3, and the translation for every `d`
+after Lemma 7.2), by comparing the paper's constructions and displayed formulas
 with brute-force computations from the definitions.  The checks are grouped
 by section in `checks/sec2.py` (Section 2), `checks/sec345.py` (Sections 3
 to 5) and `checks/sec678.py` (Sections 6 to 8 and 10); `checks/common.py`

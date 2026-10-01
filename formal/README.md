@@ -135,13 +135,16 @@ To know what is proved, read `Challenge.lean`.  It imports only Mathlib and cont
 statements and every definition they use: pattern containment `PermContains` for
 `Equiv.Perm (Fin n)`, the patterns `1342` and `12453` as products of transpositions, and the
 recurrences `W`, `H`, `K` and `G` for `d = 1, 2`.  Comparing these definitions with the
-paper's displays (`eq:W`, `eq:H`, `eq:scalar-K`–`eq:scalar-G`, `eq:K`–`eq:G`) takes three
+paper's displays (`eq:W` and `eq:W-boundary`, `eq:H` with `H_0(∅) = 1`,
+`eq:scalar-K`–`eq:scalar-G`, `eq:K`–`eq:G`) takes three
 facts, which Appendix B of the paper explains.  The recurrences are written with a recursion
 bound, and the development proves that every sufficient bound gives the same value.  In the
 kernel recurrences every sum over intermediate or terminal controls is restricted to the
 controls of mass at most that of the source control, which the paper's Lemmas 2.17 and 6.1
-show loses nothing.  The terms of the split sums with `a = 0` or `b = 0` are written as a
-separate endpoint term `D`.  No natural-number subtraction in the definitions truncates: each
+show loses nothing.  The terms of the split sums with `a = 0` or `b = 0` are written as one
+endpoint term, with a case distinction on whether the head has size one
+(`if ℓ = 0 then … else 2 * …`); the development's restated equations call it `D` in the
+kernel recurrences and `Eend` in those of `W` and `H`.  No natural-number subtraction in the definitions truncates: each
 is guarded by its range (for example `h < p₀` in `p₁ + p₀ - 1 - h`).
 
 Beyond `Challenge.lean`, the trusted base is Lean's kernel, the Mathlib definitions that

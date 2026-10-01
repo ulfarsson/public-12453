@@ -190,16 +190,18 @@ valid from `n=0` whenever
 (r+1)(d+1)+r\leq151.
 \]
 
-The strongest positive signal is asymptotic.  Before the new calculation, the
-terms only through 100 suggested
+The strongest positive signal is asymptotic.  The paper's Conjecture 10.1 is the form
 
 \[
-a_n\sim C(9+4\sqrt2)^n
-  \exp(-\kappa n^{1/3})n^{-17/4}
-  \bigl(1+h n^{-1/3}+O(n^{-2/3})\bigr).
+a_n= C(9+4\sqrt2)^n
+  \exp(-\kappa n^{1/3})n^{g}
+  \bigl(1+h n^{-1/3}+O(n^{-2/3})\bigr)
 \]
 
-Freezing the fit made on `70,...,100` and predicting all fifty unseen terms
+with the exponent `g` unspecified.  Before the new calculation, the terms only through
+100, fitted on `70,...,100` with `g` free, gave `g = -4.251`, and the nearby value
+`g = -17/4` was fixed (`code/av12453_asymptotic_holdout.py` prints both fits).
+Freezing the fit made with `g = -17/4` on `70,...,100` and predicting all fifty unseen terms
 `101,...,150` gives RMS relative error `2.45e-7` and maximum relative error
 `4.13e-7`.  A refit on `70,...,150` gives
 
@@ -211,4 +213,6 @@ h=1.36798512.
 
 This remains conjectural, but the out-of-sample accuracy is strong evidence
 for the `n^{1/3}` stretched exponential and against a regular-singular
-power-law asymptotic.
+power-law asymptotic.  The coefficients do not determine `g` reliably: the fitted value
+depends on the correction terms admitted, which is why the conjecture leaves it
+unspecified.

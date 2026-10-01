@@ -184,7 +184,10 @@ sha256sum -c MANIFEST.sha256
 ## Data and licensing
 
 The code, data and Lean development are released under the Apache License
-2.0 (see `LICENSE`).  The paper in `paper/`, text and figures, is released
+2.0 (see `LICENSE`).  The heatmap of the paper's Figure 4 was drawn by the heatmap
+script of the PermPAL database, written by Jay Pantone and Vince Vatter, which is
+not part of this repository (see `code/av12453_sampler/examples/README.md`).  The
+paper in `paper/`, text and figures, is released
 under the Creative Commons Attribution 4.0 International license (CC BY 4.0),
 as on arXiv.
 

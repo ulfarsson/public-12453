@@ -17,7 +17,9 @@
 \usepackage{aliascnt}
 \usepackage{hyperref}
 \usepackage{xurl}
-\usepackage[nameinlink,noabbrev]{cleveref}
+% file names and identifiers set with \path break only after / and _
+\def\UrlBreaks{\do\/\do\_}
+\usepackage[capitalise,nameinlink,noabbrev]{cleveref}
 
 \definecolor{pairblue}{RGB}{37,99,154}
 \definecolor{tailorange}{RGB}{205,105,31}
@@ -97,13 +99,16 @@ polynomial size.  For 12453 a translation symmetry sharpens the bounds to
 degree seven for the operations and degree four for the storage.  We also
 compute the number of 12453-avoiding permutations of every length up to 150.
 The previously published series, due to Biers-Ariel (2019), reached length
-38.  We also generate uniformly random avoiders, which we illustrate with a
-heatmap of one million 12453-avoiding permutations of length 300.  The
-counting recurrences for 1342 and 12453 are verified in the Lean~4 proof
+38.  We also give a sampler of uniformly random avoiders.  A
+floating-point implementation of it, proved to be within total variation
+distance $3.5\cdot10^{-5}$ of uniform for ideal random bits, draws the one
+million
+12453-avoiding permutations of length 300 shown in a heatmap.  The literal
+and kernel recurrences for 1342 and 12453 are verified in the Lean~4 proof
 assistant.
 \end{abstract}
 
-\subjclass[2020]{05A05, 05A15, 68W40}
+\subjclass[2020]{05A05, 05A15, 05A16, 68W40, 68V15}
 \keywords{permutation pattern, pattern avoidance, polynomial-time
 algorithm, Wilfian formula}
 
@@ -126,20 +131,21 @@ Throughout, $\N=\{0,1,2,\ldots\}$.
 
 The basic enumerative problem is to determine
 \[
-  a_n(\tau)=|\Av_n(\tau)|.
+  a_n(\tau)=\lvert\Av_n(\tau)\rvert.
 \]
 By \emph{polynomial-time enumeration} we mean computing this integer, not
-listing the avoiding permutations.  In other words, we seek a \emph{Wilfian formula}~\cite{Wilf1982,Zeilberger1998}.  For a fixed pattern,
+listing the avoiding permutations.  In other words, we seek a \emph{Wilfian formula} in the sense of
+Wilf~\cite{Wilf1982} and Zeilberger~\cite{Zeilberger1998}.  For a fixed pattern,
 the theorem of Marcus and Tardos~\cite{MarcusTardos2004} gives an
 exponential upper bound $a_n(\tau)\leq c(\tau)^n$ on the counting sequence.
-Arratia~\cite{Arratia1999} showed that $a_n(\tau)^{1/n}$ converges.  Its
-limit, which is finite by this bound, is called the \emph{Stanley--Wilf
+Arratia~\cite{Arratia1999} showed that $a_n(\tau)^{1/n}$ has a limit in
+$[1,\infty]$.  The limit, which is finite by this bound, is called the \emph{Stanley--Wilf
 limit} of $\tau$, or the \emph{growth rate} of $\Av(\tau)$.  The task is to obtain $a_n(\tau)$ in at most $P(n)$
 steps, where $P$ is a polynomial.
 No general principle
-can apply, since
-Garrabrant and Pak~\cite{GarrabrantPak2016} constructed a finitely based
-class whose counting sequence cannot be computed in polynomial time
+can apply to all finitely based classes, since
+Garrabrant and Pak~\cite{GarrabrantPak2016} constructed one whose counting
+sequence cannot be computed in polynomial time
 unless $\mathsf{EXP}=\mathsf{\oplus EXP}$.\footnote{Here
 $\mathsf{EXP}$ is the class of decision problems solvable in deterministic
 exponential time, $\mathsf{\oplus EXP}$ is the class of problems that ask
@@ -164,11 +170,12 @@ Thus
 The case $d=1$ is already enumerated algebraically by B\'ona
 \cite{Bona1997}.
 The family itself also appears in B\'ona~\cite{Bona2005}: from
-$\beta_d=1\oplus\beta_{d-1}$ for $d\geq2$, and $\beta_1=1\oplus231$, he obtained
-a recursive deletion rule for \emph{left-to-right minima} (entries smaller
-than every entry to their left) and used it to determine the Stanley--Wilf
-limits.  That rule does not by itself determine the exact counts
-from the unrefined $\beta_{d-1}$ counts.
+$\beta_d=1\oplus\beta_{d-1}$ for $d\geq2$ he obtained a recursive deletion
+rule for \emph{left-to-right minima} (entries smaller than every entry to
+their left), and, starting from the Stanley--Wilf limit $8$ of
+$1342$~\cite{Bona1997}, used it to determine the Stanley--Wilf limits of the
+family \cite[Proposition~5.1 and Theorem~5.2]{Bona2005}.  The rule determines
+the growth rates but not the exact counts.
 The next case is $d=2$, giving $\beta_2 = 12453$.  The counting sequence begins
 \begin{equation}\label{eq:first-terms}
   1,1,2,6,24,119,694,4581,33286,260927,2174398,19053058,\ldots.
@@ -177,18 +184,21 @@ The next case is $d=2$, giving $\beta_2 = 12453$.  The counting sequence begins
 In the census of Clisby, Conway, Guttmann, and
 Inoue~\cite{ClisbyConwayGuttmannInoue2022}, the $12453$ sequence was known
 through $n=38$ from a specialized program of
-Biers-Ariel~\cite{BiersAriel2019,BiersArielA116485}.  The program uses a
+Biers-Ariel~\cite{BiersArielA116485}, posted with OEIS
+A116485~\cite{OEISA116485}.  The program uses a
 composition-valued state of unbounded length, and the number of its states
 grows exponentially.  Our starting point is the same recurrence: for $d=2$
 the literal recurrence developed below coincides with Biers-Ariel's, state
-for state, and we extend it to the whole family $\beta_d$.  We then show how
+for state (\cref{sec:literal}), and we extend it to the whole family
+$\beta_d$.  We then show how
 to shrink its exponential state space to polynomial size.
 
 The family also has a description by a sorting device.  Albert, Homberger,
 Pantone, Shar, and Vatter \cite{AlbertHombergerPantoneSharVatter2018} study
-the $\mathcal C$-machine, which pushes each input entry anywhere into a
-container whose contents must remain in the class $\mathcal C$ and pops the
-container from its left end.  Their Theorem~1.1 shows that the
+the $\mathcal C$-machine, which reads the entries $1,2,\ldots,n$ in order
+and either outputs each one directly or pushes it anywhere into a container
+whose contents must stay order-isomorphic to a permutation in $\mathcal C$,
+and which outputs entries from the container only from its left end.  Their Theorem~1.1 shows that the
 $\Av(B)$-machine generates exactly $\Av(1\ominus B)$, and they observe that
 $\Av(4213)$, the complement of $\Av(1342)$, is generated by the
 $\Av(213)$-machine, answering a question of B\'ona.  Since
@@ -208,7 +218,7 @@ $231$-avoiding order, and we record the conditions created by a prefix as
 an ordered stack of intervals of unread values (\cref{sec:obligations}).
 Reading one more letter changes the control, that is, the counts of unread
 values that no condition restricts, or the active head of the stack, or
-both.  The intervals below the head are not touched until the head has been
+both.  The deferred intervals are not touched until the head has been
 consumed, and the transitions up to that point do not depend on them.  A
 transfer kernel records the control at which this happens.  This removes
 the stack from the memoization key, and the resulting table has polynomial
@@ -218,10 +228,11 @@ Our main result is the following.
 The notation $O_d(\cdot)$ allows the hidden constant to depend on the fixed
 family parameter $d$.
 
+\Needspace{12\baselineskip}
 \begin{theorem}\label{thm:main}
-For every fixed $d\geq1$ and every $N\geq0$, the numbers
+For every fixed $d\geq1$ and every $N\geq1$, the numbers
 \[
-  |\Av_0(\beta_d)|,\ldots,|\Av_N(\beta_d)|
+  \lvert\Av_0(\beta_d)\rvert,\ldots,\lvert\Av_N(\beta_d)\rvert
 \]
 can be computed using $O_d(N^{3d+2})$ integer arithmetic operations
 and $O_d(N^{2d+1})$ stored integers.  All integers involved have
@@ -238,10 +249,12 @@ where $M(b)$ is the cost of multiplying $b$-bit integers, and the bit
 storage is $O_d(N^{2d+2}\log N)$.
 \end{theorem}
 
-In particular, the family theorem gives time $O(N^5)$ and storage $O(N^3)$
-for $\Av(1342)$, and $O(N^{8})$ and $O(N^5)$ for $\Av(12453)$.  An additional
-translation symmetry, proved in \cref{sec:d2-support}, improves this to
-$O(N^7)$ and $O(N^4)$ for $\Av(12453)$ (\cref{cor:d2-complexity}).  The
+In particular, the family theorem gives $O(N^5)$ operations and $O(N^3)$
+stored integers for $\Av(1342)$, and $O(N^{8})$ and $O(N^5)$ for
+$\Av(12453)$.  An additional translation symmetry, proved in
+\cref{sec:d2-support}, improves this to $O(N^7)$ and $O(N^4)$ for
+$\Av(12453)$ (\cref{cor:d2-complexity}).  The same symmetry holds for
+every $d$ and lowers both exponents of \cref{thm:main} by one.  The
 theorem gives a polynomial bound for each fixed $d$, not a uniform one when
 $d$ is part of the input.
 
@@ -252,20 +265,24 @@ the literal recurrence is a pushdown system: every transition acts on the
 interval stack through its active head alone, so the completion counts
 factor through transfer kernels
 (\cref{thm:protected-tail-principle,cor:protected-tail}), although the
-number of reachable stack states grows like the Fibonacci numbers
-(\cref{prop:exponential}).  The factorization itself is the counting form of
-the classical conversion of a pushdown automaton into a grammar
-(\cref{rem:pop-sequences}).  What is new is that it applies with a control
-set that grows with $n$, where it gives a transfer table of polynomial size
-rather than a finite grammar.  We prove the family bounds of
+number of reachable stack states is at least the Fibonacci number
+$F_{n-d}$ (\cref{prop:exponential}).  The factorization itself is the
+counting form of the classical conversion of a pushdown automaton into a
+grammar (\cref{rem:pop-sequences}).  What is new is the combinatorial input
+that makes it apply: for every $d$, the conditions created by a prefix form a
+stack that the scan touches only at its head
+(\cref{lem:separators,prop:scan-states,prop:state-invariant}), and the number
+of controls is polynomial in $n$, so the factorization gives a transfer table
+of polynomial size rather than a finite grammar.  We prove the family bounds of
 \cref{thm:main} and two translation quotients for $12453$
 (\cref{lem:d2-translation,lem:d2-second-translation}).  We also provide
-the values $|\Av_n(12453)|$ for $n\leq150$, computed by Chinese remaindering
+the values $\lvert\Av_n(12453)\rvert$ for $n\leq150$, computed by Chinese remaindering
 with a proved bound and checked by separately written implementations
-(\cref{tab:terms-150}).  The
-transfer tables can also be used to generate uniformly random avoiders in
-polynomial time (\cref{prop:sampling}), and the counting recurrences for
-$d\leq2$ are machine-checked in Lean~4 (\cref{sec:formal}).
+(\cref{tab:terms-150} and the supplement).  The
+transfer tables can also be used to generate uniformly random elements of
+$\Av_n(12453)$ in polynomial time (\cref{prop:sampling}), and the literal and
+kernel recurrences for $d\leq2$ are machine-checked in Lean~4
+(\cref{sec:formal}).
 
 The paper is organized as follows.  In \cref{sec:obligations} we describe the
 conditions that a scanned prefix imposes on its completions, represent them
@@ -278,11 +295,15 @@ by the $d$ patience-sorting thresholds and their bands.  In
 that its state space is exponential.  In \cref{sec:kernels} we apply the
 factorization to it and obtain the transfer kernels.  In \cref{sec:algorithm}
 we bound their supports and prove \cref{thm:main}.  In \cref{sec:d2-support}
-we specialize to $12453$ and use two translation symmetries to reach
-$O(N^7)$ operations and $O(N^4)$ storage.  In \cref{sec:computations} we
-compute the values $|\Av_n(12453)|$ for $n\leq150$ and describe the uniform
-sampler.  In \cref{sec:formal} we describe the Lean development.  In \cref{sec:discussion} we place the class among the
+we specialize to $12453$ and use a translation symmetry to reach $O(N^7)$
+operations and $O(N^4)$ storage, and a second one to halve the storage
+constant.  In \cref{sec:computations} we
+compute the values $\lvert\Av_n(12453)\rvert$ for $n\leq150$ and describe the uniform
+sampler.  In \cref{sec:formal} we describe the Lean development, with
+details in \cref{app:lean}.  In \cref{sec:discussion} we place the class among the
 length-five Wilf classes and state a conjecture on its asymptotics.
+\Cref{app:float} bounds the distance of the floating-point sampler from
+uniformity.
 
 \section{Triggers, stacks, and the complete one-threshold prototype}
 \label{sec:obligations}
@@ -324,9 +345,8 @@ larger.  Conversely, an increasing $d$-subsequence followed by such a $231$
 has relative order $\iota_d\oplus231=\beta_d$.
 \end{proof}
 
-When a trigger $c$ is read, its entire subsequent projection onto values
-larger than $c$ must avoid
-$231$.  Later in the scan, some letters of that projection have already been
+When a trigger $c$ is read, its \emph{projection}, the subword of the
+letters after $c$ that are larger than $c$, must avoid $231$.  Later in the scan, some letters of that projection have already been
 read.  It is not enough to test the unread part of the projection, since an
 occurrence of $231$ may use both read and unread letters.  The interval stack
 below records the resulting conditions on the unread letters.
@@ -343,13 +363,17 @@ once.
 
 \subsection{The Catalan interval stack}\label{sec:stack}
 
-The following first-letter decomposition of $\Av(231)$ applies to an
-arbitrary finite ordered alphabet.
+Here and throughout, an \emph{interval} is a consecutive block of the
+ordered set of currently unread values.  Its elements need not be
+consecutive integers.  The \emph{local rank} of an element $x$ of a finite
+totally ordered set $I$ is $|\{y\in I:y\leq x\}|$.  The following
+first-letter decomposition of $\Av(231)$ applies to an arbitrary finite
+ordered alphabet.
 
 \Needspace{12\baselineskip}
 \begin{lemma}[First-letter lemma]\label{lem:first-letter}
 Let $I$ be a finite totally ordered set of size $\ell$, and let $x\in I$ have
-local rank $r=|\{y\in I:y\leq x\}|$.  A permutation of $I$ beginning with
+local rank $r$.  A permutation of $I$ beginning with
 $x$ avoids $231$ if and only if
 all values below $x$ occur before all values above $x$, and the two induced
 subwords avoid $231$.  Thus reading $x$ replaces an interval of size $\ell$
@@ -402,10 +426,7 @@ letter $2$ it would form a $231$.
 
 The stack records the obligations created by the scanned prefix.  Further
 obligations arise as the completion is read, and they are incorporated by
-the stack updates described below.  Here and throughout, an \emph{interval}
-is a consecutive block of the ordered set of currently unread values.  Its
-elements need not be consecutive integers.
-We call $I_1$ the \emph{active head} and $(I_2,\ldots,I_s)$ the
+the stack updates described below.  We call $I_1$ the \emph{active head} and $(I_2,\ldots,I_s)$ the
 \emph{deferred tail}.  Only the active head may be read next among the values
 of the stack: every letter of $I_1$ must be read before any letter of
 $I_2$, and so forth.  Unread values below the trigger are constrained by no
@@ -463,9 +484,9 @@ value above every letter, when $\sigma$ has no $d$-trigger.  The
 $I_1<I_2<\cdots<I_s$ whose union is the set of unread letters larger than
 $q$, so that each $I_j$ is an interval in the sense of \cref{sec:stack},
 $I_1$ is the active head, and $(I_2,\ldots,I_s)$ is the deferred tail.  In
-particular $S$ is the empty list, $s=0$, when $\sigma$ has no $d$-trigger.  The
-\emph{initial state} is $(\emptyword,())$: the empty prefix and the empty
-stack.  Let $(\sigma,S)$ be a scan state and let $x$ be an unread letter.
+particular $S=\varnothing$ is the empty list, $s=0$, when $\sigma$ has
+no $d$-trigger.  The \emph{initial state} is $(\emptyword,\varnothing)$: the
+empty prefix and the empty stack.  Let $(\sigma,S)$ be a scan state and let $x$ be an unread letter.
 Reading $x$ is a \emph{legal move}, leading to the state $(\sigma x,S')$, in
 the following three cases.
 \begin{enumerate}
@@ -664,9 +685,9 @@ $\{6,7,8,12,13\}\mid\{15\}$.
 The values $6,7,8$ join the head without a separation: the read letters
 $9$, $10$, $11$, which lie between them and $12$ in value, were read before
 the trigger $5$ and constrain nothing in $E$.  They must, however, precede
-$15$: if $15$ came before $6$, then either $15$ precedes some
-$y\in\{12,13\}$ and $9,14,15,y$ is an occurrence of $1342$, or $12$
-precedes $15$ and $5,12,15,6$ is one.  Inside the head only $231$-avoidance
+$15$: if $15$ came before some $y'\in\{6,7,8\}$, then either $15$
+precedes some $y\in\{12,13\}$ and $9,14,15,y$ is an occurrence of $1342$,
+or $12$ precedes $15$ and $5,12,15,y'$ is one.  Inside the head only $231$-avoidance
 remains.  The permutation $\pi$ continues with $12$ before $6$, and
 $13,12,6,7,8$ would have been allowed as well.  For $d=2$ the same permutation is scanned in
 \cref{ex:full-state}: there the first $2$-trigger is $11$ rather than $9$,
@@ -730,18 +751,18 @@ Let $\sigma$ be a legal word with stack $\mathcal S(\sigma)=(I_1,\ldots,I_s)$.
 \begin{proof}
 (a) Suppose that $\sigma$ contains $\beta_d$.  The first $d$ letters of an
 occurrence form an increasing $d$-subsequence ending at a $d$-trigger $c$,
-and its last three letters $\alpha,\beta,\gamma$, in this order, satisfy
-$c<\gamma<\alpha<\beta$.  Let $\tau$ be the prefix of $\sigma$ read just
-before $\beta$.  It is legal and contains $c$ and $\alpha$, so its least
-$d$-trigger $q$ satisfies $q\leq c$.  Since $\beta>q$ is read legally from
-$\tau$, it lies in the active head of $\mathcal S(\tau)$ by
-\cref{lem:legal-moves}(b).  Let $u$ and $v$ be the unread letters of $\tau$
-next below and next above $\alpha$.  Then $q<\gamma\leq u$ and $v\leq\beta$,
-and $\alpha$ was read after the $d$-trigger $c<u$, so $u$ and $v$ lie in
-different intervals of $\mathcal S(\tau)$ by \cref{lem:separators}.  But the
-stack consists of the unread letters above $q$, its active head is the
-lowest interval, and $u<v\leq\beta$, so $u$ and $v$ both lie in the active
-head, a contradiction.
+and its last three letters $y_2,y_3,y_1$, in this order, satisfy
+$c<y_1<y_2<y_3$.  Let $\sigma'$ be the prefix of $\sigma$ read just
+before $y_3$.  It is legal and contains $c$ and $y_2$, so its least
+$d$-trigger $q$ satisfies $q\leq c$.  Since $y_3>q$ is read legally from
+$\sigma'$, it lies in the active head of $\mathcal S(\sigma')$ by
+\cref{lem:legal-moves}(b).  Let $u$ and $v$ be the unread letters of
+$\sigma'$ next below and next above $y_2$.  Then $q<y_1\leq u$ and
+$v\leq y_3$, and $y_2$ was read after the $d$-trigger $c<u$, so $u$ and $v$
+lie in different intervals of $\mathcal S(\sigma')$ by \cref{lem:separators}.
+But the stack consists of the unread letters above $q$, its active head is
+the lowest interval, and $u<v\leq y_3$, so $u$ and $v$ both lie in the
+active head, a contradiction.
 
 (b) By \cref{lem:legal-moves}(b), $x$ lies in a deferred interval, so
 $s\geq2$.  Let $u=\max I_1$ and $v=\min I_2$, which are adjacent.  By
@@ -793,10 +814,10 @@ minimum $m$, the interval stack, and the symbol $W_p(L)$ of
 \cref{sec:one-threshold}, where $p$ is the number of unread letters below
 $m$, $L$ lists the interval sizes, and $W_p(L)$ is the number of
 $1342$-avoiding completions of the prefix.  Every new minimum is a merger
-in the sense of \cref{def:scan-state}(a).  The table writes ``merger'' when
-it joins values to the head or creates the stack and ``new minimum'' when
-$E=\varnothing$, and it writes ``head exhausted'' for an endpoint choice in
-a head of size one.
+in the sense of \cref{def:scan-state}(a).  The table writes ``new minimum, merger'' when
+the new minimum joins values to the head or creates the stack and ``new
+minimum'' alone when $E=\varnothing$.  It writes ``head exhausted'' for an
+endpoint choice in a head of size one.
 \begin{center}
 \small
 \setlength{\tabcolsep}{4.5pt}
@@ -846,8 +867,9 @@ only their sizes $5$ and $4$.
 
 Recall that $m$ is the least letter in the scanned prefix, virtual for the
 empty prefix.  Let $p$ be the number of unread letters below $m$, which we
-call the \emph{control} of the state, and let $L=(\ell_1,\ldots,\ell_s)$ be
-the positive sizes of the active and deferred intervals.  We write
+call the \emph{control}, and let $L=(\ell_1,\ldots,\ell_s)$ be
+the positive sizes of the active and deferred intervals.  We call $(p,L)$
+the \emph{state} of the prefix.  We write
 $|L|=\sum_{i=1}^s\ell_i$ and
 $\operatorname{len}(L)=s$.  If $L'$ is a list, $(\ell)L'$ and
 $(a,b)L'$ denote concatenation with the displayed initial entries, and
@@ -865,20 +887,22 @@ W_p((\ell)L')={}&\sum_{h=0}^{p-1}
  +\sum_{\substack{a,b\geq0\\a+b=\ell-1}}W_p(\nz(a,b)L'), \label{eq:W}
 \end{align}
 and
-\begin{align}
- W_p(\varnothing)&=
+\begin{equation}\label{eq:W-boundary}
+ W_p(\varnothing)=
   \begin{cases}
    1,&p=0,\\
-   W_{p-1}(\varnothing)+\sum_{h=0}^{p-2}W_h\!\left((p-1-h)\right),&p\geq1,
+   W_{p-1}(\varnothing)+\sum_{h=0}^{p-2}W_h\!\left((p-1-h)\right),&p\geq1.
   \end{cases}
-  \label{eq:W-boundary}\\
- |\Av_n(1342)|&=W_n(\varnothing). \label{eq:W-initial}
-\end{align}
-For every legal prefix with control $p$ and interval sizes $L$, reading the
-letters of a completion one at a time is a bijection from the completions
-that produce a $1342$-avoiding permutation to the maximal sequences of
-transitions from $(p,L)$, and $W_p(L)$ is their number.  In particular
-\eqref{eq:W-initial} holds.
+\end{equation}
+For every $p$ and $L$, $W_p(L)$ is the number of maximal transition
+sequences from $(p,L)$, all of which end at $(0,\varnothing)$.  For every
+legal prefix with state $(p,L)$, reading the letters of a completion one at
+a time is a bijection from the completions that produce a $1342$-avoiding
+permutation to the maximal transition sequences from $(p,L)$.  In
+particular
+\begin{equation}\label{eq:W-initial}
+ \lvert\Av_n(1342)\rvert=W_n(\varnothing).
+\end{equation}
 \end{proposition}
 
 \begin{proof}
@@ -935,11 +959,11 @@ read legally until the active head is empty.  The scan of
 \label{ex:1342-literal-count}
 By \eqref{eq:W-initial} and \eqref{eq:W-boundary},
 \[
- |\Av_5(1342)|=W_5(\varnothing)
+ \lvert\Av_5(1342)\rvert=W_5(\varnothing)
  =W_0((4))+W_1((3))+W_2((2))+W_3((1))+W_4(\varnothing),
 \]
-the five terms corresponding to the first letter $1,2,3,4,5$.  Expanding
-by \eqref{eq:W} reaches twenty distinct states in
+the five terms corresponding to the first letters $1,2,3,4,5$.  Expanding
+by \eqref{eq:W} and \eqref{eq:W-boundary} reaches twenty distinct states in
 all, listed here with their values, in increasing order of $\rho_1=p+|L|$:
 \begin{center}
 \small
@@ -969,9 +993,9 @@ For example,
 so that $W_5(\varnothing)=14+20+23+23+23=103$.  In the first line the terms
 are the two endpoints and the interior choices $(a,b)=(1,2),(2,1)$, and in
 the second the new minimum, which joins nothing to the head, the two
-endpoints, and the interior choice $(1,1)$.  The states with $p=0$ are
-counted by the Catalan numbers $C_\ell=\frac{1}{\ell+1}\binom{2\ell}{\ell}$,
-that is, $W_0((\ell))=C_\ell$, as \cref{lem:first-letter} predicts.  The number of distinct states grows exponentially with $n$
+endpoints, and the interior choice $(1,1)$.  The values $W_0((\ell))$ are the
+Catalan numbers $C_\ell=\frac{1}{\ell+1}\binom{2\ell}{\ell}$, as
+\cref{lem:first-letter} predicts.  The number of distinct states grows exponentially with $n$
 (\cref{prop:scalar-exponential} below).  \Cref{ex:scalar-kernel} recomputes
 the same value from the kernel rows of the shrunk state space.
 \end{example}
@@ -1056,8 +1080,8 @@ for $L=(\ell_1,\ldots,\ell_s)$
 \end{theorem}
 
 \begin{proof}
-Both identities are trivial when $U$ or $V$ is empty, so let
-$U\ne\varnothing$.  Before $L$ is exposed, a state has the form
+Both identities are trivial when $U$ is empty, and the second also when
+$V$ is empty, so let $U$ and $V$ be nonempty.  Before $L$ is exposed, a state has the form
 $(p',U'\mid L)$ with $U'\ne\varnothing$.  By \eqref{eq:W}, its transitions
 change only the control and the blocks before the marker, and they and their
 targets are the same for every choice of $L$.  Replacing $L$ by another list
@@ -1073,7 +1097,8 @@ by $W_t(L)$, and concatenation is the inverse operation.  In the same way, a
 stopped path from $(p,UV\mid L)$ leaves $VL$ unchanged until $U$ is used up,
 so it passes through a first exposure $(u,\varnothing\mid VL)$ of $VL$, and cutting it there gives a stopped path
 from $(p,U\mid VL)$ followed by one from $(u,V\mid L)$, so
-$K_{UV}=K_UK_V$.  With $U=L$ and the empty tail, the two identities give
+$K_{UV}=K_UK_V$.  Taking $U=(\ell_1,\ldots,\ell_s)$ and $L=\varnothing$
+in the first identity and applying the second repeatedly gives
 \eqref{eq:abstract-factorization}.
 \end{proof}
 
@@ -1088,8 +1113,8 @@ while passing from $p$ to $t$, and \cref{thm:protected-tail-principle} is the
 counting form of the classical conversion of a pushdown automaton into a
 context-free grammar, whose variable $[p\,\ell\,t]$ describes exactly those
 runs, see Hopcroft, Motwani, and
-Ullman~\cite[Theorem~6.14]{HopcroftMotwaniUllman2001} or
-Sipser~\cite[Lemma~2.27]{Sipser2013}.  The same runs are the pop sequences
+Ullman~\cite[Theorem~6.14]{HopcroftMotwaniUllman2001}; Sipser~\cite[Lemma~2.27]{Sipser2013}
+gives a variant with variables $A_{pq}$.  The same runs are the pop sequences
 of the weighted pushdown systems of Reps, Schwoon, Jha, and
 Melski~\cite{RepsSchwoonJhaMelski2005}, and
 \eqref{eq:abstract-factorization} is the first-passage decomposition of
@@ -1106,10 +1131,10 @@ general $d$, and \cref{sec:kernels} applies the proof there.
 \subsection{The scalar kernel algorithm}\label{sec:scalar-kernel}
 
 Recall that the control $p$ is the number of unread letters below the
-current minimum.  In the kernel $K_\ell(p,\mathord\cdot)$ of
-\cref{thm:protected-tail-principle} we call $p$ the \emph{source control},
-$t$ a \emph{terminal control}, and $K_\ell(p,\mathord\cdot)$ a \emph{scalar
-kernel row}.  A transition that selects an unread letter below the current
+current minimum.  For a kernel entry $K_\ell(p,t)$ of
+\cref{thm:protected-tail-principle} we call $p$ the \emph{source control}
+and $t$ the \emph{terminal control}, and we call $K_\ell(p,\mathord\cdot)$ a
+\emph{scalar kernel row}.  A transition that selects an unread letter below the current
 minimum is a \emph{base move}.  A transition that selects a value from the
 active head is an \emph{active-head move}.  Put $K_0=K_\varnothing$, the
 identity kernel, and $G_p=W_p(\varnothing)$.
@@ -1129,7 +1154,7 @@ The empty-stack values satisfy
   1,&p=0,\\
   \sum_{h=0}^{p-1}\sum_{t\geq0}K_{p-1-h}(h,t)G_t,&p\geq1,
  \end{cases}
- \qquad |\Av_n(1342)|=G_n.
+ \qquad \lvert\Av_n(1342)\rvert=G_n.
 \end{equation}
 \end{proposition}
 
@@ -1141,10 +1166,11 @@ the stack $\nz(a,b)L$ with $a=r-1$ and $b=\ell-r$, so the rest of the path is
 a stopped path from $(p,\nz(a,b)\mid L)$, or the empty path when
 $\ell=1$.  These are counted by
 $K_{\nz(a,b)}(p,t)=(K_aK_b)(p,t)$, by
-\cref{thm:protected-tail-principle}, which gives the double sum.  Finally, \eqref{eq:scalar-G}
+\cref{thm:protected-tail-principle}, which gives the double sum.  Finally, the recurrence in \eqref{eq:scalar-G}
 follows from \eqref{eq:W-boundary}: a new minimum leaving $h$ lower letters
 creates a part of size $p-1-h$, to which \eqref{eq:scalar-factorization}
-applies, and $K_0$ covers the case $h=p-1$.
+applies, and $K_0$ covers the case $h=p-1$.  The last equation is
+\eqref{eq:W-initial}.
 \end{proof}
 
 \begin{lemma}[Exact scalar support]\label{lem:scalar-support}
@@ -1161,18 +1187,18 @@ A base move strictly decreases the control, while an active-head move leaves it
 unchanged.  Thus every terminal control is at most $p$.  A path ending at
 $p$ uses no base move.  By \cref{lem:first-letter}, such paths are in
 bijection with the $231$-avoiding permutations of the original
-$\ell$-element interval, and hence are counted by $C_\ell$.
+$\ell$-element interval, so there are $C_\ell$ of them.
 
-For $t<p$, consider the path that first reads the base letter with exactly
-$t$ unread base letters below it, which makes the control $t$ and the active
-head of size $\ell+p-1-t$, and then reads endpoints until the head is
-exhausted.  It reads no other base letter and exposes the marked suffix at
-control $t$.  Thus every $t\in\{0,\ldots,p\}$ occurs.
+For $t<p$, consider the path that first reads the unread letter below the
+current minimum that has $t$ unread letters below it, which makes the
+control $t$ and the active head of size $\ell+p-1-t$, and then reads
+endpoints until the head is exhausted.  It makes no other base move and
+exposes the marked suffix at control $t$.  Thus every $t\in\{0,\ldots,p\}$ occurs.
 \end{proof}
 
 We call $p+\ell$ the \emph{grade} of the kernel row $K_\ell(p,\mathord\cdot)$.
 
-\begin{example}[From kernel rows to $|\Av_5(1342)|$]
+\begin{example}[From kernel rows to $\lvert\Av_5(1342)\rvert$]
 \label{ex:scalar-kernel}
 We write each row $K_\ell(p,\mathord\cdot)$ as the vector
 $(K_\ell(p,0),\ldots,K_\ell(p,p))$, which by \cref{lem:scalar-support} lists
@@ -1213,20 +1239,20 @@ tail is exposed.
 
 \begin{theorem}[Polynomial enumeration of $1342$-avoiders]
 \label{thm:scalar-algorithm}
-For every $N\geq0$, the numbers
-$|\Av_n(1342)|$ for $0\leq n\leq N$ can be computed using $O(N^5)$
+For every $N\geq1$, the numbers
+$\lvert\Av_n(1342)\rvert$ for $0\leq n\leq N$ can be computed using $O(N^5)$
 integer arithmetic operations and $O(N^3)$ stored integers.  Every
-integer has $O(N\log N)$ bits.  Therefore the bit time is
+integer has $O(N\log N)$ bits.  Therefore the bit complexity is
 $O(N^5M(N\log N))$ and the bit storage is $O(N^4\log N)$, where $M(b)$ is
 the cost of multiplying $b$-bit integers, as in \cref{thm:main}.
 \end{theorem}
 
 \begin{proof}
-We order the kernel rows by grade.  The row in a base term of
-\eqref{eq:scalar-K} has grade
-$h+(\ell+p-1-h)=p+\ell-1$.  In a split term, $p+a<p+\ell$.  If
+We order the kernel rows by grade.  The row
+$K_{\ell+p-1-h}(h,\mathord\cdot)$ in a base term of \eqref{eq:scalar-K} has
+grade $p+\ell-1$.  In a split term, $p+a<p+\ell$.  If
 $K_a(p,u)\neq0$, then $u\leq p$, by \cref{lem:scalar-support} when $a\geq1$
-and since $K_0$ is the identity when $a=0$, and hence $u+b\leq p+b<p+\ell$.
+and since $K_0$ is the identity when $a=0$, so that $u+b\leq p+b<p+\ell$.
 Thus increasing grade
 is a topological order for all kernel dependencies: an order in which every
 row comes after all the rows its recurrence uses, so that evaluating the rows
@@ -1254,7 +1280,7 @@ total.  The nonsplit kernel terms use $O(N^4)$ operations in total, and
 \eqref{eq:scalar-G} uses $O(N^3)$.
 
 For a scalar kernel entry, we take the marked suffix to be empty, by
-suffix independence.  Its initial number of unread letters is then
+\cref{thm:protected-tail-principle}.  Its initial number of unread letters is then
 $p+\ell\leq N$.  An empty-stack computation also starts with at most $N$
 unread letters.  This number decreases at every transition.  At each state,
 the number of outgoing transitions is the number of legal next letters and
@@ -1268,7 +1294,7 @@ to intermediate integers.
 
 B\'ona~\cite{Bona1997} found the algebraic generating function
 \begin{equation}\label{eq:bona-1342}
- \sum_{n\geq0}|\Av_n(1342)|x^n
+ \sum_{n\geq0}\lvert\Av_n(1342)\rvert x^n
  =\frac{(1-8x)^{3/2}-8x^2+20x+1}{2(1+x)^3}.
 \end{equation}
 \Cref{thm:scalar-algorithm} is a separate transfer construction, and it
@@ -1280,8 +1306,8 @@ unchanged.
 \label{sec:frontier}
 
 We now consider the pattern $\beta_d$ for an arbitrary $d\geq1$, and replace
-the current minimum of \cref{sec:obligations} by $d$ thresholds and bands,
-which record the base values that a new letter may update.  After a
+the current minimum of \cref{sec:obligations} by $d$ thresholds and the
+bands of unread values below and between them.  After a
 prefix has been read, let $b_j$ be the smallest final entry of an
 increasing subsequence of length $j$ contained in that prefix, for
 $1\leq j\leq d$.  When the prefix contains no such subsequence, we use the
@@ -1302,21 +1328,17 @@ $b_1$, while band $i$ lies between $b_i$ and $b_{i+1}$ for $1\leq i<d$.
 We write $\mathbf p=(p_0,p_1,\ldots,p_{d-1})$ for the band sizes.  We again
 call $\mathbf p$ the \emph{control}, write $\|\mathbf p\|_1=p_0+\cdots+p_{d-1}$
 for its \emph{control mass}, and $\mathbf0$ for the zero control.  Let $B_0,\ldots,B_{d-1}$ be the corresponding unread blocks.
-Together with the pending intervals, the value order is
+Together with the intervals of the stack, the value order is
 \begin{equation}\label{eq:ordered-layout}
  B_0<b_1<B_1<b_2<\cdots<b_{d-1}<B_{d-1}<b_d
- <I_1<\cdots<I_s.
+ <I_1<\cdots<I_s
 \end{equation}
-Empty
+by \cref{prop:state-invariant}(a) below.  Empty
 blocks are allowed.  As in the one-threshold case (\cref{sec:obligations}), a
 base move selects a value from some $B_i$ and an active-head move
 selects a value from $I_1$.  We call a base move from $B_i$ with $i<d-1$ an
 \emph{early-band move} and a base move from $B_{d-1}$ a \emph{last-band
-move}.  In the terms of \cref{def:scan-state}, a value
-of $B_i$ with $i<d-1$ is a non-trigger move, a value of $B_{d-1}$ is a
-merger, and a value of $I_1$ is a split (\cref{prop:state-invariant}(b)
-below).  By \eqref{eq:bd-q} below, $b_d$ is the least $d$-trigger $q$ of
-\cref{def:scan-state}.  Initially
+move}.  Initially
 $\mathbf p=(n,0,\ldots,0)$.
 
 \begin{figure}[tb]
@@ -1380,7 +1402,8 @@ $\mathbf p=(n,0,\ldots,0)$.
   \fill (5,5) circle (3.5pt);  \node[below right=0pt] at (5,5) {\footnotesize $5$};
 \end{tikzpicture}
 \end{minipage}
-\caption{The bands and the stack.  Left: the thresholds $b_1<\cdots<b_d$,
+\caption{The bands and the stack.  Left, schematically: the thresholds
+$b_1<\cdots<b_d$ (the only read letters drawn, at arbitrary positions),
 the bands $B_0,\ldots,B_{d-1}$ of unread base values with sizes
 $\mathbf p=(p_0,\ldots,p_{d-1})$, and the stack $I_1,\ldots,I_s$ above
 $b_d$.  Right: the running example \eqref{eq:running-example} for $d=2$
@@ -1409,7 +1432,10 @@ virtual $b_d=n+d$ means that the prefix has no $d$-trigger.  With $q$ as in
 \end{equation}
 In particular, the unread values below $b_d$ belong to the projection of no
 trigger read so far, while every unread value above a nonvirtual $b_d$
-belongs to the projection created by the trigger $b_d$.
+belongs to the projection created by the trigger $b_d$.  In the terms of
+\cref{def:scan-state}, a value of $B_i$ with $i<d-1$ is a non-trigger move,
+a value of $B_{d-1}$ is a merger, and a value of $I_1$ is a split
+(\cref{prop:state-invariant}(b) below).
 
 For example, in the permutation $316829574$ the entries $3,6$ form an increasing $2$-subsequence, and the subsequent
 projection onto values larger than $6$ is $8,9,7$, an occurrence of $231$.
@@ -1422,21 +1448,23 @@ $2,5,4$, all smaller than $6$, do not belong to this projection.
 In this section we write down the literal recurrence for $\beta_d$, show that
 it counts every avoider once, characterize the separations of its stack, and
 show that its state space is exponential.  We now express the band updates in terms of their sizes.  For $0\leq i<d-1$ and
-$0\leq h<p_i$, define
+$0\leq h<p_i$, let $x$ be the value of $B_i$ that has $h$ unread values of
+$B_i$ below it.  Reading $x$ makes it the new threshold $b_{i+1}$, leaves
+$h$ values in band $i$, and moves the $p_i-1-h$ values of $B_i$ above it to
+band $i+1$, so the control becomes
 \begin{equation}\label{eq:T}
  T_{i,h}(\mathbf p)=
  (p_0,\ldots,p_{i-1},h,
   p_{i+1}+p_i-1-h,p_{i+2},\ldots,p_{d-1}).
 \end{equation}
-The chosen letter becomes the new threshold $b_{i+1}$.  Then $h$ values
-remain in band $i$, and the values above it in the old band join band $i+1$.  For the
-last band put
+Similarly, if $x$ is the value of $B_{d-1}$ that has $h$ unread values of
+$B_{d-1}$ below it, reading $x$ gives the control
 \begin{equation}\label{eq:U}
  U_h(\mathbf p)=(p_0,\ldots,p_{d-2},h),
  \qquad \delta_h=p_{d-1}-1-h.
 \end{equation}
 For $d=1$, interpret \eqref{eq:U} as $U_h((p_0))=(h)$.
-Here the chosen letter is a new least $d$-trigger.  The $\delta_h$ unread
+Here $x$ is a new least $d$-trigger, and the $\delta_h$ unread
 values above it and below the old $b_d$ join the active head.
 
 For example, take $d=2$ and the prefix $9,11,10,14,5$ of the running example
@@ -1450,7 +1478,7 @@ control $U_1(\mathbf p)=(4,1)$, and the $\delta_1=1$ value $8$ joins the
 head, so the stack becomes $\{8,12,13\}\mid\{15\}$.  \Cref{ex:full-state}
 follows the whole running example through such moves.
 
-Let $L=(\ell_1,\ldots,\ell_s)$ be the sizes of the pending intervals,
+Let $L=(\ell_1,\ldots,\ell_s)$ be the sizes of the intervals of the stack,
 active head first, and call $(\mathbf p,L)$ the \emph{state} of a legal
 prefix (\cref{def:scan-state}).  For an empty stack
 we interpret $\ell_1=0$ and its tail as empty.
@@ -1483,7 +1511,7 @@ before \eqref{eq:bd-q}, a letter $x\in B_i$ changes only $b_{i+1}$, and it
 is a non-trigger move if $i<d-1$ and a merger if $i=d-1$, since then
 $x<b_d=q$.  A letter of $I_1$ exceeds $b_d$, so it changes no threshold, and
 it is a split, as noted after \cref{def:scan-state}.  The new controls are
-described after \eqref{eq:T} and \eqref{eq:U}, the set $E$ of a merger has
+given by \eqref{eq:T} and \eqref{eq:U}, the set $E$ of a merger has
 $\delta_h$ elements, and the new stacks follow from \cref{def:scan-state}.
 Every other unread letter lies in a deferred interval and is illegal by
 \cref{lem:legal-moves}(b).
@@ -1512,17 +1540,21 @@ is empty.  The quantity
 drops by one on every transition.  An early-band move reduces the control
 mass by one.  A last-band move reduces it by $\delta_h+1$ and adds
 $\delta_h$ to the head.  An active-head move consumes one head value.
-Therefore \eqref{eq:H} and $H_{\mathbf0}(\varnothing)=1$ define
+The zero state $(\mathbf0,\varnothing)$ is the only state without
+transitions: a nonzero control allows a base move and a nonempty stack a
+letter of the head.  Therefore \eqref{eq:H} and $H_{\mathbf0}(\varnothing)=1$ define
 $H_{\mathbf p}(L)$, and by induction on $\rho$ it is the number of maximal
 transition sequences from $(\mathbf p,L)$, all of which end at the zero
 state.  Theorem~\ref{thm:literal} below shows that
 \begin{equation}\label{eq:initial-terminal}
- a_n^{(d)}:=|\Av_n(\beta_d)|
+ a_n^{(d)}:=\lvert\Av_n(\beta_d)\rvert
  =H_{(n,0,\ldots,0)}(\varnothing).
 \end{equation}
-For $d=1$, identify $H_{(p)}(L)=W_p(L)$.  The early-band sum is empty,
-$U_h((p))=(h)$, and \eqref{eq:H}--\eqref{eq:initial-terminal} reduce to
-\eqref{eq:W}--\eqref{eq:W-initial}.
+For $d=1$, identify $H_{(p)}(L)=W_p(L)$.  The early-band sum is empty and
+$U_h((p))=(h)$, so \eqref{eq:H} and $H_{\mathbf0}(\varnothing)=1$ reduce to
+\eqref{eq:W} and \eqref{eq:W-boundary}, \eqref{eq:rho} to
+\eqref{eq:rho-scalar}, and \eqref{eq:initial-terminal} to
+\eqref{eq:W-initial}.
 
 \begin{example}[What the second threshold adds]\label{ex:full-state}
 We specialize to $d=2$ and scan the running example
@@ -1637,13 +1669,20 @@ hypothesis applies to the successors.  The empty prefix has the state
 $((n,0,\ldots,0),\varnothing)$.
 \end{proof}
 
+For $d=2$, \eqref{eq:H} is the recurrence evaluated by Biers-Ariel's
+program~\cite{BiersArielA116485}.  Its function
+\path{Avoid12453_helper(i,j,L)} is $H_{(i-1,j-i-1)}(L)$, with the list
+$[0]$ for the empty stack, and its four contributions to the output are, in
+order, the early-band, last-band, endpoint and interior terms of
+\eqref{eq:H}.
+
 The stack can be read off the scanned prefix.  Recall that two unread
 values are adjacent if no unread value lies strictly between them.  By
 \cref{prop:scan-states}(c), the legal prefixes are exactly the prefixes of
 $\beta_d$-avoiding permutations, and every legal prefix has an avoiding
 completion, so condition (iii) below is not vacuous.
 
-\begin{corollary}[Separations of the stack]\label{cor:separators}
+\begin{corollary}[Separations and completions]\label{cor:separators}
 After a legal prefix has been read, let $u<v$ be adjacent unread values
 above $b_d$.  The following are equivalent.
 \begin{enumerate}
@@ -1677,7 +1716,8 @@ them: several letters between $u$ and $v$ may satisfy (ii), and the letter
 whose split created the separation need not be among them.  Adjacency is
 needed only in (ii), as the example before \cref{ex:1342-scan} shows.  For arbitrary unread $u<v$ above $b_d$,
 conditions (i) and (iii) remain equivalent, and they hold exactly when some
-pair $a<c$ of adjacent unread values with $u\leq a<c\leq v$ satisfies (ii).
+pair $u'<v'$ of adjacent unread values with $u\leq u'<v'\leq v$ satisfies
+(ii).
 
 \begin{proposition}\label{prop:exponential}
 For fixed $d\geq1$ and $n\geq d+1$, literal memoization of \eqref{eq:H} has
@@ -1700,9 +1740,9 @@ The literal state space is therefore exponential in $n$.
 \section{Protected tails and transfer kernels}\label{sec:kernels}
 
 In this section we factor the literal recurrence through transfer kernels and
-derive recurrences for the kernels and for the empty-stack values.  By
-\cref{thm:literal}, $H_{\mathbf p}(L)$ is the number of maximal transition
-sequences from $(\mathbf p,L)$.  We mark an arbitrary tail $L$ of the stack
+derive recurrences for the kernels and for the empty-stack values.  As
+shown after \eqref{eq:rho}, $H_{\mathbf p}(L)$ is the number of maximal
+transition sequences from $(\mathbf p,L)$, for every state.  We mark an arbitrary tail $L$ of the stack
 and define exposures, stopped paths and the identity kernel $K_\varnothing$
 as in \cref{sec:obligations}.  An early-band move changes only the control.
 A last-band move can enlarge the active head, and a letter of the active
@@ -1717,9 +1757,10 @@ $K_U^L(\mathbf p,\mathbf t)$ be the number of stopped paths from
 $(\mathbf p,U\mid L)$ to $(\mathbf t,\varnothing\mid L)$, and we write
 $K_\ell^L=K_{(\ell)}^L$ and $K_0=K_\varnothing$.
 
-\begin{corollary}[Permutation-stack factorization]\label{cor:protected-tail}
+\begin{corollary}[Protected-tail factorization for $\beta_d$]\label{cor:protected-tail}
 The number $K_U^L(\mathbf p,\mathbf t)$ is independent of $L$.  We write
-$K_U(\mathbf p,\mathbf t)$ for it.  Then, for all lists $U$, $V$ and $L$,
+$K_U(\mathbf p,\mathbf t)$ for it.  Then, for all lists $U$, $V$ and $L$ of
+positive integers,
 \begin{equation}\label{eq:factorization}
  H_{\mathbf p}(UL)=
  \sum_{\mathbf t\in\N^d}K_U(\mathbf p,\mathbf t)H_{\mathbf t}(L)
@@ -1740,7 +1781,7 @@ $\mathbf t$ with $K_\ell(\mathbf p,\mathbf t)\ne0$.  The factorization
 replaces the composition argument by a product of transfer kernels,
 evaluated on the required source rows.  The recurrence for the kernel rows
 follows, and \cref{sec:algorithm} bounds the number of source and terminal
-controls required for coefficients through degree $N$.
+controls required for the values $\lvert\Av_n(\beta_d)\rvert$ with $n\leq N$.
 
 \begin{proposition}[Compressed kernel recurrence]
 \label{prop:kernel-recurrence}
@@ -1806,7 +1847,7 @@ empty-stack recurrence \eqref{eq:G}.  The split term is controlled by the
 following support bound.
 
 \begin{lemma}[Kernel support]\label{lem:support}
-For every $\ell\geq1$,
+For every $\mathbf p\in\N^d$ and $\ell\geq1$,
 \begin{equation}\label{eq:support}
  \supp K_\ell(\mathbf p,\mathord\cdot)
  \subseteq
@@ -1820,10 +1861,10 @@ As in the proof of \cref{lem:scalar-support}, a base move strictly lowers
 the control mass and an active-head move leaves the control unchanged.
 \end{proof}
 
-In the algorithm below, each row operation is coefficientwise, and every row
-not yet computed is zero.
+In the algorithm below, each row operation is coefficientwise, and each row
+is accumulated from zero.
 
-\paragraph{Kernel phase.}
+\emph{Kernel phase.}
 For $w=1,2,\ldots,N$, and every $\mathbf p\in\N^d$, $\ell\geq1$ with
 $\|\mathbf p\|_1+\ell=w$, evaluate \eqref{eq:K} coefficientwise and store
 the resulting sparse row.  In each split term, for every $a,b\geq0$ with
@@ -1832,7 +1873,7 @@ $\mathbf u\in\supp K_a(\mathbf p,\mathord\cdot)$, add the scalar multiple
 $K_a(\mathbf p,\mathbf u)K_b(\mathbf u,\mathord\cdot)$ to the row being
 computed.
 
-\paragraph{Empty-stack phase.}
+\emph{Empty-stack phase.}
 Set $G_{\mathbf0}=1$.  For $m=1,2,\ldots,N$, and every
 $\mathbf p\in\N^d$ with $\|\mathbf p\|_1=m$, evaluate \eqref{eq:G}, using
 $K_0$ when $\delta_h=0$.  Return
@@ -1885,21 +1926,23 @@ $\rho(\mathbf p,L)\leq N$ unread values and as many legal next letters, every
 stored
 integer and every intermediate product and partial sum is at most
 $(N+1)^N$ and has $O(N\log N)$ bits.  Replacing integer multiplication by its
-$M(N\log N)$ bit cost proves the stated bit time.  The bit storage is
+$M(N\log N)$ bit cost proves the stated bit complexity.  The bit storage is
 $O_d(N^{2d+2}\log N)$.
 \end{proof}
 
 \section{The two-threshold quotient for
 \texorpdfstring{$12453$}{12453}}\label{sec:d2-support}
 
-In this section we specialize to $d=2$ and write $\mathbf p=(p,q)$.  Two symmetries of the kernels are
+In this section we specialize to $d=2$ and write $\mathbf p=(p,q)$, so
+that $q$ is the size of band~$1$, not the least $2$-trigger of
+\eqref{eq:bd-q}.  Two symmetries of the kernels are
 available in this case, and they serve different purposes.  The first is a
-translation in the lower threshold coordinate: a kernel entry depends on the
+translation in the first control coordinate: a kernel entry depends on the
 first coordinates of its source and terminal controls only through their
 difference, so one coordinate can be dropped from the table.  This is the
 symmetry that improves the $d=2$ specialization $O(N^8)$ and $O(N^5)$
 of \cref{thm:main} to the $O(N^7)$ and $O(N^4)$ of \cref{cor:d2-complexity}.
-The second is a partial translation in the upper coordinate.  It leaves
+The second is a partial translation in the second control coordinate.  It leaves
 those exponents unchanged and halves the leading constant in the storage count.
 We first determine the support of a kernel row exactly, which refines the
 bound of \cref{lem:support}.
@@ -1922,7 +1965,7 @@ make the early-band move with $h=u$, which gives $(u,Q)$ with
 $Q=p+q-1-u$.  The support inequality says $v\leq Q$.  If $v=Q$, make no
 further base move.  If $v<Q$, make the last-band move with $h=v$.  If
 $u=p$, then $v\leq q-1$, and the last-band move with $h=v$ can be made
-directly.  Finally, exhaust each active head by endpoint choices, which
+directly.  Finally, exhaust the active head by endpoint choices, which
 exposes the marked suffix at $(u,v)$.
 \end{proof}
 
@@ -1936,19 +1979,38 @@ For $\ell\geq1$ and $0\leq c\leq p$,
 \end{lemma}
 
 \begin{proof}
-Consider a kernel path ending at $(c,s)$.  Its first control coordinate
-never falls below $c$, so the $c$ lowest unread values are never read.
-Delete them throughout the path and shift all remaining values down by
-$c$.  This preserves the active head
-sizes, every transition multiplicity, and the second control coordinate, and
-gives a path from $(p-c,q)$ to $(0,s)$.  The inverse operation adds $c$
-unread values below every value used by the path.  These added values are
-never selected, because the terminal first coordinate is $c$.  They shift by
-exactly $c$ the parameter $h$ of every band-$0$ letter, leave the parameter
-$h$ of every last-band letter and the local ranks within the active head
-unchanged, and preserve every transition multiplicity.  The
-two operations are inverse.
+No transition increases the first control coordinate: an early-band move
+with parameter $h$ lowers it from $p'$ to $h$, and the other moves keep it.
+Every state of a stopped path from $((p,q),(\ell)\mid L)$ to
+$((c,s),\varnothing\mid L)$ therefore has first coordinate at least $c$, and
+every early-band move on it has parameter $h\geq c$.  Lower every first
+coordinate and every early-band parameter on the path by $c$.  By
+\eqref{eq:T}, an early-band move from $(p',q')$ with parameter $h$ becomes
+the move from $(p'-c,q')$ with parameter $h-c$, whose target
+$(h-c,q'+p'-1-h)$ is the old target with its first coordinate lowered by
+$c$.  By \eqref{eq:U}, a last-band move keeps its parameter, the second
+coordinate of its target and its head enlargement, and active-head moves do
+not involve the control.  The result is a stopped path from
+$((p-c,q),(\ell)\mid L)$ to $((0,s),\varnothing\mid L)$, and raising every
+first coordinate and every early-band parameter by $c$ is the inverse map.
 \end{proof}
+
+The proof uses only two facts: no transition increases the first control
+coordinate, and, by \eqref{eq:T} and \eqref{eq:U}, if the first coordinate
+of the source of a move is lowered by $c$, and its parameter $h$ also when
+the move reads a value of $B_0$, then the target changes only in its first
+coordinate, which is lowered by $c$, and the head enlargement is unchanged.
+Both facts hold for every $d$, so that
+\[
+ K_\ell(\mathbf p,\mathbf t)
+ =K_\ell(\mathbf p-t_0\mathbf e_0,\mathbf t-t_0\mathbf e_0)
+ \qquad\hbox{whenever }t_0\leq p_0,
+\]
+where $\mathbf e_0=(1,0,\ldots,0)$.  Storing only the entries with $t_0=0$
+and counting as in the proofs of \cref{thm:main,cor:d2-complexity} gives
+$O_d(N^{3d+1})$ operations and $O_d(N^{2d})$ stored integers, that is,
+$O(N^4)$ and $O(N^2)$ for $1342$, and the bounds of \cref{cor:d2-complexity}
+for $12453$.  We have stated \cref{thm:main} in the simpler form.
 
 We write
 \begin{equation}\label{eq:R-definition}
@@ -1959,7 +2021,8 @@ entries the \emph{first-coordinate quotient}.  Throughout this section the
 letter $a$ denotes a reduced first control coordinate, not a block size as in
 \eqref{eq:W} and \eqref{eq:K}.  Block sizes in a split are written
 $\ell_1,\ell_2$.  By \cref{lem:d2-translation}, every kernel entry is
-represented by one such reduced entry, with $a=p-c$.  By \cref{lem:d2-exact-support}, for a reduced source
+represented by one such reduced entry, with $a=p-c$ (entries with $c>p$
+vanish by \cref{lem:d2-exact-support}).  By \cref{lem:d2-exact-support}, for a reduced source
 $(\ell,a,q)$ with $a=0$ the possible terminal coordinates are
 $0\leq s\leq q$, and if $a>0$ a base move is necessary and
 $0\leq s\leq a+q-1$.  The first-coordinate quotient therefore has
@@ -1970,8 +2033,8 @@ $0\leq s\leq a+q-1$.  The first-coordinate quotient therefore has
 \end{equation}
 The entry formula follows by summing $q+1$ for $a=0$ and $a+q$ for $a>0$
 over the same padded source region.  In particular, it already gives
-$O(N^4)$ storage.  We count the operations after the second
-translation.
+$O(N^4)$ storage.  We count the operations in the proof of
+\cref{cor:d2-complexity}.
 
 We now rewrite the kernel recurrence in the reduced variables by applying
 \cref{lem:d2-translation} to \eqref{eq:K}.  An early-band move from $(a,q)$
@@ -2062,10 +2125,10 @@ $L$ is exposed at the same step.  This gives a stopped path counted by
 $R_{\ell,a}(q,s)$ that reads the same labels.
 
 Conversely, consider a stopped path counted by $R_{\ell,a}(q,s)$.  No
-last-band move of it reads a label $y$ of the initial band~$0$.  Indeed, $y$
-entered band~$1$ through an early-band move, which read another label of the
-initial band~$0$, and reading $y$ sends every label of the initial band~$1$
-still in band~$1$ into the head.  The terminal band~$1$ would then consist of
+last-band move of it reads a label $y$ of the initial band~$0$.  Such a $y$
+would have entered band~$1$ through an early-band move, which read another
+label of the initial band~$0$, and reading $y$ would send every label of the
+initial band~$1$ still in band~$1$ into the head.  The terminal band~$1$ would then consist of
 at most $a-2$ labels of the initial band~$0$, contradicting $s\geq a-1$.  So
 every last-band move reads a label of the initial band~$1$.  Insert a label
 $z$ into the initial band~$1$ below its labels.  The same labels can then be
@@ -2096,19 +2159,26 @@ $0\leq s<a$ when $a\geq1$.  The exact number of retained entries is
 Thus the second translation halves the leading storage constant relative to
 the first-coordinate quotient, and each omitted entry is recovered from
 \eqref{eq:d2-second-translation} in $O(1)$ operations.  Exact polynomials for loop iterations and
-stored entries are recorded in the computation report in the supplement.
+stored entries are recorded in the computation report
+\path{notes/av12453_150_computation_report.md} of the supplement.
 
 \begin{corollary}[Sharpened $12453$ bound]\label{cor:d2-complexity}
-The numbers $|\Av_n(12453)|$ for $0\leq n\leq N$ can be computed using
+For every $N\geq1$, the numbers $\lvert\Av_n(12453)\rvert$ for $0\leq n\leq N$
+can be computed using
 $O(N^7)$ integer arithmetic operations and $O(N^4)$ stored integers.
-The bit time is $O(N^7M(N\log N))$, and the bit storage is
+The bit complexity is $O(N^7M(N\log N))$, and the bit storage is
 $O(N^5\log N)$, with $M$ as in \cref{thm:main}.
 \end{corollary}
 
 \begin{proof}
-We count the operations for the first-coordinate quotient, evaluated in
-increasing reduced grade, which the preceding paragraphs showed to be a
-topological order for \eqref{eq:R-recurrence}.  It has
+The algorithm evaluates \eqref{eq:R-recurrence} for the reduced sources
+$(\ell,a,q)$ with $\ell+a+q\leq N$ in increasing reduced grade, which the
+preceding paragraphs showed to be a topological order, then evaluates
+\eqref{eq:G}, reading every kernel entry from the first-coordinate quotient
+by \eqref{eq:d2-translation}, and returns the values \eqref{eq:answer-G}.
+It is correct by the proof of \cref{thm:main} and
+\cref{lem:d2-exact-support,lem:d2-translation}.  We count its operations.
+The first-coordinate quotient has
 $O(N^3)$ source rows and $O(N^4)$ stored entries by
 \eqref{eq:d2-first-reduced-counts}.  Evaluating the split terms involves $O(N)$ choices for
 the block split $\ell_1$, $O(N)$ choices for the control split $a_1$, and
@@ -2126,7 +2196,7 @@ gives the stated bit bounds.
 \section{The counting sequence of \texorpdfstring{$\Av(12453)$}{Av(12453)}}
 \label{sec:computations}
 
-In this section we describe the computation of $|\Av_n(12453)|$ for
+In this section we describe the computation of $\lvert\Av_n(12453)\rvert$ for
 $n\leq150$ and, in \cref{sec:sampling}, uniform random generation.
 \Cref{tab:terms-150} lists some of the values.  The file
 \path{code/data/av12453_terms_0_150.txt} in the supplement contains all of
@@ -2137,7 +2207,7 @@ them.
 \scriptsize
 \begin{tabular}{@{}r>{\raggedright\arraybackslash}p{0.88\textwidth}@{}}
 \toprule
-$n$ & $|\Av_n(12453)|$ \\
+$n$ & $\lvert\Av_n(12453)\rvert$ \\
 \midrule
 $ 0 $ & $ 1 $ \\
 $ 1 $ & $ 1 $ \\
@@ -2175,7 +2245,7 @@ $ 149 $ & $ 2727515338\allowbreak 5986397634\allowbreak 7598705423\allowbreak 92
 $ 150 $ & $ 3822057739\allowbreak 1784040990\allowbreak 0771979163\allowbreak 2020545156\allowbreak 2668309691\allowbreak 7522113147\allowbreak 0523342088\allowbreak 8592406553\allowbreak 2828958769\allowbreak 7088297741\allowbreak 5112039607\allowbreak 5850075847\allowbreak 7699391695\allowbreak 5095899208\allowbreak 9859207315\allowbreak 9171767612\allowbreak 574 $ \\
 \bottomrule
 \end{tabular}
-\caption{The numbers $|\Av_n(12453)|$ for $0\leq n\leq9$, $70\leq n\leq80$,
+\caption{The numbers $\lvert\Av_n(12453)\rvert$ for $0\leq n\leq9$, $70\leq n\leq80$,
 and $140\leq n\leq150$.}
 \label{tab:terms-150}
 \end{table}
@@ -2186,29 +2256,33 @@ reconstructed the values over the integers.  The programs
 supplement perform the modular evaluation, the check of the coefficient
 bound, and the reconstruction.
 
-The reconstruction rests on a bound for the coefficients.  Put
-$b_m=|\Av_m(1342)|$ and
+The reconstruction rests on a bound for the coefficients.  With
+$a_m^{(1)}=\lvert\Av_m(1342)\rvert$ as in \eqref{eq:initial-terminal}, put
 \begin{equation}\label{eq:exact-crt-bound}
- B_N:=\sum_{m=0}^N\binom Nm^2 b_m.
+ \mathcal B_N:=\sum_{m=0}^N\binom Nm^2 a_m^{(1)}.
 \end{equation}
 As B\'ona~\cite{Bona2005} observed, deleting the left-to-right minima of a
-$12453$-avoider leaves a $1342$-avoider: a $1342$ among the remaining
-entries could be preceded by an earlier smaller entry, producing a $12453$.
+$12453$-avoider leaves a $1342$-avoider: the first entry of an occurrence of
+$1342$ among the remaining entries is not a left-to-right minimum, so an
+earlier smaller entry precedes it and forms a $12453$ with the occurrence.
 If $m$ entries remain, choose their positions, their values, and their
-standardization.  The deleted minima occupy the remaining positions, and
-their remaining values are forced in decreasing order.  Therefore
-$|\Av_N(12453)|\leq B_N$.
+standardization.  The deleted minima occupy the remaining positions and take
+the remaining values in decreasing order.  Therefore
+$\lvert\Av_N(12453)\rvert\leq\mathcal B_N$.
 
-The integers $b_m$ are computed from \eqref{eq:bona-1342}.  The
+The integers $a_m^{(1)}$ are computed from \eqref{eq:bona-1342}.  The
 source \path{av12453_fast_rns.cpp} implements \eqref{eq:R-recurrence} and
 the empty-stack recurrence \eqref{eq:G} modulo each selected prime.  By
 \cref{thm:literal,cor:protected-tail,prop:kernel-recurrence,%
-cor:empty-stack-recurrence,lem:d2-translation,lem:d2-second-translation},
-its outputs are the residues of the coefficients.  The moduli are the
+cor:empty-stack-recurrence,lem:d2-exact-support,lem:d2-translation,%
+lem:d2-second-translation}, these recurrences give the coefficients, so a
+correct evaluation outputs their residues, and the checks below test the
+implementation.  The moduli are the
 twenty-four largest primes below $2^{31}$, recorded with the residue packs
 in the supplement.  The program \path{reconstruct_av12453_rns.py} verifies
-that the product $\mathcal M$ of the eighteen largest exceeds $B_{150}$.
-The margin is $\mathcal M/B_{150}>1.92$.  Since the nonnegative bound $B_N$
+that the product $\mathcal M$ of the eighteen largest exceeds
+$\mathcal B_{150}$.  The margin is $\mathcal M/\mathcal B_{150}>1.92$.  Since
+the nonnegative bound $\mathcal B_N$
 is nondecreasing, every coefficient through degree $150$ lies in
 $[0,\mathcal M)$.  The Chinese remainder theorem therefore determines each
 coefficient uniquely.
@@ -2219,14 +2293,16 @@ program computes all $151$ coefficients modulo $2^{61}-1$ and also agrees.
 These are error-detection checks, not inputs to the uniqueness argument.
 The values through $n=38$ agree with those previously known, in OEIS
 A116485~\cite{OEISA116485}, which come from Biers-Ariel's
-program~\cite{BiersAriel2019,BiersArielA116485}.
+program~\cite{BiersArielA116485}.
 
 \subsection{Uniform random generation}\label{sec:sampling}
 
-The transfer tables can also be used to generate uniformly random avoiders.  By
-\cref{thm:literal}, the labeled complete paths of \eqref{eq:H} from the
-initial state $H_{(n,0,\ldots,0)}(\varnothing)$ correspond bijectively to the $\beta_d$-avoiding permutations of length $n$.  By the
-recursive method \cite{NijenhuisWilf1978}, such a path is uniformly random
+The transfer tables can also be used to generate uniformly random avoiders.  We
+call a maximal transition sequence a \emph{complete path}.  By
+\cref{thm:literal}, the complete paths from the initial state
+$((n,0,\ldots,0),\varnothing)$ correspond bijectively to the
+$\beta_d$-avoiding permutations of length $n$.  By the recursive method of
+Nijenhuis and Wilf~\cite{NijenhuisWilf1978}, such a path is uniformly random
 when every transition is chosen with probability proportional to the number
 of complete paths through it, that is, to the value of the
 corresponding summand of \eqref{eq:H}.  That value is a completion count
@@ -2245,12 +2321,12 @@ the new head will have been exhausted.  Inside a kernel
 $K_\ell(\mathbf p,\mathbf t)$, a summand of \eqref{eq:K} is chosen in the
 same way.  This selects a base move, an endpoint of the active head, or an
 interior letter of it together with the intermediate control $\mathbf u$ of
-the split, and each pending block carries the control at which it must be
-exposed.  By induction on the grade, a given stopped path of
-$K_\ell(\mathbf p,\mathbf t)$ is produced with probability
-$1/K_\ell(\mathbf p,\mathbf t)$ and a given complete path from
-$G_{\mathbf p}$ with probability $1/G_{\mathbf p}$.  At
-$\mathbf p=(n,0,\ldots,0)$ this is $1/|\Av_n(\beta_d)|$.
+the split, and each block of the stack carries the control at which it must be
+exposed.  By induction on the grade and the control mass, a given stopped path
+counted by $K_\ell(\mathbf p,\mathbf t)$ is produced with probability
+$1/K_\ell(\mathbf p,\mathbf t)$, and a given complete path from the state
+$(\mathbf p,\varnothing)$ with probability $1/G_{\mathbf p}$.  At
+$\mathbf p=(n,0,\ldots,0)$ this is $1/\lvert\Av_n(\beta_d)\rvert$.
 
 \begin{proposition}[Uniform random generation]\label{prop:sampling}
 Let $N\geq n\geq0$.  Once the first-coordinate quotient $R_{\ell,a}(q,s)$ of
@@ -2263,10 +2339,13 @@ produced with $O(n^4)$ arithmetic operations on the stored integers.
 The paragraph before the proposition shows that the distribution is uniform.  A permutation of length $n$ is
 produced by $n$ letter choices.  Each choice scans the summands of one
 instance of \eqref{eq:G} or \eqref{eq:K} in a fixed order and stops at the first summand whose running
-total exceeds a uniformly random integer $U$ with $0\leq U<T$, where $T$ is
+total exceeds a uniformly random integer $y$ with $0\leq y<Y$, where $Y$ is
 the stored value of the state.  Every summand is one stored entry or a
-product of two, by \cref{lem:d2-translation}.  Every state
-reached from $(n,0)$ has grade at most $n$.  At an empty-stack state the
+product of two, by \cref{lem:d2-translation}.  Every kernel row consulted
+has reduced grade at most $n$, and every empty-stack control has mass at
+most $n$.  The sampler keeps the value sets of the bands and of the
+intervals of the stack as sorted lists, so that it outputs the letter of
+each chosen transition and updates the sets in $O(n)$ operations.  At an empty-stack state the
 last-band terms range over the band position and the terminal control,
 $O(n^3)$ summands.  Inside a kernel the interior terms range over the split
 position and the intermediate control, again $O(n^3)$.  The other groups are
@@ -2278,18 +2357,21 @@ $O(n^4)$.
 Unlike the coefficients of \cref{tab:terms-150}, our sampler runs in
 floating point.  \Cref{prop:sampling} is the exact-arithmetic statement.
 \Cref{app:float} describes the implementation and proves that, for
-$n\leq300$, its output is within total variation distance
+$n\leq300$ and with ideal random bits, its output is within total variation
+distance
 $3.5\cdot10^{-5}$ of the uniform distribution on $\Av_n(12453)$
 (\cref{prop:float-sampling}).  Every sample is verified to avoid $12453$ by
 an independent test based on \cref{lem:trigger}, and the sampler was checked
-against exhaustive enumeration for small $n$.  Building
-the tables for $N=300$ took about four hours on eight cores.  One million
+against exhaustive enumeration for $7\leq n\leq10$.  Building
+the tables for $N=300$ took about four hours on an eight-core aarch64
+machine and produced a table of $5.4$~GB, which the sampler holds in
+memory.  One million
 samples of length $300$ then took about thirty-five minutes.
 
 \Cref{fig:heatmap} shows the resulting position--value heatmap, rendered
 with the script that draws the heatmaps of the PermPAL database
 \cite{PermPAL,AlbertEtAl2026}, beside one of the samples.  The first letter
-has mean $291.9$ over the sample.  The dark band from the top left to the bottom
+has mean $291.9$ over the one million samples.  The dark band from the top left to the bottom
 right shows that a typical avoider stays close to a decreasing curve.  The
 left-to-right minima lie below it, and their mean number is $77.5$.  The single
 sample shows the same features: a decreasing band of letters with the
@@ -2318,44 +2400,52 @@ minima.}
 
 \section{Formal verification}\label{sec:formal}
 
-The counting recurrences of this paper for $d\leq2$ have been verified in
-the Lean~4 proof assistant \cite{Lean4} with the Mathlib library
+The literal and kernel recurrences of this paper for $d\leq2$ have been
+verified in the Lean~4 proof assistant \cite{Lean4} with the Mathlib library
 \cite{Mathlib}.  The development is in the directory \path{formal/} of the
 supplement.  Its four main theorems state that, for every $n$,
 \begin{align*}
- W_n(\varnothing)&=|\Av_n(1342)|,
- &G_n&=|\Av_n(1342)|,\\
- H_{(n,0)}(\varnothing)&=|\Av_n(12453)|,
- &G_{(n,0)}&=|\Av_n(12453)|.
+ W_n(\varnothing)&=\lvert\Av_n(1342)\rvert,
+ &G_n&=\lvert\Av_n(1342)\rvert,\\
+ H_{(n,0)}(\varnothing)&=\lvert\Av_n(12453)\rvert,
+ &G_{(n,0)}&=\lvert\Av_n(12453)\rvert.
 \end{align*}
-That is, \cref{thm:literal} holds for $d\leq2$, and the recurrences
-evaluated by the algorithm of \cref{sec:algorithm} count $\Av_n(1342)$ and
-$\Av_n(12453)$.
+The development proves the counting statement of \cref{thm:literal} for
+$d\leq2$, that a legal prefix with state $(\mathbf p,L)$ has
+$H_{\mathbf p}(L)$ completions to a $\beta_d$-avoiding permutation, and the
+first and third theorems are its case of the empty prefix.  The second and
+fourth say that the recurrences evaluated by the algorithm of
+\cref{sec:algorithm} count $\Av_n(1342)$ and $\Av_n(12453)$.
 
 A reader who wants to verify this needs to do two things.  The first
-is to run the scripts \path{check.sh} and \path{comparator.sh}.  The first
-builds the development and checks that its proof libraries and the file
-\path{Solution.lean} contain no unproved statement and that every theorem of
-the libraries depends only on Lean's three standard axioms.  The second
-checks, with Lean's kernel and two independent kernels, that the proofs in
+is to run the scripts \path{check.sh} and \path{comparator.sh}.  The script
+\path{check.sh} builds the development and checks that its proof libraries
+and the file \path{Solution.lean} contain no unproved statement and that
+every theorem of the libraries depends only on Lean's three standard axioms.
+The script \path{comparator.sh} checks, with Lean's kernel and the two
+independent kernels nanoda and con-ron, that the proofs in
 \path{Solution.lean} prove exactly the statements of the file
 \path{Challenge.lean} and use no other axioms.  In \path{Challenge.lean} each
 of the four statements has the placeholder \texttt{sorry} in place of its
-proof.  The second task is to read \path{Challenge.lean}, about
+proof.  The second thing to do is to read \path{Challenge.lean}, about
 180 lines that import only Mathlib and contain the four statements together
 with every definition they use: pattern containment, the patterns $1342$ and
 $12453$, and the recurrences.  The proofs need not be read.
 
-The proofs follow the paper.  The state of a scanned prefix is defined from
-the prefix, the separation criterion of \cref{lem:separators} is the
+The proofs follow the paper.  The interval stack of a scanned prefix is
+computed from the prefix by the moves of \cref{prop:state-invariant}(b) and
+its control from the thresholds, the separation criterion of \cref{lem:separators} is the
 inductive invariant, \cref{prop:scan-states}(a) and (b) are derived from it,
 and the recurrences follow by induction on the number of unread values.  The
 kernels are defined by their recurrences, and the factorization
-\eqref{eq:factorization} is proved from the equations of $H$ by induction on
-the grade rather than by cutting paths.  Not formalized are the complexity
-statements of \cref{thm:main,cor:d2-complexity}, the translation quotients
-of \cref{sec:d2-support} and hence the programs of \cref{sec:computations},
-condition (iii) of \cref{cor:separators}, \cref{prop:exponential}, and the
+\eqref{eq:factorization} for a single head $U=(\ell)$ is proved from the
+equations of $H$ by induction on the grade rather than by cutting paths.
+Not formalized are, among others, the complexity statements of
+\cref{thm:main,cor:d2-complexity}; the description of the kernels as counts
+of stopped paths; the translation quotients of \cref{sec:d2-support} and the
+bound $\lvert\Av_N(12453)\rvert\leq\mathcal B_N$, and with them the programs
+of \cref{sec:computations}; \cref{prop:sampling} and \cref{app:float};
+condition (iii) of \cref{cor:separators}; \cref{prop:exponential}; and the
 family for $d\geq3$.  \Cref{app:lean} describes the development in more
 detail.
 
@@ -2369,7 +2459,8 @@ prefix-reversal equivalence of Backelin--West--Xin
 \cite{BackelinWestXin2007} gives
 $12453=12 \oplus 231 \sim 21 \oplus 231=21453$, whose orbit supplies eight more.  Therefore the
 algorithm, bounds, and coefficients apply to all sixteen members
-of the length-five Wilf class represented by $12453$.
+of the length-five Wilf class represented by $12453$, which has no other
+members~\cite[Table~1]{ClisbyConwayGuttmannInoue2022}.
 
 B\'ona determined the Stanley--Wilf limit of every member of the
 family \cite{Bona2005}:
@@ -2377,45 +2468,55 @@ family \cite{Bona2005}:
  \lim_{n\to\infty}\bigl(a_n^{(d)}\bigr)^{1/n}=(d-1+\sqrt{8})^2 .
 \end{equation*}
 For the remainder of this section, put
-$a_n=a_n^{(2)}=|\Av_n(12453)|$ and $\mu=(1+\sqrt{8})^2=9+4\sqrt{2}$.
+$a_n=a_n^{(2)}=\lvert\Av_n(12453)\rvert$ and $\mu=(1+\sqrt{8})^2=9+4\sqrt{2}$.
 The coefficients through $n=100$, read with the series analysis of Clisby,
-Conway, Guttmann and Inoue~\cite{ClisbyConwayGuttmannInoue2022}, suggest the
+Conway, Guttmann, and Inoue~\cite{ClisbyConwayGuttmannInoue2022}, suggest the
 following refinement.
 
 \begin{conjecture}\label{conj:12453-asymptotic}
-There are constants $C,\kappa>0$ and $h\in\mathbb R$ such that, as
+There are constants $C,\kappa>0$ and $g,h\in\mathbb R$ such that, as
 $n\to\infty$,
 \begin{equation}\label{eq:12453-asymptotic}
- a_n=C\mu^n e^{-\kappa n^{1/3}}n^{-17/4}
+ a_n=C\mu^n e^{-\kappa n^{1/3}}n^{g}
  \left(1+h n^{-1/3}+O(n^{-2/3})\right).
 \end{equation}
 \end{conjecture}
 
-The exponents $1/3$ and $-17/4$ were selected using only
-$a_0,\ldots,a_{100}$.  The parameters $\kappa,\log C,h$ were obtained by
-unweighted least squares on $70\leq n\leq100$ for the model
-$\log a_n=n\log\mu-\kappa n^{1/3}-\tfrac{17}{4}\log n+\log C+h n^{-1/3}$,
-and were fixed before $a_{101},\ldots,a_{150}$ were computed.  The frozen
-values are $(\kappa,C,h)=(1.34550865,\ 0.82710184,\ 1.36800770)$ to the
-digits shown.
+The stretched exponent $1/3$ agrees with the value that the 2022 analysis
+found most likely~\cite[Section~10.3]{ClisbyConwayGuttmannInoue2022}.
+Unweighted least squares on $70\leq n\leq100$ for the model
+\[
+ \log a_n=n\log\mu-\kappa n^{1/3}+g\log n+\log C+h n^{-1/3}
+\]
+gives $g\approx-4.251$, and we fixed the nearby value $g=-17/4$.  Both
+exponents were chosen using only $a_0,\ldots,a_{100}$.  With
+$g=-17/4$, the same fit gave the parameters $\kappa,\log C,h$, which were
+fixed before $a_{101},\ldots,a_{150}$ were computed.  The frozen values are
+$\kappa=1.34550865$, $C=0.82710184$ and $h=1.36800770$, to the digits
+shown.
 On those fifty excluded coefficients, the maximum absolute difference
 between the observed and predicted values of $\log a_n$ is below
-$4.3\cdot10^{-7}$.  The fit and this check are reproduced by a program in
-the supplement.  From shorter series, the 2022
-analysis estimated the stretched-exponential base $e^{-\kappa}$ (their $\mu_1$)
-between $0.26$ and $0.29$ and the power-law exponent as $-4.67\pm0.1$
-\cite{ClisbyConwayGuttmannInoue2022}.  The frozen fit gives
-$e^{-\kappa}\approx0.260$, at the lower end of that range.  Its exponent
-$-17/4$ differs from the 2022 estimate, but we do not regard the two as in
+$4.3\cdot10^{-7}$.  The two fits and this check are reproduced by a
+program in the supplement.
+
+From shorter series, the 2022 analysis concluded that the
+stretched-exponential base $e^{-\kappa}$ (their $\mu_1$) is $0.27\pm0.02$
+and that the power-law exponent is
+$-4.7\pm0.3$~\cite[Section~10.3]{ClisbyConwayGuttmannInoue2022}.  The frozen
+fit gives $e^{-\kappa}\approx0.260$, inside that range.  Its exponent
+$-17/4$ lies outside the 2022 range, but we do not regard the two as in
 conflict.  On $70\leq n\leq150$ the exponent $-17/4$ fits the model with
-one correction term far better than $-4.67$ does.  The preference shrinks by
-more than an order of magnitude once a second correction term $n^{-2/3}$ is
-admitted.  In fits with two correction terms, a change in the stretched
-exponent $1/3$ is largely compensated by changes in the power-law exponent
-and in $\kappa$.  The inferred power-law exponent is therefore sensitive to the correction terms
-included, and the available coefficients do not determine it reliably.  We record $-17/4$ as the simplest value consistent with the exact
-coefficients, not as a sharpening of the 2022 estimate.  This supports
-\cref{conj:12453-asymptotic} but proves neither it nor any D-finiteness claim.
+one correction term far better than their single-fit value $-4.67$ does.
+The preference shrinks by more than an order of magnitude once a second
+correction term $n^{-2/3}$ is admitted.  In fits with two correction terms,
+a change in the stretched exponent $1/3$ is largely compensated by changes
+in the power-law exponent and in $\kappa$.  The inferred power-law exponent
+is therefore sensitive to the correction terms included, and the available
+coefficients do not determine it reliably, which is why
+\cref{conj:12453-asymptotic} leaves $g$ unspecified.  We report
+$g\approx-17/4$ as the value fitted with the stretched exponent $1/3$ and
+one correction term, not as a sharpening of the 2022 estimate.  The holdout
+test supports \cref{conj:12453-asymptotic} but does not prove it.
 
 \section*{Data and code availability}
 
@@ -2428,8 +2529,12 @@ public repository
 \url{https://github.com/ulfarsson/public-12453}
 \end{center}
 \noindent
-which is the supplement referred to throughout the paper.  The code, data, and
-Lean development are released under the Apache License 2.0.  The repository's
+in its release v1.4.0, which is the supplement referred to throughout the
+paper.  The code, data, and Lean development are released under the Apache
+License 2.0.  The heatmap of \cref{fig:heatmap} was drawn from the count
+matrix in the repository by the heatmap script of the PermPAL database,
+written by Jay Pantone and Vince Vatter, which is not part of the
+repository.  The repository's
 \path{MANIFEST.sha256} records the SHA-256 digest of every file, and its README files
 give verification, reconstruction, and audit commands.
 
@@ -2449,7 +2554,7 @@ supplement checks every combinatorial statement of the paper that has finite con
 exhaustively for all permutations of length at most $8$, by comparing the
 paper's constructions and displayed formulas with brute-force computations
 from the definitions.  These checks are written with the Permuta library
-\cite{Permuta}, whose code predates the large language model assistants, and
+\cite{Permuta}, whose core code predates the large language model assistants, and
 they do not use the implementations described in \cref{sec:computations}.
 The author takes full responsibility for the paper.
 
@@ -2479,8 +2584,9 @@ values
  \qquad
  G'_{(p,q)}=2^{-2(p+q)}G_{(p,q)}.
 \]
-In the scaled values, every band term and every $D$ term of
-\eqref{eq:R-recurrence} is multiplied by $1/4$, the split term becomes
+In the scaled values, every band term and every $D_{\ell,a}$ with
+$\ell\geq2$ in \eqref{eq:R-recurrence} is multiplied by $1/4$, the split
+term becomes
 $4^{m-1}R'_{\ell_1,a_1}(q,m)R'_{\ell_2,a_2}(m,s)$, and $D_{1,a}(q,s)$ becomes
 $2^{-2(1+a+q)}\one_{a=0,\,q=s}$.  In \eqref{eq:G-reduced} the first two terms
 are multiplied by $1/4$ and the last becomes
@@ -2490,17 +2596,20 @@ of binary64, and none is infinite or subnormal.
 
 A term $4^{m-1}r_1r_2$ with scaled factors $r_1,r_2$ is formed as
 $(2^{m-1}r_1)(2^{m-1}r_2)$, or as $(4^{m-1}r_1)r_2$ when
-$4^{m-1}r_1\leq10^{300}$.  The factors are then at least $2^{-603}$, whereas
+$4^{m-1}r_1\leq10^{300}$.  The factors are then at least $2^{-603}$, while
 $r_1r_2$ can be as small as $2^{-1200}$ and would underflow.  The program computes the reduced
 entries in increasing reduced grade and then the values $G'_{(p,q)}$ in
 increasing $p+q$.  It forms each value by adding its summands to a running
 sum, one at a time, in a fixed order, starting from zero.  In
 \eqref{eq:G-reduced} the terms with fixed $h$ and $c$ are first added into
-an inner sum over $t$.  The compiler may fuse a multiplication with the
-addition that follows it.
+an inner sum over $t$.  The programs use IEEE binary64 arithmetic with
+rounding to nearest and are compiled without options, such as
+\texttt{-ffast-math}, that allow the compiler to reassociate or otherwise
+reorder floating-point operations.  The compiler may fuse a multiplication
+with the addition that follows it.
 
 The sampler follows \cref{prop:sampling}.  Its state is the control $(p,q)$
-together with the stack of pending blocks, each carrying its size and the
+together with the stack of blocks, each carrying its size and the
 control at which it must be exposed.  At an empty-stack state the candidates
 of a letter choice are the summands of \eqref{eq:G-reduced}, and the stored
 value of the state is $G'_{(p,q)}$.  At a state whose head has size $\ell$
@@ -2508,8 +2617,8 @@ and is to be exposed at control $(c,t)$, the stored value is
 $R'_{\ell,a}(q,t)$ with $a=p-c$, and the candidates are the summands of
 \eqref{eq:R-recurrence}.  For $\ell\geq2$ the term $D_{\ell,a}(q,t)$ is two
 candidates, one for each endpoint of the head.  Each candidate is given its
-value in the scaled recurrence, so that the candidates of a state sum to
-its stored value.
+value in the scaled recurrence, so that the exact values of the candidates
+of a state sum to the exact scaled value of the state.
 
 The candidates are scanned in a fixed order, in groups.  Each band term and
 each endpoint is a group of its own.  At an empty-stack state the terms of
@@ -2519,11 +2628,15 @@ group.  The sampler computes the sum of each group by adding its members in
 order, and the running sums $A_1\leq A_2\leq\cdots$ of the group sums by
 adding these in order.  It takes a multiple $x$ of $2^{-53}$ in $[0,1)$ from
 $53$ random bits and rounds $x\hat T$ to $y$, where $\hat T$ is the stored
-value of the state.  It then takes the first group $g$ with $A_g>y$ and,
+value of the state.  The random bits come from the generator xoshiro256**
+of Blackman and Vigna~\cite{BlackmanVigna2021}, seeded for each sample
+through splitmix64.  The sampler then takes the first group $g$ with
+$A_g>y$ and,
 inside that group, the first member whose running sum exceeds the rounded
 difference $y-A_{g-1}$, or the last member if there is none.  Candidates of
 value zero are skipped.  If no group has $A_g>y$, the sampler scans again
-with $y$ multiplied by $A/\hat T$, where $A$ is the total of the scan, and if
+with $y$ multiplied by $\hat A/\hat T$, where $\hat A$ is the total of the
+scan, and if
 that also falls short it takes the last candidate of positive value.
 
 \subsection{The error bound}\label{app:float-bound}
@@ -2541,7 +2654,8 @@ $|\delta_i|\leq u$ is $1+\theta$ with $|\theta|\leq\gamma_m$
 
 For $R_{\ell,a}(q,s)$ put $\lambda=\ell+a+q-s$, and for $G_{(p,q)}$ put
 $\lambda=p+q$.  This is the number of letters read by the stopped paths of
-$R_{\ell,a}(q,s)$ and by the complete paths from $G_{(p,q)}$, and
+$R_{\ell,a}(q,s)$ and by the complete paths from the state
+$((p,q),\varnothing)$, and
 $\lambda\leq N$.  Every band term and every $D$ term has one letter fewer.
 The two factors of a split term together have $\lambda-1$ letters, since the
 split reads one letter itself, and the same holds for the two factors of a
@@ -2553,7 +2667,7 @@ once for each endpoint.  For $G_{(p,q)}$ with $n=p+q$ there are $n$ of them
 if $q=0$, and $n+(n-2)(p+1)(q-1)/2\leq N+N^2(N-2)/8=\nu-1$ if $q\geq1$,
 since $(p+1)+(q-1)=n$, with equality at $(149,151)$.  For $R_{\ell,a}(q,s)$
 with $t=a+q$ there are at most $t+1$ if $\ell=1$, and at most
-$t+\ell+(\ell-2)t(t+1)/2\leq N+N(N-2)^2/8<\nu-1$ if $\ell\geq2$.  Indeed,
+$t+\ell+(\ell-2)t(t+1)/2\leq N+N(N-2)^2/8<\nu-1$ if $\ell\geq2$, since
 the band and $D$ terms number at most $t+2$, the split terms with fixed
 $\ell_1$ at most $(a+1)q+a(a+1)/2+1\leq t(t+1)/2+1$, while $t+\ell\leq N$
 and $(\ell-2)t\leq(N-2)^2/4$.  So no value has more than $\nu-1$ summands and no
@@ -2571,16 +2685,21 @@ computed.  A nonzero exact scaled value is a positive integer times
 $2^{-2w}$, where $w\leq N$ is the reduced grade or $p+q$, so it is at least $2^{-600}$, and so is every
 nonzero summand.  Since the summands are nonnegative and rounding is
 monotone, every running sum lies between its first nonzero summand and the
-stored value.  With the range of the stored values and the form of the
-products above, every nonzero number formed lies between $2^{-603}$ and
-$2^{997}$, so no underflow or overflow occurs.
+stored value.  By the induction hypothesis, a computed product of stored
+factors is the exact value of its summand times a number between $1/2$ and
+$2$, so it is at least $2^{-601}$.  The build for $N=300$
+checks the range of the stored values given in
+\cref{app:float-implementation}, and with it and the form of the products
+there, every nonzero number formed lies between $2^{-603}$ and $2^{997}$, so
+no underflow or overflow occurs.
 
 A summand that is one stored value times a power of two is formed without
 rounding.  A product of two stored values is formed with one rounding, or
 with none if it is fused with the next addition.  By the induction hypothesis
 and since the letters of the factors add up to at most $\lambda-1$, the
-product of the exact factors of a summand is its exact value times
-$1+\theta$ with $|\theta|\leq\gamma_{\nu(\lambda-1)}$.  The summand then
+exact product of the stored factors of a summand, with its power of two, is
+the exact value of the summand times $1+\theta$ with
+$|\theta|\leq\gamma_{\nu(\lambda-1)}$.  The summand then
 undergoes at most $\nu$ roundings: at most one in the product, at most
 one in each addition to the running sum of its group, and at most one in
 each addition of a group sum.  Therefore the computed value is
@@ -2590,11 +2709,11 @@ $(1+\theta)\sum_i z_i$ with $|\theta|\leq\gamma_{\nu\lambda}$.
 \end{proof}
 
 \begin{proposition}[Floating-point sampling]\label{prop:float-sampling}
-Let $n\leq300$ and $g=\gamma_{\nu N}$.  Assume that the random bits used
-by the sampler are independent and uniform.  Then the output of the
-floating-point sampler is within total variation distance
+Let $n\leq300$ and $\bar\gamma=\gamma_{\nu N}$.  Assume that the random
+bits used by the sampler are independent and uniform.  Then the output of
+the floating-point sampler is within total variation distance
 \[
- n\Bigl(\frac{g}{1-g}+7\nu u\Bigr)<3.5\cdot10^{-5}
+ n\Bigl(\frac{\bar\gamma}{1-\bar\gamma}+7\nu u\Bigr)<3.5\cdot10^{-5}
 \]
 of the uniform distribution on $\Av_n(12453)$.
 \end{proposition}
@@ -2609,12 +2728,13 @@ $\hat w_i=\mathrm{fl}(v_i)$ be the value the sampler computes, with
 $\hat w_i=v_i$ when there is one factor.
 
 \emph{The values.}  By \cref{lem:float-tables} applied to the factors,
-$\hat w_i=w_i(1+\theta_i)$ with $|\theta_i|\leq\gamma_{\nu(\lambda-1)+1}\leq g$,
-and $\hat T=W(1+\theta)$ with $|\theta|\leq g$.  Therefore
+$\hat w_i=w_i(1+\theta_i)$ with
+$|\theta_i|\leq\gamma_{\nu(\lambda-1)+1}\leq\bar\gamma$, and
+$\hat T=W(1+\theta)$ with $|\theta|\leq\bar\gamma$.  Therefore
 \begin{equation}\label{eq:float-values}
  \sum_{i=1}^k\Bigl|\frac{\hat w_i}{\hat T}-\frac{w_i}{W}\Bigr|
  =\sum_{i=1}^k\frac{w_i}{W}\Bigl|\frac{1+\theta_i}{1+\theta}-1\Bigr|
- \leq\frac{2g}{1-g}.
+ \leq\frac{2\bar\gamma}{1-\bar\gamma}.
 \end{equation}
 The stored value $\hat T$ and the total $\hat A$ of the scan are both
 computed sums of $v_1,\ldots,v_k$ in which each $v_i$ undergoes at most
@@ -2625,18 +2745,19 @@ $|\hat A-\hat T|\leq2.01\nu u\hat T$.
 
 \emph{The scan.}  For $y<\hat A$ the chosen candidate is a nondecreasing
 function of $y$, since rounding is monotone.  So candidate $i$ is chosen for
-$y$ in an interval $[\beta_{i-1},\beta_i)$, where
-$0=\beta_0\leq\cdots\leq\beta_k=\hat A$.  Consider a group with running sums
-$a_1\leq\cdots\leq a_r$ of its members, and let $A_{g-1}$ and $A_g$ be the
-running sums before and after it.  The group occupies
+$y$ in an interval $[\xi_{i-1},\xi_i)$, where
+$0=\xi_0\leq\cdots\leq\xi_k=\hat A$.  Consider a group with running sums
+$\alpha_1\leq\cdots\leq\alpha_r$ of its members, and let $A_{g-1}$ and $A_g$
+be the running sums before and after it.  The group occupies
 $[A_{g-1},A_g)$, and its member $j<r$ ends where
-$\mathrm{fl}(y-A_{g-1})$ reaches $a_j$, or at $A_g$ if that comes first.
+$\mathrm{fl}(y-A_{g-1})$ reaches $\alpha_j$, or at $A_g$ if that comes first.
 Since $|\mathrm{fl}(z)-z|\leq u|z|$, this breakpoint differs from
-$A_{g-1}+a_j$ by at most $1.01u\hat A$.  The difference $a_j-a_{j-1}$ differs from
-the value of member $j$ by at most $u\hat A$, and $A_g-A_{g-1}$ differs from
-$a_r$ by at most $u\hat A$.  Hence
+$A_{g-1}+\alpha_j$ by at most $1.01u\hat A$.  The difference
+$\alpha_j-\alpha_{j-1}$ differs from the value of member $j$ by at most
+$u\hat A$, and $A_g-A_{g-1}$ differs from $\alpha_r$ by at most $u\hat A$.
+Therefore
 \begin{equation}\label{eq:float-scan}
- |\beta_i-\beta_{i-1}-\hat w_i|\leq4.02u\hat A\qquad(1\leq i\leq k).
+ |\xi_i-\xi_{i-1}-\hat w_i|\leq4.02u\hat A\qquad(1\leq i\leq k).
 \end{equation}
 
 \emph{The draw.}  For $\tau\geq0$ let $F(\tau)$ be the probability that
@@ -2652,12 +2773,12 @@ $x\geq z$ lies between $1-z-u$ and $1-z$.  Together,
 
 \emph{One letter choice.}  Let $\hat p_i$ be the probability that the
 sampler chooses candidate $i$.  Without a rescan, candidate $i$ is chosen
-with probability $F(\beta_{i-1})-F(\beta_i)$.  By \eqref{eq:float-draw},
+with probability $F(\xi_{i-1})-F(\xi_i)$.  By \eqref{eq:float-draw},
 replacing $F$ by $f$ changes the sum over $i$ of these probabilities by at
-most $4.02ku$ in total.  The differences $f(\beta_{i-1})-f(\beta_i)$ equal
-$(\beta_i-\beta_{i-1})/\hat T$ except above $\hat T$, which changes the sum
+most $4.02ku$ in total.  The differences $f(\xi_{i-1})-f(\xi_i)$ equal
+$(\xi_i-\xi_{i-1})/\hat T$ except above $\hat T$, which changes the sum
 by at most $\max(\hat A-\hat T,0)/\hat T\leq2.01\nu u$.  By
-\eqref{eq:float-scan}, replacing $\beta_i-\beta_{i-1}$ by $\hat w_i$ changes
+\eqref{eq:float-scan}, replacing $\xi_i-\xi_{i-1}$ by $\hat w_i$ changes
 it by at most $4.03ku$.  A rescan happens with probability
 $F(\hat A)\leq f(\hat A)+2.01u\leq2.01\nu u+2.01u$.  Since $k<\nu$,
 \[
@@ -2666,7 +2787,7 @@ $F(\hat A)\leq f(\hat A)+2.01u\leq2.01\nu u+2.01u$.  Since $k<\nu$,
 \]
 With \eqref{eq:float-values}, the total variation distance between the
 choice of the sampler and the choice with probabilities $w_i/W$ is at most
-$g/(1-g)+7\nu u$.
+$\bar\gamma/(1-\bar\gamma)+7\nu u$.
 
 \emph{The sample.}  With probabilities $w_i/W$, the choices produce the
 uniform distribution on $\Av_n(12453)$, by \cref{prop:sampling}.  Run the
@@ -2674,13 +2795,14 @@ two processes together, and as long as they are in the same state, couple
 their next choices so that they differ with probability equal to the total
 variation distance between them.  A sample is produced by $n$ choices, so
 the two outputs differ with probability at most
-$n(g/(1-g)+7\nu u)$.  At $n=300$ this is $3.43\cdot10^{-5}$.
+$n(\bar\gamma/(1-\bar\gamma)+7\nu u)$.  At $n=300$ this is
+$3.43\cdot10^{-5}$.
 \end{proof}
 
 The bound of \cref{lem:float-tables} is far from the observed error: at
 $n=150$ it gives about $6\cdot10^{-8}$ for $G_{(n,0)}$, while the
-floating-point values $G_{(n,0)}$ agree with the coefficients of
-\cref{tab:terms-150} through $n=150$ to about $10^{-11}$ relative error.
+floating-point values $G_{(n,0)}$ agree with the exact coefficients
+through $n=150$ to within $3.2\cdot10^{-13}$ relative error.
 
 \section{The Lean development}\label{app:lean}
 
@@ -2692,7 +2814,8 @@ The development works with words over $\mathbb N$ and $0$-based values.  It
 defines pattern containment as the existence of an order-isomorphic
 subsequence, a finite set of $0$-based words in bijection with $\Av_n(\tau)$,
 the one-threshold recurrence $W$ of
-\eqref{eq:W}, the literal recurrence $H$ of \eqref{eq:H} for $d=2$, and the
+\eqref{eq:W} and \eqref{eq:W-boundary}, the literal recurrence $H$ of
+\eqref{eq:H} with $H_{\mathbf0}(\varnothing)=1$ for $d=2$, and the
 kernel recurrences \eqref{eq:scalar-K}--\eqref{eq:scalar-G} for $d=1$ and
 \eqref{eq:K}--\eqref{eq:G} for $d=2$.  In the two kernel systems every sum
 over intermediate or terminal controls is restricted to the controls of mass
@@ -2714,9 +2837,9 @@ source tree.  The library \path{PermPatterns/} holds the generic apparatus
 (words, containment and avoidance, standardization, the patterns $231$ and
 $\iota_d$, sums, symmetries, and the passage to Mathlib's permutations of
 $\{0,\ldots,n-1\}$), and nothing in it refers to the family $\beta_d$.  The
-library \path{Av12453/} holds the development specific to this paper.  Its
-module \path{Axioms.lean} checks that every declaration of the two
-libraries depends only on propositional extensionality, choice, and quotient
+library \path{Av12453/} holds the development specific to this paper.  The
+file \path{Av12453/Axioms.lean}, which neither library imports, checks that
+every declaration of the two libraries depends only on propositional extensionality, choice, and quotient
 soundness.  The file \path{formal/README.md} describes the modules, the
 checks run by \path{check.sh}, and the trusted base.  The
 Lean toolchain (version 4.35.0-rc2) and the Mathlib revision are pinned in
@@ -2737,14 +2860,16 @@ the number of unread values, the grade, and the control mass of the
 argument, and the development
 proves that every sufficient bound gives the same value.  So the reader need
 only compare
-the equations of the auxiliary functions with the displays \eqref{eq:W},
-\eqref{eq:H}, \eqref{eq:scalar-K}--\eqref{eq:scalar-G}, and
-\eqref{eq:K}--\eqref{eq:G}.  The Lean writes the terms with $a=0$ or $b=0$
-of the split sums of these displays as a separate endpoint term, \texttt{D}
-in the kernel recurrences, which is the same sum.  Each definition carries a
-docstring giving
-this dictionary, with the $0$-based conventions spelled out, and the
-displays are also restated as proved theorems
+the equations of the auxiliary functions with the displays \eqref{eq:W} and
+\eqref{eq:W-boundary}, \eqref{eq:H} with $H_{\mathbf0}(\varnothing)=1$,
+\eqref{eq:scalar-K}--\eqref{eq:scalar-G}, and \eqref{eq:K}--\eqref{eq:G}.
+\path{Challenge.lean} writes the terms with $a=0$ or $b=0$ of the split sums
+of these displays as one endpoint term, with a case distinction on whether
+the head has size one, which is the same sum.  The development's restated
+kernel equations call this term \texttt{D}, and those of \texttt{W} and
+\texttt{H} call it \texttt{Eend}.  The opening docstring of
+\path{Challenge.lean} gives this dictionary, with the $0$-based conventions
+spelled out, and the displays are also restated as proved theorems
 (\texttt{K\_succ\_eq}, \texttt{G\_eq}, and their analogues), which serve as
 reading aids but are not part of what must be trusted.
 
@@ -2758,8 +2883,9 @@ interval containing it, so \cref{lem:separators} and
 prefix.  \Cref{lem:trigger,lem:first-letter} are formalized, but the four
 main theorems do not use them.  Since the kernels are defined by their
 recurrences, \cref{prop:kernel-recurrence} is not needed.  The restriction of the
-control sums is proved lossless, and it is also what makes the grade a
-well-founded order for \eqref{eq:K} read as a definition.
+control sums is proved lossless, and it is also what makes recursion on
+the grade terminate for \eqref{eq:scalar-K} and \eqref{eq:K} read as
+definitions.
 
 The development has over eleven thousand lines in thirty modules.  The
 definitions were also
