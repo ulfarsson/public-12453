@@ -5,7 +5,7 @@ public import Av12453
 @[expose] public section
 
 /-!
-# Polynomial-time enumeration of `Av(1342)` and `Av(12453)`: the proofs
+# Counting recurrences for `Av(1342)` and `Av(12453)`: the proofs
 
 The four theorems of `Challenge.lean`, proved from the development in `PermPatterns/` and
 `Av12453/`.  The definitions of `Challenge.lean` are those of the development, except the

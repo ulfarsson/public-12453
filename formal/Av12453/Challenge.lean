@@ -5,7 +5,7 @@ public import Mathlib
 @[expose] public section
 
 /-!
-# Polynomial-time enumeration of `Av(1342)` and `Av(12453)`: the statement
+# Counting recurrences for `Av(1342)` and `Av(12453)`: the statement
 
 This file is the statement surface of the Lean development accompanying
 

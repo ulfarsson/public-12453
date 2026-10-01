@@ -2,14 +2,22 @@
 version: "v0.4"
 
 project:
-  name: "Polynomial-time enumeration of Av(1342) and Av(12453)"
+  name: "Counting recurrences for the permutation classes Av(1342) and Av(12453)"
   description: >-
-    The counting recurrences for the permutation classes Av(1342) and
-    Av(12453): the one-threshold recurrence and the scalar kernel algorithm
-    for 1342, and the literal two-threshold recurrence and the transfer-kernel
-    algorithm for 12453, each proved to compute the number of permutations of
-    length n avoiding the pattern, for every n.  These are the cases d = 1 and
-    d = 2 of the paper's algorithm for the family Av(12...d + 231).
+    For a permutation pattern τ, let Av_n(τ) be the set of permutations of
+    length n that avoid τ.  This formalization proves, for every n, that four
+    recurrences from the source paper compute |Av_n(1342)| and |Av_n(12453)|.
+    For 1342 they are the one-threshold recurrence W and the scalar kernel
+    recurrence G, and for 12453 the literal two-threshold recurrence H and the
+    transfer-kernel recurrence G.  These are the cases d = 1 and d = 2 of the
+    paper's counting recurrences for the classes Av(12...d ⊕ 231), the direct
+    sum of an increasing pattern and 231, whose kernel form gives
+    polynomial-time algorithms for every fixed d (the complexity bounds
+    themselves are not formalized).  The counting sequence of Av(1342) has been
+    known since Bóna (1997).  That of Av(12453) was previously known only up to
+    n = 38, from a program of Biers-Ariel that evaluates the recurrence H, and
+    the paper uses its kernel algorithm to compute it up to n = 150 (that
+    computation is not formalized).
   authors:
     - "Henning Arnór Skeggi Úlfarsson"
   license: "Apache-2.0"
@@ -30,6 +38,37 @@ sources:
     relationship: "formalizes"
     license: "CC BY 4.0"
     author_endorsement: "participated"
+  - title: "Exact enumeration of 1342-avoiding permutations: a close link with labeled trees and planar maps"
+    authors:
+      - "Miklós Bóna"
+    id: "doi:10.1006/jcta.1997.2800"
+    type: "paper"
+    location: "https://doi.org/10.1006/jcta.1997.2800"
+    relationship: "background"
+    author_endorsement: "not-contacted"
+    note: >-
+      The counting sequence of Av(1342), with its algebraic generating
+      function; the formalized recurrences for 1342 are a different route to
+      the same numbers.
+  - title: "Julia program to compute terms of OEIS A116485"
+    authors:
+      - "Yonah Biers-Ariel"
+    type: "other"
+    location: "https://oeis.org/A116485/a116485_1.txt"
+    relationship: "other"
+    author_endorsement: "not-contacted"
+    note: >-
+      The program that gave the terms of A116485 up to n = 38.  Its function
+      Avoid12453_helper(i,j,L) evaluates the literal recurrence H at
+      control (i-1, j-i-1) and stack L (the dictionary is in Section 4 of the
+      paper), so count_12453_literal proves that the recurrence this program
+      evaluates counts Av_n(12453).
+  - title: "A116485: Number of permutations in S_n that avoid the pattern 12453 (or equivalently, 31245)"
+    id: "OEIS:A116485"
+    type: "other"
+    location: "https://oeis.org/A116485"
+    relationship: "background"
+    note: "The On-Line Encyclopedia of Integer Sequences entry for the counting sequence of Av(12453)."
 
 related_formalizations: []
 
@@ -44,9 +83,12 @@ status:
     as definitions, with the endpoint terms written separately and the sums
     over controls restricted to controls of mass at most that of the source
     control; the paper's support lemmas show that this loses nothing.  Not
-    formalized: the complexity bounds of Theorem 1.1 and Corollary 7.4, the
-    translation quotients of Section 7, the programs of Section 8, the general
-    family d >= 3, and Corollary 4.4(iii) and Proposition 4.5.
+    formalized, among others: the complexity bounds of Theorem 1.1 and
+    Corollary 7.4, the description of the kernels as counts of stopped paths,
+    Proposition 8.1 and Appendix A (uniform sampling), Corollary 4.4(iii),
+    Proposition 4.5, the general family d >= 3, and the translation quotients
+    of Section 7 and the bound |Av_N(12453)| <= B_N, on which the programs of
+    Section 8 that compute the terms up to n = 150 rely.
   sorry_count: 0
   sorry_in_definitions: 0
   axioms: []
@@ -90,13 +132,13 @@ fidelity:
 
 review:
   status: "self-assessed"
-  reviewers:
-    - "none"
   notes: >-
-    The statement file was compared by hand with the paper's displays
+    The author compared the statement file by hand with the paper's displays
     (Appendix B of the paper explains the correspondence), and the
     recurrences evaluated by kernel computation reproduce the paper's worked
-    examples and the first terms of both counting sequences.
+    examples and the first terms of both counting sequences.  AI agents in
+    separate sessions also audited the development against the paper; these
+    audits are not independent human review.
 
 alignment:
   namespace: "Av12453"
