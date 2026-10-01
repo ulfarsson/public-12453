@@ -58,11 +58,12 @@ All commands below are run from the repository root.
 
 ## Reproducing the results
 
-### Exhaustive checks of the paper's statements for n <= 8
+### Brute-force checks of the paper's statements
 
-Every numbered statement of the paper that has finite content is compared
-with a brute-force computation from the definitions, over all permutations
-of length at most 8 (about six million comparisons, one minute under PyPy):
+Finite instances of the paper's statements are compared with brute-force
+computations from the definitions, many of them over all permutations of
+length at most 8 (about six million comparisons, one minute under PyPy).
+Each check prints the range of parameters it covers:
 
 ```sh
 python3 -m venv venv && venv/bin/pip install permuta      # or a PyPy venv: pypy3 -m venv venv

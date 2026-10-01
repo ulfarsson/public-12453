@@ -24,18 +24,22 @@ d = 1, 2, and Proposition 2.8 checked along the running example for d = 1, 2
 and exhaustively for small n); 2.2 (Lemma 2.7 at d = 1 with the stack rebuilt
 from the prefix, Example 2.9 reproduced as a table); 2.3 (Proposition 2.10's
 recurrence W implemented and compared with permuta, Examples 2.11 and
-2.12).  The rest of the paper is not walked through; its statements with
-finite content are covered by the exhaustive checks below.
+2.12).  The rest of the paper is not walked through.  Finite instances of
+its statements are checked by the script described below.
 
 ## Exhaustive checks up to length 8
 
-`av12453_exhaustive_checks.py` checks every numbered statement of the paper
-that has finite content for all permutations of length at most 8 (option
-`--nmax`), together with the unnumbered claims of that kind (the path counts
-for every state after `eq:rho` and in Proposition 2.10, the dictionary to
-Biers-Ariel's program after Theorem 4.3, and the translation for every `d`
-after Lemma 7.2), by comparing the paper's constructions and displayed formulas
-with brute-force computations from the definitions.  The checks are grouped
+`av12453_exhaustive_checks.py` compares finite instances of the paper's
+numbered statements, and of the unnumbered claims after `eq:rho`, Theorem 4.3
+and Lemma 7.2 (the path counts for every state, the dictionary to
+Biers-Ariel's program, the translation for every `d`), with brute-force
+computations from the definitions, including exhaustive checks on the
+permutations of length at most 8 (option `--nmax`).  Each check prints the
+range of parameters it covers and what it leaves out: the general family is
+checked for `d <= 3` (for `d <= 4` in the coefficients), the factorization
+`K_UV = K_U K_V` through single heads and products applied to the empty-stack
+values, and Proposition 8.1 on the literal recurrence rather than on the
+stored tables.  The checks are grouped
 by section in `checks/sec2.py` (Section 2), `checks/sec345.py` (Sections 3
 to 5) and `checks/sec678.py` (Sections 6 to 8 and 10); `checks/common.py`
 holds the shared brute-force helpers (permuta for permutations and pattern

@@ -72,8 +72,9 @@ automation:
     from the paper's definitions and proofs, as stated in the paper's AI
     statement.  The author specified the mathematics and is responsible for
     the statement file Challenge.lean.  An independent Python walkthrough
-    checks every combinatorial statement of the paper with finite content for
-    all permutations of length at most 8 against brute force.
+    compares finite instances of the paper's combinatorial statements with
+    brute-force computations, including exhaustive checks on permutations of
+    length at most 8.
 
 fidelity:
   divergences: >-

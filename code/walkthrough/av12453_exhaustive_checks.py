@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Exhaustive checks of the paper's statements for permutations of length <= 8.
+"""Brute-force checks of finite instances of the paper's statements.
 
-Every numbered statement of the paper that has finite content is checked by
-comparing the paper's construction or displayed formula with a brute-force
-computation from the definitions, using permuta for the permutations and
-pattern containment.  The checks are organised by section in checks/sec2.py
+Finite instances of the paper's statements are checked by comparing the
+paper's construction or displayed formula with a brute-force computation
+from the definitions, using permuta for the permutations and pattern
+containment.  Each check prints the range of parameters it covers.  The checks are organised by section in checks/sec2.py
 (Section 2), checks/sec345.py (Sections 3-5) and checks/sec678.py (Sections
 6-8 and 10); checks/common.py holds the shared brute-force helpers.  Nothing
 here uses the fast implementations in code/.
