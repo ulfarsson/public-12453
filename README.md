@@ -48,7 +48,7 @@ development that machine-checks the counting recurrences for `d <= 2`.
 - Python 3.11 or later.  PyPy is recommended for the pure-Python programs
   (the walkthrough checks take about one minute under PyPy).
 - `permuta` 2.3.1 (`pip install permuta`) for the walkthrough and its checks.
-- Lean 4.33.1 through `elan`, with the Mathlib revision pinned in
+- Lean 4.35.0-rc2 through `elan`, with the Mathlib revision pinned in
   `formal/Av12453/lake-manifest.json`, for the Lean development.
 
 All commands below are run from the repository root.
@@ -141,12 +141,24 @@ heatmap of length 300 shown in the paper (`examples/ex_n300_1M*`).
 
 ```sh
 export PATH="$HOME/.elan/bin:$PATH"
+(cd formal/Av12453 && lake exe cache get)
 sh formal/check.sh
+sh formal/comparator.sh
 ```
 
-This builds the two libraries, `PermPatterns` (the reusable pattern core,
+The statement surface is `formal/Av12453/Challenge.lean`: about 180 lines that import
+only Mathlib and contain the four headline theorems (`Av12453.count_1342_literal`,
+`count_1342_kernel`, `count_12453_literal`, `count_12453_kernel`) together with every
+definition they use.  It is the only file a reader needs to check.  `Solution.lean`
+proves the four theorems from the development, and `formal/comparator.sh` runs `lake
+comparator`, which checks that each proof proves exactly the statement of
+`Challenge.lean` and is accepted by Lean's kernel and by the independent kernels nanoda
+and con-ron; it ends with `Your solution is okay!`.  The project follows the format of the
+Palomar registry (`comparator.json`, `formalization.yaml`, Lean's module system).
+
+`check.sh` builds the two libraries, `PermPatterns` (the reusable pattern core,
 ten modules) and `Av12453` (the paper-specific development, twenty
-modules), in about nine minutes cold, runs the axiom sweep over every
+modules), runs the axiom sweep over every
 declared constant of both, checks that the sweep covered every module, and
 rejects any `sorry`, `native_decide` or non-standard axiom; it ends with
 `CERTIFICATE CHECK PASSED`.  The four

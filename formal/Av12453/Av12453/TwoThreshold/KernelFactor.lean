@@ -3,8 +3,12 @@ Copyright (c) 2026 Henning Ulfarsson. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Henning Ulfarsson
 -/
-import Av12453.TwoThreshold.Kernel
-import Av12453.TwoThreshold.KernelSupport
+module
+
+public import Av12453.TwoThreshold.Kernel
+public import Av12453.TwoThreshold.KernelSupport
+
+@[expose] public section
 
 /-!
 # The protected-tail factorization for `Av(12453)` (`d = 2`)
@@ -22,10 +26,10 @@ with `𝐭` running over the index set `S 𝐩 = {𝐭 : ‖𝐭‖₁ ≤ ‖�
 support of the kernel row `K_ℓ(𝐩, ·)` by \cref{lem:support}
 (`KernelSupport.K_eq_zero_of_mass_lt`).
 
-The abstract protected-tail principle (`thm:protected-tail-principle`) is *not* formalized;
-as at `d = 1` (`Av12453/OneThreshold/KernelFactor.lean`) the factorization is proved
-directly from the defining equations of `H` and `K`, by the first-move partition that
-proves \cref{prop:kernel-recurrence}.
+The path-cutting proof of \cref{thm:protected-tail-principle} is *not* formalized; as
+at `d = 1` (`Av12453/OneThreshold/KernelFactor.lean`) the factorization is proved
+directly from the defining equations of `H` and `K`, by induction on the grade along the
+first-move partition that proves \cref{prop:kernel-recurrence}.
 
 ## The proof
 

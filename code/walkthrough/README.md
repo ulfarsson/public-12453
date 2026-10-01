@@ -17,14 +17,14 @@ internally, and the conversion happens only in those helpers.
 Sections covered so far, in the paper's order and numbering: Section 1
 (containment, occurrences, the family beta_d, the first terms); Section 2's
 preamble (standardization, restriction, d-triggers, Lemma 2.1 with the
-231-obligations, residual obligations); 2.1 (Lemma 2.2 and Av(231)(I), direct
-sums and display (3), Example 2.3, Definition 2.4 implemented for every d as
-`legal_move`/`scan`, Example 2.7 with `is_scan_state` and `is_faithful`, Lemma 2.8 and Example 2.9,
-Proposition 2.10 checked along
-the running example for d = 1, 2 and exhaustively for small n); 2.2 (Lemma 2.11
-checked, Example 2.12 reproduced as a table); 2.3 (Proposition 2.13's
-recurrence W implemented and compared with permuta, Examples 2.14 and
-2.15).  Next:
+231-obligations); 2.1 (Lemma 2.2 and Av(231)(I), direct sums and display (3),
+Example 2.3, Definition 2.4 implemented for every d as `legal_move`/`scan`,
+Lemma 2.5, Example 2.6, Lemma 2.7 checked along the running example for
+d = 1, 2, and Proposition 2.8 checked along the running example for d = 1, 2
+and exhaustively for small n); 2.2 (Lemma 2.7 at d = 1 with the stack rebuilt
+from the prefix, Example 2.9 reproduced as a table); 2.3 (Proposition 2.10's
+recurrence W implemented and compared with permuta, Examples 2.11 and
+2.12).  Next:
 2.4 to 2.6 (the exponential state space, the protected-tail factorization,
 the scalar kernels) and Sections 3 to 5.
 

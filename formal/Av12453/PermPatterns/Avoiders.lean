@@ -3,8 +3,12 @@ Copyright (c) 2026 Henning Ulfarsson. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Henning Ulfarsson
 -/
-import Mathlib.Data.List.Permutation
-import PermPatterns.Decidable
+module
+
+public import Mathlib.Data.List.Permutation
+public import PermPatterns.Decidable
+
+@[expose] public section
 
 /-!
 # Permutations and pattern avoiders

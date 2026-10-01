@@ -3,8 +3,12 @@ Copyright (c) 2026 Henning Ulfarsson. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Henning Ulfarsson
 -/
-import Mathlib.Data.Fintype.Perm
-import PermPatterns.Avoiders
+module
+
+public import Mathlib.Data.Fintype.Perm
+public import PermPatterns.Avoiders
+
+@[expose] public section
 
 /-!
 # The bridge to Mathlib's `Equiv.Perm (Fin n)`

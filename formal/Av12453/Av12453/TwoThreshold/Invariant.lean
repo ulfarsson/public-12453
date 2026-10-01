@@ -3,7 +3,11 @@ Copyright (c) 2026 Henning Ulfarsson. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Henning Ulfarsson
 -/
-import Av12453.TwoThreshold.Defs
+module
+
+public import Av12453.TwoThreshold.Defs
+
+@[expose] public section
 
 /-!
 # (A) The separation invariant of the two-threshold scan
@@ -28,7 +32,7 @@ beginning "For (i) implies (ii)"), in the three cases of the two-threshold scan:
   `E ∪ I₁`, or `E`.  Every other pair lies above the old `b₂`, keeps its interval (`E` is
   disjoint from it) and keeps the letters between its members.
 * **Active-interval move** (`x > b₂`, `x ∈ I₁`).  The stack is nonempty, so `b₂` is a
-  `2`-trigger by \cref{lem:least-trigger-frontier} (`Layout.isTrigger_b2`), and `x` is read
+  `2`-trigger by \eqref{eq:bd-q} (`Layout.isTrigger_b2`), and `x` is read
   after it.  The only new pair is the pair `u < x < v` of unread neighbours of `x`; then `u`
   lies in the lower part of the split head and `v` in the upper part or in a deferred
   interval, so the two are separated, and `x` witnesses (ii) with the trigger `b₂ < u`.  All

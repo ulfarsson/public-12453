@@ -1,0 +1,13 @@
+{
+  "challenge_module": "Challenge",
+  "solution_module": "Solution",
+  "theorem_names": [
+    "Av12453.count_1342_literal",
+    "Av12453.count_1342_kernel",
+    "Av12453.count_12453_literal",
+    "Av12453.count_12453_kernel"
+  ],
+  "definition_names": [],
+  "permitted_axioms": ["propext", "Quot.sound", "Classical.choice"],
+  "enable_nanoda": true
+}

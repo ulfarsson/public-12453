@@ -3,7 +3,11 @@ Copyright (c) 2026 Henning Ulfarsson. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Henning Ulfarsson
 -/
-import Av12453.Basic
+module
+
+public import Av12453.Basic
+
+@[expose] public section
 
 /-!
 # The one-threshold scan and the literal recurrence for `Av(1342)`
@@ -21,21 +25,20 @@ A *prefix* is a list `σ : List ℕ` of letters read so far.  `unread n σ` is t
 not yet read, `m n σ` the least letter read (the paper's threshold `m`, with the virtual
 value `n` for the empty prefix), and `p n σ` the number of unread values below `m` (the
 paper's control `p`).  `step` performs one legal move of \cref{def:scan-state} on the
-interval stack -- a new minimum is a *merger*, which adjoins the values between it and the
-old threshold to the active head (\cref{lem:merger}), a value of the active head is a
+interval stack -- a new minimum is a *merger*, which adds the values between it and the
+old threshold to the active head (\cref{def:scan-state}(a)), a value of the active head is a
 *split* (\cref{lem:first-letter}), and a value of a deferred interval is illegal
 (\cref{lem:legal-moves}(b)) -- and `stackOf`/`stack` iterate it along the prefix.
 `layout_of_legal` below is the scan-state property of \cref{def:scan-state} (the paper's
-\cref{lem:legal-moves}(a)).  The paper's faithfulness (\cref{def:faithful}) is not
-formalized as such: this development uses the separation criterion of
-\cref{lem:1342-separators} as its invariant instead, and derives the two consequences
-that the counting argument needs.
+\cref{lem:legal-moves}(a)).  As in the paper, the invariant is the separation criterion
+of \cref{lem:separators}, from which the two consequences that the counting argument
+needs, \cref{prop:scan-states}(a) and (b), are derived.
 `Legal n σ` is the paper's *legal word* and `stack n σ` its stack `S(σ)`; `L n σ` lists the
 interval sizes.
 
 ## The recurrence
 
-`W p L` is \eqref{eq:W}, \eqref{eq:W-endpoint}, \eqref{eq:W-boundary}, defined by recursion
+`W p L` is \eqref{eq:W} and \eqref{eq:W-boundary}, defined by recursion
 on the measure `p + L.sum` (\eqref{eq:rho-scalar}, `rho_eq`) and characterized by the three
 equations `W_eq_nil`, `W_eq_cons` and `W_endpoint`.
 
@@ -44,7 +47,7 @@ equations `W_eq_nil`, `W_eq_cons` and `W_endpoint`.
 * `IsWord`, `unread`, `m`, `below`, `p` : the scanned prefix and its control.
 * `step`, `stackAux`, `stackOf`, `Legal`, `stack`, `L` : the interval stack of a prefix.
 * `Layout` : the ordered-layout invariant \eqref{eq:ordered-layout} for `d = 1`.
-* `Adjacent`, `Sep`, `DiffIntervals` : the vocabulary of \cref{lem:1342-separators}.
+* `Adjacent`, `Sep`, `DiffIntervals` : the vocabulary of \cref{lem:separators}.
 * `W`, `Eend`, `nz` : the one-threshold recurrence.
 * `A` : the number of `1342`-avoiders with a given prefix (the permutations of
   `{0, …, n-1}` and the `Av(B)`-members among them are `PermPatterns.perms` and
@@ -200,7 +203,7 @@ def step (n : ℕ) (σ : List ℕ) (st : List (Finset ℕ)) (x : ℕ) : Option (
       | [] => none
   else none
 
-/-- The values adjoined to the active head by the new minimum `x` (the `E` of the merger
+/-- The values added to the active head by the new minimum `x` (the `E` of the merger
 lemma). -/
 def mergeSet (n : ℕ) (σ : List ℕ) (x : ℕ) : Finset ℕ :=
   (unread n σ).filter (fun y => x < y ∧ y < m n σ)
@@ -352,7 +355,7 @@ theorem Legal.mem_unread (h : Legal n (σ ++ [x])) : x ∈ unread n σ :=
 
 /-! ### The one-threshold recurrence `W`
 
-The recurrence is the paper's \eqref{eq:W}, \eqref{eq:W-endpoint} and \eqref{eq:W-boundary}.
+The recurrence is the paper's \eqref{eq:W} and \eqref{eq:W-boundary}.
 It is defined here by recursion on the fuel `k`, with `W p L` evaluating the body with
 `k = p + L.sum + 1`; `Waux_congr` shows that any sufficient amount of fuel gives the same
 value, and `W_eq_nil`, `W_eq_cons` and `W_endpoint` are the three defining equations.  On a
@@ -360,7 +363,7 @@ list with a zero entry -- a state that never occurs along the scan, since the in
 the stack are nonempty -- `W` is `0`. -/
 
 /-- Fuel-driven evaluation of the one-threshold recurrence. -/
-private def Waux : ℕ → ℕ → List ℕ → ℕ
+def Waux : ℕ → ℕ → List ℕ → ℕ
   | 0, _, _ => 0
   | k + 1, q, [] => (if q = 0 then 1 else 0) + ∑ h ∈ Finset.range q, Waux k h (nz [q - 1 - h])
   | _ + 1, _, 0 :: _ => 0
@@ -427,11 +430,11 @@ private theorem W_eq_Waux {q : ℕ} {l : List ℕ} {k : ℕ} (hk : q + l.sum < k
     W q l = Waux k q l :=
   Waux_congr _ _ _ _ (by omega) hk
 
-/-- The paper's `E_ℓ(p, L')` of \eqref{eq:W-endpoint}. -/
+/-- The paper's `E_ℓ(p, L')` of \eqref{eq:W} (its terms `a = 0` and `b = 0`). -/
 def Eend (ℓ q : ℕ) (L' : List ℕ) : ℕ :=
   if ℓ = 1 then W q L' else 2 * W q ((ℓ - 1) :: L')
 
-/-- **\eqref{eq:W-endpoint}**: the endpoint term. -/
+/-- **The endpoint term** of \eqref{eq:W}. -/
 theorem W_endpoint (ℓ q : ℕ) (L' : List ℕ) :
     Eend ℓ q L' = if ℓ = 1 then W q L' else 2 * W q ((ℓ - 1) :: L') := rfl
 
@@ -673,7 +676,7 @@ def Adjacent (n : ℕ) (σ : List ℕ) (u v : ℕ) : Prop :=
 
 set_option linter.unusedVariables false in
 /--
-The separation predicate of \cref{lem:1342-separators} and \cref{cor:separators}(ii): some
+The separation predicate of \cref{lem:separators} and \cref{cor:separators}(ii): some
 letter `z` with `u < z < v` was read after a letter `c < u`.  For `d = 1` every read letter
 is a trigger, which is why `c` ranges over all read letters.
 -/

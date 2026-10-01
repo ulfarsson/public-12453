@@ -112,10 +112,11 @@ algorithm, Wilfian formula}
 \section{Introduction}
 
 A permutation $\pi=\pi_1\cdots\pi_n$ of
-$[n]=\{1,\ldots,n\}$ \emph{contains} a pattern
-$\tau$ in the symmetric group $S_k$ if there are indices
+$[n]=\{1,\ldots,n\}$ \emph{contains} another permutation
+$\tau$ of $[k]$ if there are indices
 $1\leq i_1<\cdots<i_k\leq n$ for which
-$\pi_{i_1},\ldots,\pi_{i_k}$ has the same relative order as $\tau$.
+$\pi_{i_1},\ldots,\pi_{i_k}$ has the same relative order as $\tau$. In this
+case we say that $\tau$ is a \emph{pattern} in $\pi$.
 Otherwise $\pi$ \emph{avoids} $\tau$.  For example, the entries
 $2,5,7,9,6$ in $251796834$ have relative ranks
 $1,2,4,5,3$, and therefore form an occurrence of $12453$.  We write
@@ -290,15 +291,16 @@ We first describe the restrictions that a scanned prefix imposes on its
 completions and show that they admit an interval-stack representation for
 every $d\geq1$.  We then develop the counting algorithm completely for
 $d=1$, which isolates the protected-tail construction before the additional
-threshold coordinates are introduced.  The lemmas on triggers and stacks
-(\cref{lem:trigger,lem:first-letter,lem:legal-moves,lem:merger,prop:scan-states})
-are used unchanged for the general family in \cref{sec:literal}, and
-\cref{thm:protected-tail-principle} is stated for recurrences on a control
-set and a stack, so that it applies verbatim in \cref{sec:kernels}.
+threshold coordinates are introduced.  The scan states and their legal
+moves (\cref{def:scan-state,lem:legal-moves,lem:separators,prop:scan-states})
+are defined and studied for every $d$ and used unchanged in
+\cref{sec:literal}, and the proof of \cref{thm:protected-tail-principle}
+applies verbatim in \cref{sec:kernels}.
 
-For a word $w$ with distinct entries, its \emph{standardization}
-$\st(w)$ is obtained by replacing the smallest entry by $1$, the next
-smallest by $2$, and so on.  If $X$ is a set of values, $w|_X$ denotes the
+Containment and avoidance are defined for words with distinct entries in
+the same way, by relative order.  The \emph{standardization} of such a word is
+obtained by replacing the smallest entry by $1$, the next smallest by $2$,
+and so on.  If $X$ is a set of values, $w|_X$ denotes the
 subword formed by retaining only the entries belonging to $X$.  An
 \emph{increasing $d$-subsequence} of a permutation $\pi$, or more generally of a
 word $\pi$ with distinct entries, is a choice of positions
@@ -312,7 +314,7 @@ every increasing $d$-subsequence ending at $c=\pi_j$, the word
 \[
   \pi_{j+1}\cdots\pi_n\big|_{\{x:x>\pi_j\}}
 \]
-avoids $231$ after standardization.
+avoids $231$.
 \end{lemma}
 
 \begin{proof}
@@ -334,14 +336,10 @@ requires that
 \(
  \pi_{j+1}\cdots\pi_n|_{\{x:x>c\}}
 \)
-avoid $231$ after standardization.  Let $\sigma=\sigma_1\cdots\sigma_k$ be
+avoid $231$.  Let $\sigma=\sigma_1\cdots\sigma_k$ be
 the scanned prefix.  The letters of $[n]$ not in $\sigma$ are \emph{unread},
 and a \emph{completion} of $\sigma$ is a word $w$ using each unread letter
-once.  For a trigger $c=\sigma_j$ of $\sigma$, its \emph{residual obligation}
-is the restriction of this requirement to completions of $\sigma$, with the
-already scanned letters of the projection fixed: $w$ satisfies it when
-$(\sigma_{j+1}\cdots\sigma_k w)|_{\{x:x>c\}}$ avoids $231$ after
-standardization.
+once.
 
 \subsection{The Catalan interval stack}\label{sec:stack}
 
@@ -384,8 +382,8 @@ in the lower interval while that interval is nonempty, and the lemma,
 applied to the subword on that interval, splits it in turn.  The letter itself then
 plays no further role, since both conditions of the lemma concern only the
 letters after it.  Repeated application
-of \cref{lem:first-letter} thus represents the residual obligation of $c$
-by an ordered interval stack
+of \cref{lem:first-letter} thus represents what the obligation of $c$
+requires of the unread letters by an ordered interval stack
 \[
   I_1<I_2<\cdots<I_s,
 \]
@@ -395,13 +393,7 @@ which we also write $I_1\mid I_2\mid\cdots\mid I_s$.  That is, the unread letter
   \oplus\Av(231)(I_s).
 \end{equation}
 The read letters of the projection do not appear in \eqref{eq:stack-form},
-and none of them is needed again.  Note that an occurrence of $231$
-involving a read letter $x$ and an unread letter must begin with $x$: if a
-letter $a<x$ read earlier were its first entry, then every value of the
-projection below $a$ would already have been read, because the lower
-interval of $a$ precedes its upper one, which contains $x$.  Beginning with
-$x$, the occurrence needs an upper letter followed by a lower one, which the
-split at $x$ excludes.  For example, relabel the values of a projection as
+and none of them is needed again.  For example, relabel the values of a projection as
 $1,\ldots,6$ and suppose that its first two letters are $4$ and $2$.
 Reading $4$ leaves the stack $\{1,2,3\}\mid\{5,6\}$, and reading $2$ then
 leaves $\{1\}\mid\{3\}\mid\{5,6\}$.  The completion $1365$ is allowed,
@@ -427,12 +419,8 @@ and a read letter lying in that gap a \emph{separator}.  A separation may
 have several separators.  An interior choice creates a new separation, at
 the letter read, while an endpoint choice leaves at least one side empty
 and creates none, although the letter read may lie in an existing
-separation.  Inductively, as long as no trigger smaller than $c$ has been
-read (a trigger larger than $c$ is itself a letter of the projection and
-only splits it further), two unread letters $u<v$ of the projection lie in
-different intervals if and only if some letter $y$ with $u<y<v$ has been
-read from the projection.  \Cref{lem:1342-separators,cor:separators} below determine the separations
-of the stack once the obligations of several triggers have been combined.
+separation.  \Cref{lem:separators} below determines the separations of the
+stack once the obligations of several triggers have been combined.
 
 \begin{example}[Reading one projection]\label{ex:one-projection}
 The permutation
@@ -462,35 +450,31 @@ between $\{12,13\}$ and $\{15\}$, and $10$ and $11$ separate nothing.
 
 Several triggers impose overlapping obligations.  We now define the object
 that records all of them: a read prefix together with a stack, updated by
-three kinds of move.  \Cref{lem:merger} and
-\cref{prop:scan-states} then show that the stack of a legal prefix
-represents exactly the conjunction of the residual obligations of its
-triggers, and that the legal prefixes are exactly the prefixes of
-$\beta_d$-avoiding permutations.
+three kinds of move.  \Cref{prop:scan-states} then shows that the legal
+prefixes are exactly the prefixes of $\beta_d$-avoiding permutations.
 
 \begin{definition}[Scan states and legal moves]\label{def:scan-state}
 Fix $d\geq1$ and $n$.  A \emph{scan state} is a pair $(\sigma,S)$.  Here
 $\sigma$ is a word with distinct letters from $[n]$, called the \emph{read
 prefix}, and the letters of $[n]$ not in $\sigma$ are \emph{unread}.  We
-write $q$ for the least $d$-trigger of $\sigma$ when $\sigma$ has one.  The
+write $q$ for the least $d$-trigger of $\sigma$, and put $q=n+d$, a virtual
+value above every letter, when $\sigma$ has no $d$-trigger.  The
 \emph{stack} $S=(I_1,\ldots,I_s)$ is a list of nonempty sets with
 $I_1<I_2<\cdots<I_s$ whose union is the set of unread letters larger than
 $q$, so that each $I_j$ is an interval in the sense of \cref{sec:stack},
-$I_1$ is the active head, and $(I_2,\ldots,I_s)$ is the deferred tail.  When
-$\sigma$ has no $d$-trigger, $S$ is the empty list, $s=0$.  The
+$I_1$ is the active head, and $(I_2,\ldots,I_s)$ is the deferred tail.  In
+particular $S$ is the empty list, $s=0$, when $\sigma$ has no $d$-trigger.  The
 \emph{initial state} is $(\emptyword,())$: the empty prefix and the empty
 stack.  Let $(\sigma,S)$ be a scan state and let $x$ be an unread letter.
 Reading $x$ is a \emph{legal move}, leading to the state $(\sigma x,S')$, in
 the following three cases.
 \begin{enumerate}
-\item[(a)] \emph{Merger}: $x$ is a $d$-trigger of $\sigma x$ and is smaller
-  than every $d$-trigger of $\sigma$.  Let $E$ be the set of unread letters
-  strictly between $x$ and $q$, or the set of all unread letters larger than
-  $x$ when $\sigma$ has no $d$-trigger.  Then $S'=(E\cup I_1,I_2,\ldots,I_s)$
-  if $s\geq1$, and $S'=(E)$ if $s=0$, the empty stack when $E=\varnothing$.
-\item[(b)] \emph{Split}: $x$ is a $d$-trigger of $\sigma x$ that exceeds some
-  $d$-trigger of $\sigma$, and $x$ lies in the active head $I_1$, so that
-  $s\geq1$.  Then $S'=(I_1^{<x},I_1^{>x},I_2,\ldots,I_s)$, where $I_1^{<x}$
+\item[(a)] \emph{Merger}: $x$ is a $d$-trigger of $\sigma x$ and $x<q$.  Let
+  $E$ be the set of unread letters strictly between $x$ and $q$.  Then
+  $S'=(E\cup I_1,I_2,\ldots,I_s)$, where $I_1=\varnothing$ if $s=0$, with an
+  empty set deleted.
+\item[(b)] \emph{Split}: $x$ is a $d$-trigger of $\sigma x$, $x>q$, and $x$
+  lies in the active head $I_1$.  Then $S'=(I_1^{<x},I_1^{>x},I_2,\ldots,I_s)$, where $I_1^{<x}$
   and $I_1^{>x}$ are the sets of elements of $I_1$ below and above $x$, with
   empty sets deleted.  The move is an endpoint or an interior choice, as defined above,
   depending on the local rank of $x$ in $I_1$.
@@ -501,18 +485,15 @@ the following three cases.
 Reading any other unread letter is \emph{illegal}.  A word $\sigma$ is
 \emph{legal} if the initial state reaches a state $(\sigma,S)$ by legal
 moves, and we write $\mathcal S(\sigma)$ for the resulting stack, the
-\emph{stack of $\sigma$}.  Finally, $\mathcal R(\sigma)$
-denotes the set of permutations of $[n]$ with prefix $\sigma$ all of whose
-prefixes are legal, the permutations that \emph{can be read} from $\sigma$.
+\emph{stack of $\sigma$}.
 \end{definition}
 
-When $\sigma$ has
-no $d$-trigger the condition in (a) holds vacuously, so a trigger read from
-such a $\sigma$ always merges.  Each move determines $S'$ from $(\sigma,S)$ and
+A $d$-trigger read from a prefix without one always merges, since then
+$q=n+d$.  Each move determines $S'$ from $(\sigma,S)$ and
 $x$, and \cref{lem:legal-moves}(a) below shows that $(\sigma x,S')$ is again
 a scan state, so the stack $\mathcal S(\sigma)$ of a legal word is
-determined by $\sigma$.  Note that if $\sigma$ has a $d$-trigger, then every
-unread letter $x>q$ is a $d$-trigger of $\sigma x$ exceeding $q$, since
+determined by $\sigma$.  Note that every unread letter $x>q$ is a
+$d$-trigger of $\sigma x$, since
 replacing the last entry of an increasing $d$-subsequence ending at $q$ by
 $x$ gives one ending at $x$.  For $d=1$ a legal move is a new left-to-right
 minimum, which merges (\cref{fig:moves}(a)), or a letter of the active head,
@@ -605,66 +586,25 @@ Let $(\sigma,S)$ be a scan state and let $x$ be an unread letter.
 \end{lemma}
 
 \begin{proof}
-(a) In a merger, $x$ becomes the least $d$-trigger of $\sigma x$.  If
-$\sigma$ has no $d$-trigger, then $S$ is empty and $E$ is the set of all
-unread letters above $x$, so $S'=(E)$ is a scan state with $\sigma x$.
-Otherwise the unread letters of $\sigma x$ larger than $x$ are those of $E$
-together with those larger than $q$, that is, $E\cup I_1\cup\cdots\cup I_s$,
-the union of $S'$.  Every letter of $E$ is smaller than $q$ and every letter
-of $S$ is larger, so $E<I_1$ and the sets of $S'$ are disjoint and
-increasing.  In a
+(a) In a merger, $x$ becomes the least $d$-trigger of $\sigma x$, and the
+unread letters of $\sigma x$ larger than $x$ are those of $E$ together with
+those larger than $q$, that is, $E\cup I_1\cup\cdots\cup I_s$, the union of
+$S'$.  Every letter of $E$ is smaller than $q$ and every letter of $S$ is
+larger, so $E<I_1$ and the sets of $S'$ are disjoint and increasing.  In a
 split, the least $d$-trigger is still $q$, since $x>q$, and the unread
 letters above $q$ lose exactly $x$, which is what the split removes.  The two
-parts of $I_1$ lie below and above $x$.  In a non-trigger move, $x<q$ if
-$\sigma$ has a $d$-trigger, since an unread $x>q$ is a $d$-trigger of
-$\sigma x$ as noted above, so the least $d$-trigger and the unread letters
-above it are unchanged, and so is $S$.  If $\sigma$ has no $d$-trigger, then
-$S$ is empty and a non-trigger move leaves it empty.
+parts of $I_1$ lie below and above $x$.  In a non-trigger move, $x<q$, since
+an unread $x>q$ is a $d$-trigger of $\sigma x$ as noted above, so $q$ and the
+unread letters above it are unchanged, and so is $S$.
 
 (b) Let $x$ lie in a deferred interval.  Then $x>q$, so $x$ is a
-$d$-trigger of $\sigma x$ exceeding $q$, as noted above.  Therefore cases (a)
+$d$-trigger of $\sigma x$, as noted above.  Therefore cases (a)
 and (c) of \cref{def:scan-state} do not apply, and $x\notin I_1$ excludes
-case (b).  Conversely, let reading $x$ be illegal.  Since case (c) does not apply,
-$x$ is a $d$-trigger of $\sigma x$.  Since case (a) does not apply, $x$
-exceeds some $d$-trigger of $\sigma$, so $x>q$.  Therefore $x$ lies in the
+case (b).  Conversely, let reading $x$ be illegal.  Since case (c) does not
+apply, $x$ is a $d$-trigger of $\sigma x$, and since case (a) does not apply,
+$x>q$.  Therefore $x$ lies in the
 stack, and in a deferred interval since case (b) does not apply.
 \end{proof}
-
-\begin{definition}[Faithful stacks]\label{def:faithful}
-Let $(\sigma,S)$ be a scan state with $S=(I_1,\ldots,I_s)$.  We say that
-$S$ is \emph{faithful to} $\sigma$ if a completion $w$ of $\sigma$ satisfies
-the residual obligations of all $d$-triggers of $\sigma$ precisely when
-\[
-  w|_{I_1\cup\cdots\cup I_s}\in\Av(231)(I_1)\oplus\cdots\oplus\Av(231)(I_s),
-\]
-where the right-hand side consists of the empty word when $s=0$.
-\end{definition}
-
-A scan state fixes the shape of the stack.  Faithfulness is the semantic
-property that the stack describes exactly the obligations created so far,
-and a stack may or may not have it.  \Cref{lem:merger} shows that a merger
-preserves faithfulness, and \cref{prop:scan-states} that the stack
-$\mathcal S(\sigma)$ of a legal prefix is faithful to $\sigma$.
-
-\begin{example}[Faithful and unfaithful stacks]\label{ex:faithful}
-Let $d=1$ and let $\sigma=9,11,10,14$ be the prefix of the running example
-\eqref{eq:running-example} scanned in \cref{ex:one-projection}.  Its least
-trigger is $9$, and the unread letters above $9$ are $12$, $13$, $15$, so
-the stacks $\{12,13\}\mid\{15\}$, $\{12,13,15\}$ and
-$\{12\}\mid\{13\}\mid\{15\}$ all form scan states with $\sigma$.  For $d=1$
-every letter of $\sigma$ is a trigger, and a completion $w$ satisfies their
-residual obligations exactly when $11,10,14,w|_{\{y:y>9\}}$ and
-$14,w|_{\{y:y>11\}}$ avoid $231$, the obligations of $10$ and $14$ adding
-nothing further.  As computed in \cref{ex:one-projection}, this holds
-exactly when $w$ reads $12$ and $13$, in either order, before $15$: a
-completion reading $15$ first completes the occurrence $14,15,y$ of $231$
-with $y\in\{12,13\}$.  Therefore $\{12,13\}\mid\{15\}$, the stack produced
-by the legal moves, is faithful to $\sigma$.  The stack $\{12,13,15\}$ is
-not: it allows the order $15,12,13$, which violates the obligation of $9$.
-Nor is $\{12\}\mid\{13\}\mid\{15\}$: it excludes the order $13,12,15$,
-which satisfies every obligation.
-\end{example}
-
 
 \begin{figure}[b]
 \centering
@@ -705,7 +645,7 @@ which satisfies every obligation.
   \node[anchor=south] at (17.5,15.6) {\footnotesize before};
   \node[anchor=south,red] at (23,15.6) {\footnotesize after};
 \end{tikzpicture}
-\caption{The stack merger of \cref{lem:merger} for $d=1$ on the running
+\caption{A merger (\cref{def:scan-state}(a)) for $d=1$ on the running
 example \eqref{eq:running-example}: the prefix $9,11,10,14$ has been read,
 leaving the head $I_1=\{12,13\}$ and the tail $I_2=\{15\}$, and the new
 trigger $x=5$ merges $E=\{6,7,8\}$, the unread values between $x$ and
@@ -713,84 +653,20 @@ $q=9$, into the head.  The tail is unchanged.  See \cref{ex:one-merger}.}
 \label{fig:merger}
 \end{figure}
 
-\begin{lemma}[Stack merger]\label{lem:merger}
-Let $(\sigma,S)$ be a scan state whose stack $S=(I_1,\ldots,I_s)$ is
-faithful to $\sigma$, and let $x$ be an unread letter that is a $d$-trigger
-of $\sigma x$ and is smaller than every $d$-trigger of $\sigma$.
-\begin{enumerate}
-\item[(a)] If $\sigma$ has no $d$-trigger, then $S$ is empty, and the stack
-  $(E)$, where $E$ is the set of unread letters larger than $x$, is faithful
-  to $\sigma x$.  If $x$ is the largest unread letter, then $E$ is empty and
-  the stack is therefore empty.
-\item[(b)] If $\sigma$ has a $d$-trigger, let $q$ be the least one and let
-  $E$ be the set of unread letters strictly between $x$ and $q$.  Then the
-  merged stack
-  \[
-    (E\cup I_1,I_2,\ldots,I_s),
-  \]
-  or $(E)$ when $s=0$, with an empty set deleted, is faithful to $\sigma x$.
-  In particular only the active head changes.
-\end{enumerate}
-\end{lemma}
-
-\begin{proof}
-Let $S'$ be the new stack, $(E)$ in case (a) and the merged stack in case
-(b), and let $U$ be the union of its sets.  In both cases $U$ is the set of
-unread letters larger than $x$, and by \cref{lem:legal-moves}(a) the pair
-$(\sigma x,S')$ is a scan state.
-
-Let $w$ be a completion of $\sigma x$.  Since $x$ is smaller than every
-$d$-trigger of $\sigma$, it drops out of every projection created by such a
-trigger, so $w$ satisfies the residual obligations of the $d$-triggers of
-$\sigma$ exactly when the completion $xw$ of $\sigma$ does.  By faithfulness
-of $S$, and since $x$ lies in no $I_j$, this holds exactly when
-$w|_{I_1\cup\cdots\cup I_s}$ lies in $\Av(231)(I_1)\oplus\cdots\oplus\Av(231)(I_s)$.
-The one further obligation of $\sigma x$ is that of $x$, which requires
-$w|_U$ to avoid $231$.  We must show that both conditions hold exactly when
-$w|_U$ lies in the direct sum of $S'$.
-
-Suppose $w|_U$ lies in the direct sum of $S'$.  A direct sum of
-$231$-avoiding words avoids $231$, since positions and values both increase
-from each block to the next, so $w|_U$ avoids $231$.  Its restriction to
-$I_1\cup\cdots\cup I_s$ is the direct sum of the restrictions to
-$I_1,\ldots,I_s$, each of which avoids $231$ as a subword of a block, so it
-lies in the old direct sum.
-
-Conversely, suppose $w|_U$ avoids $231$ and $w|_{I_1\cup\cdots\cup I_s}$
-lies in the old direct sum.  Then $w|_{E\cup I_1}$ avoids $231$ as a subword
-of $w|_U$, each $w|_{I_j}$ avoids $231$, and every value of $I_1$ precedes
-every value of $I_2\cup\cdots\cup I_s$.  Finally, every $e\in E$ precedes every
-$z\in I_j$ with $j\geq2$.  Suppose instead that $z$ precedes $e$, and
-choose $u\in I_1$, which precedes $z$.  Then $e<u<z$, so $u,z,e$ is an
-occurrence of $231$ in $w|_U$, a contradiction.
-\end{proof}
-
-The merger creates no separation between $E$ and $I_1$, although read
-letters lie between them in value: the old least trigger $q$ and the
-earlier triggers above $q$, some of them read from earlier active
-heads.  When $d\geq2$, earlier letters that were not triggers may lie
-inside the value range of $E$ as well, and they create no separation
-either.  All of these letters were read before the new trigger, so none
-belongs to its projection.  No earlier obligation involves $E$, since every
-earlier trigger is at least $q$.  A separation produced by a split is
-therefore not permanent: once the interval below it has been exhausted, a
-later merger can extend the head past the letters that produced it, as
-rows $2$--$5$ of \cref{ex:1342-scan} show.
-
 \begin{example}[One merger]\label{ex:one-merger}
 We continue \cref{ex:one-projection}.  The fifth letter $5$ of $\pi$ is a
-trigger smaller than the earlier triggers $9,11,10,14$, and
-\cref{fig:merger} shows the stack before and after reading it.  In the
-notation of \cref{lem:merger}(b), $q=9$ and $E=\{6,7,8\}$, the unread
-values between $5$ and $9$.  The current stack $\{12,13\}\mid\{15\}$ consists exactly of the
-unread values above $9$, and it is faithful to the prefix by
-\cref{ex:faithful}.  The merged stack is $\{6,7,8,12,13\}\mid\{15\}$.
+trigger smaller than the earlier triggers $9,11,10,14$, so reading it is a
+merger, and \cref{fig:merger} shows the stack before and after.  In the
+notation of \cref{def:scan-state}(a), $q=9$ and $E=\{6,7,8\}$, the unread
+values between $5$ and $9$.  The stack $\{12,13\}\mid\{15\}$ consists of the
+unread values above $9$, and the merged stack is
+$\{6,7,8,12,13\}\mid\{15\}$.
 The values $6,7,8$ join the head without a separation: the read letters
 $9$, $10$, $11$, which lie between them and $12$ in value, were read before
 the trigger $5$ and constrain nothing in $E$.  They must, however, precede
-$15$: if $15$ came before $6$, then either the old obligation is already
-violated, or $12$ precedes $15$ and $12,15,6$ is an occurrence of $231$ in
-the projection of $5$, that is, $5,12,15,6$ is an occurrence of $1342$.  Inside the head only $231$-avoidance
+$15$: if $15$ came before $6$, then either $15$ precedes some
+$y\in\{12,13\}$ and $9,14,15,y$ is an occurrence of $1342$, or $12$
+precedes $15$ and $5,12,15,6$ is one.  Inside the head only $231$-avoidance
 remains.  The permutation $\pi$ continues with $12$ before $6$, and
 $13,12,6,7,8$ would have been allowed as well.  For $d=2$ the same permutation is scanned in
 \cref{ex:full-state}: there the first $2$-trigger is $11$ rather than $9$,
@@ -798,145 +674,113 @@ and the corresponding merger occurs at the $2$-trigger $6$, with $q=10$ and
 $E=\{7,8\}$.
 \end{example}
 
+Two unread letters are \emph{adjacent} if no unread letter lies strictly
+between them.  The following lemma determines the separations of the stack
+from the scanned prefix.
+
+\begin{lemma}[Separations of the stack]\label{lem:separators}
+Let $\sigma$ be a legal word, let $q$ be its least $d$-trigger, and let
+$u<v$ be adjacent unread letters above $q$.  Then $u$
+and $v$ lie in different intervals of $\mathcal S(\sigma)$ if and only if
+some letter $x$ with $u<x<v$ was read after a $d$-trigger smaller than $u$.
+\end{lemma}
+
+\begin{proof}
+We argue by induction along the legal moves that read $\sigma$.  While no
+$d$-trigger has been read there is no letter above $q=n+d$.  Let $x$ be the letter
+read next.  Reading $x$ makes its two unread neighbours adjacent, when both
+exist, and leaves every other adjacent pair with its members and the letters
+between them.
+
+Suppose first that reading $x$ is a merger.  Then $x$ becomes the least
+$d$-trigger, and an adjacent pair $u<v$ above $x$ that was not an adjacent
+pair above $q$ has $u\in E$.  Every $d$-trigger of $\sigma$ is larger than
+$u$, and no letter has been read after $x$, so the second condition fails.
+The stack of $\sigma$ consists of the unread letters above $q$, so $v$ lies
+in $E$ or is the least element of $I_1$, and $u$ and $v$ lie in the single
+interval $E\cup I_1$.  Thus the first condition fails as well.  The
+other pairs keep their intervals, and $x$ lies below them and has not been
+followed by any letter, so both conditions are unchanged for them.
+
+Suppose next that reading $x$ is a split.  Then $x\in I_1$ and $x>q$.  A new
+adjacent pair consists of the unread neighbours $u<x<v$ of $x$, when both
+exist and $u>q$.  Then $u$ lies in the part of $I_1$ below $x$, while $v$
+lies in the part above $x$ or, if $x=\max I_1$, is the least element of
+$I_2$.  Thus $u$ and $v$ lie in different intervals, and $x$, read after
+$q<u$, witnesses the second condition.  The other pairs keep their
+intervals, and $x$ lies between the members of none of them, since those are
+adjacent and $x$ was unread.
+
+Finally, a non-trigger move reads a letter $x<q$, as in the proof of
+\cref{lem:legal-moves}, and changes neither the stack nor either condition.
+\end{proof}
+
 \begin{proposition}[Scan states of avoiders]\label{prop:scan-states}
 Let $\sigma$ be a legal word with stack $\mathcal S(\sigma)=(I_1,\ldots,I_s)$.
 \begin{enumerate}
-\item[(a)] The stack $\mathcal S(\sigma)$ is faithful to $\sigma$.
+\item[(a)] The word $\sigma$ avoids $\beta_d$.
 \item[(b)] If reading the unread letter $x$ from $\sigma$ is illegal, then no
   $\beta_d$-avoiding permutation has the prefix $\sigma x$.
-\item[(c)] $\mathcal R(\sigma)$ is the set of $\beta_d$-avoiding permutations
-  of $[n]$ with prefix $\sigma$.  In particular
-  $\mathcal R(\emptyword)=\Av_n(\beta_d)$,
-  and a word is legal if and only if it is a prefix of a $\beta_d$-avoiding
-  permutation.
+\item[(c)] A word is legal if and only if it is a prefix of a
+  $\beta_d$-avoiding permutation.  In particular $\Av_n(\beta_d)$ is the set
+  of legal permutations of $[n]$.
 \end{enumerate}
 \end{proposition}
 
 \begin{proof}
-We prove (a) by induction along $\sigma$.  For the empty word there is no
-trigger, no obligation and no stack, so the empty stack is faithful.  Let
-$S=\mathcal S(\sigma)$ be faithful to $\sigma$, let reading $x$ be a legal
-move, and consider the three cases of \cref{def:scan-state}.
+(a) Suppose that $\sigma$ contains $\beta_d$.  The first $d$ letters of an
+occurrence form an increasing $d$-subsequence ending at a $d$-trigger $c$,
+and its last three letters $\alpha,\beta,\gamma$, in this order, satisfy
+$c<\gamma<\alpha<\beta$.  Let $\tau$ be the prefix of $\sigma$ read just
+before $\beta$.  It is legal and contains $c$ and $\alpha$, so its least
+$d$-trigger $q$ satisfies $q\leq c$.  Since $\beta>q$ is read legally from
+$\tau$, it lies in the active head of $\mathcal S(\tau)$ by
+\cref{lem:legal-moves}(b).  Let $u$ and $v$ be the unread letters of $\tau$
+next below and next above $\alpha$.  Then $q<\gamma\leq u$ and $v\leq\beta$,
+and $\alpha$ was read after the $d$-trigger $c<u$, so $u$ and $v$ lie in
+different intervals of $\mathcal S(\tau)$ by \cref{lem:separators}.  But the
+stack consists of the unread letters above $q$, its active head is the
+lowest interval, and $u<v\leq\beta$, so $u$ and $v$ both lie in the active
+head, a contradiction.
 
-In a merger, the new stack is that of \cref{lem:merger}, part (a) if
-$\sigma$ has no $d$-trigger and part (b) otherwise, so it is faithful to
-$\sigma x$.
+(b) By \cref{lem:legal-moves}(b), $x$ lies in a deferred interval, so
+$s\geq2$.  Let $u=\max I_1$ and $v=\min I_2$, which are adjacent.  By
+\cref{lem:separators}, some letter $z$ with $u<z<v$ was read after a
+$d$-trigger $c<u$.  A permutation with prefix $\sigma x$ reads $u$ after
+$x$, and $v\leq x$.  An increasing $d$-subsequence ending at $c$, followed
+by $z$, $x$, $u$, is therefore an occurrence of $\beta_d$, since
+$c<u<z<x$.
 
-In a split, $x\in I_1$, so $x>q$ and $x$ is a $d$-trigger of $\sigma x$ as
-noted after \cref{def:scan-state}.  A completion $w$ of $\sigma x$ satisfies
-the residual obligations of the triggers of $\sigma$ if and only if the
-completion $xw$ of $\sigma$ does, that is, by the induction hypothesis, if
-and only if $(xw)|_{I_1}\in\Av(231)(I_1)$, $w|_{I_j}\in\Av(231)(I_j)$ for
-$j\geq2$, and $w$ reads the sets $I_1\setminus\{x\},I_2,\ldots,I_s$ in this
-order.  By \cref{lem:first-letter}, the first condition holds if and only if
-$w|_{I_1\setminus\{x\}}\in\Av(231)(I_1^{<x})\oplus\Av(231)(I_1^{>x})$.
-Together, these conditions say that the restriction of $w$ to the stack
-values lies in the direct sum of the split stack.  The obligation of the new
-trigger $x$ adds nothing: its projection is
-$I_1^{>x}\cup I_2\cup\cdots\cup I_s$, on which the split stack already
-prescribes a direct sum of $231$-avoiding words, and such a word avoids
-$231$ as in the proof of \cref{lem:merger}.
-
-In a non-trigger move, $x$ is not a $d$-trigger of $\sigma x$.  If $\sigma$
-has no $d$-trigger, there is no obligation and no stack before or after the
-move.  Otherwise $x<q$, as in the proof of \cref{lem:legal-moves}, so $x$
-lies below every $d$-trigger of $\sigma$ and belongs to none of their
-projections.  The residual obligations and the stack are unchanged.
-
-For (b), let reading $x$ be illegal.  By \cref{lem:legal-moves}(b), $x$ lies
-in a deferred interval $I_j$, $j\geq2$.  Every completion of $\sigma$
-beginning with $x$ reads $x$ before the letters of the nonempty set $I_1$, so
-its restriction to the stack values is not in the direct sum of
-\cref{def:faithful}, and by (a) it violates the residual obligation of some
-$d$-trigger $c$ of $\sigma$: the projection created by $c$ contains $231$,
-and the permutation contains $\beta_d$ by \cref{lem:trigger}.
-
-For (c), let $\pi$ be a permutation with prefix $\sigma$.  If $\pi$ avoids
-$\beta_d$, then every prefix of $\pi$ is legal: the empty prefix is, and if
-a prefix $\sigma'$ of $\pi$ is legal and the next letter $x$ of $\pi$ were
-illegal, (b) would forbid the prefix $\sigma'x$ of the avoider $\pi$.
-Therefore $\pi\in\mathcal R(\sigma)$.  Conversely, let
-$\pi\in\mathcal R(\sigma)$.  Then $\pi$ itself is legal, no letter is unread,
-the stack is empty, and by (a) the empty completion satisfies the residual
-obligation of every $d$-trigger of $\pi$.  That is, the projection of every
-$d$-trigger avoids $231$ after standardization, and $\pi$ avoids $\beta_d$
-by \cref{lem:trigger}.  With $\sigma=\emptyword$ this gives
-$\mathcal R(\emptyword)=\Av_n(\beta_d)$, and a prefix of an avoider is legal
-by the first paragraph of this part.  Conversely, a legal $\sigma$ has an
-avoiding completion: read the unread letters smaller than $q$, or all unread
-letters when $\sigma$ has no $d$-trigger, in decreasing order, and then the
-intervals $I_1,\ldots,I_s$ in order, each in decreasing order.  Each letter
-of the first group is the largest unread letter below the least trigger, or
-the largest unread letter when there is none, so it is a non-trigger move or
-a merger with $E=\varnothing$, and the stack is unchanged.  Each later letter
-is the greatest element of the active head, and therefore a $d$-trigger
-above $q$, so reading it is an endpoint choice.  All moves are legal, so the
-completed permutation lies in $\mathcal R(\sigma)$ and avoids $\beta_d$.
+(c) Every prefix of an avoider is legal: the empty prefix is, and if a
+prefix $\sigma'$ of an avoider $\pi$ is legal and the next letter $x$ of
+$\pi$ were illegal, (b) would forbid the prefix $\sigma'x$ of $\pi$.
+Conversely, a legal $\sigma$ has an avoiding completion: read the unread
+letters smaller than $q$ in decreasing order, and then the intervals
+$I_1,\ldots,I_s$ in order, each in decreasing order.  Each letter of the
+first group is the largest unread letter below $q$, so it is a non-trigger
+move or a merger with $E=\varnothing$, and the stack is unchanged.  Each
+later letter is the greatest element of the active head, and therefore a
+$d$-trigger above $q$, so reading it is an endpoint choice.  All moves are
+legal, so the completed permutation is legal and avoids $\beta_d$ by (a).
+The last sentence of (c) follows, with (a) for the legal permutations.
 \end{proof}
 
-Being a prefix of a $\beta_d$-avoiding permutation is stronger than avoiding
-$\beta_d$.  The word $134$ avoids $1342$, but its only completion in $[4]$
+Being a prefix of a $\beta_d$-avoiding permutation is stronger than
+avoiding $\beta_d$.  The word $134$ avoids $1342$, but its only completion in $[4]$
 is $1342$, and after $1,3$ the stack is $\{2\}\mid\{4\}$, so reading
 $4$ is illegal.
 
 \subsection{The one-threshold state}
 
 For $d=1$, every letter is a trigger, so the least $d$-trigger $q$ of
-\cref{def:scan-state} is the least letter $m$ read so far.  Before the first
-letter, $m$ is a virtual value larger than every letter.  A new left-to-right
-minimum joins the unread values between it and $m$ to the active head, or
-creates the stack when the stack is empty.  A letter of the active head
-shortens the head at an endpoint choice and replaces it by its lower and
-upper subintervals at an interior choice.  By \cref{def:scan-state}, the
-stack of a legal prefix consists of the unread letters above $m$, and by
-\cref{prop:scan-states}(c) the legal prefixes are the prefixes of
-$1342$-avoiding permutations.  Two unread values are
-\emph{adjacent} if no unread value lies strictly between them.  The
-following lemma determines the separations of the stack.
-
-\begin{lemma}[Separations of the one-threshold stack]\label{lem:1342-separators}
-After a legal prefix has been read, let $u<v$ be adjacent unread letters
-above $m$.  Then $u$ and $v$ lie in different intervals of the stack if and
-only if some letter $x$ with $u<x<v$ was read after a letter smaller than
-$u$, that is, at a time when the minimum read so far was already below $u$.
-\end{lemma}
-
-\begin{proof}
-We argue by induction along the scan.  For the empty prefix there is
-nothing to prove.  The next legal move reads a new minimum or a letter of
-the active head.
-
-Suppose first that the next letter $x$ is a new minimum, joining $E$ to
-the head or creating the stack $(E)$.  An adjacent pair $u<v$ above the new
-minimum that was not an adjacent pair above the old minimum has $u\in E$.
-Every letter read before $x$ exceeds the old minimum and hence $u$, so no
-letter between $u$ and $v$ was read after a letter smaller than $u$.  The
-value $v$ lies in $E$ or is the least element of $I_1$, and $E\cup I_1$, or
-$E$ when the old stack was empty, is a single interval of the new stack.
-Thus neither condition holds for such a pair.
-
-Suppose instead that $x$ is read from the active head $I_1$.  Only the
-unread neighbours $u<x<v$ of $x$ can form a new adjacent pair, and only when
-both exist and lie above $m$.  This excludes $x=\min I_1$, where $u$ lies
-below $m$.  For an interior choice, $u$ and $v$ lie in the two parts created
-by the split.  For $x=\max I_1$, $u$ lies in the shortened head and $v$ is
-the least element of $I_2$ if a deferred interval remains.  Otherwise $x$ is
-the largest unread letter and no new pair arises.  In every case $u$ and $v$
-lie in different intervals, and $x$, read after $m<u$, witnesses the second
-condition.
-
-In both cases every other adjacent pair keeps its members, its intervals,
-and the letters between them, so both conditions are unchanged for it.
-\end{proof}
-
-Therefore the stack is recovered from the scanned prefix alone: its values are
-the unread letters above $m$, and its intervals are the blocks into which
-this increasing list is cut at exactly the adjacent pairs of the lemma.
-The precedence recorded by a separation is also visible directly: if $x$
-was read after $c<u$ and $v$ preceded $u$, then $c,x,v,u$ would form
-$1342$.  Conversely, two letters of the same interval can occur in either
-order in a $1342$-avoiding completion.  \Cref{cor:separators} proves this
-and extends both statements to every $d$.  Adjacency cannot be dropped:
+\cref{def:scan-state} is the least letter $m$ read so far, virtual for the
+empty prefix.  A new left-to-right minimum joins the unread values between
+it and $m$ to the active head, and a letter of the active head shortens the
+head at an endpoint choice and splits it at an interior choice.  By
+\cref{lem:separators}, two adjacent unread letters $u<v$ above $m$ lie in
+different intervals exactly when some letter between them was read at a time
+when the minimum read so far was already below $u$, so the stack is
+recovered from the scanned prefix alone.  Adjacency cannot be dropped:
 after the prefix $3,5,1$ of a $1342$-avoiding permutation of $[7]$ the
 stack is $\{2,4\}\mid\{6,7\}$, so $2$ and $6$ lie in different intervals,
 although no letter between them was read after a letter smaller than $2$.
@@ -979,8 +823,10 @@ $15$ & $15$ & head exhausted & $1$ & $\varnothing$ & $W_{0}(\varnothing)$ \\
 \end{tabular}
 \end{center}
 The first five rows are \cref{ex:one-projection,ex:one-merger}.  In the
-terms of \cref{lem:1342-separators}, the letters $9$, $10$, and $11$
-separate nothing at row $5$, as in \cref{ex:one-merger}, while $14$, read
+terms of \cref{lem:separators}, the letters $9$, $10$, and $11$
+separate nothing at row $5$, as in \cref{ex:one-merger}: the separation
+produced by $11$ at row $2$ disappeared once the interval below it was
+exhausted, and the merger extended the head past it.  The letter $14$, read
 after $9<13$, separates $13$ from $15$ from row $4$ on.  The interior choice $12$ then creates
 three intervals, separated between $8$ and $13$ and between $13$ and $15$.
 After the endpoint choice $6$, the new minimum $2$ joins $\{3,4\}$ to the head.  The
@@ -1001,38 +847,24 @@ only their sizes $5$ and $4$.
 Recall that $m$ is the least letter in the scanned prefix, virtual for the
 empty prefix.  Let $p$ be the number of unread letters below $m$, which we
 call the \emph{control} of the state, and let $L=(\ell_1,\ldots,\ell_s)$ be
-the positive sizes of the active and deferred intervals.  For a legal prefix with these data, let $W_p(L)$ be the number
-of completions that produce a $1342$-avoiding permutation.  By
-\cref{prop:scan-states}(c), these completions are exactly the sequences of
-legal moves that read every unread letter, and by \cref{def:scan-state} the
-legal moves from a legal prefix, their successor states and their
-multiplicities depend only on $(p,L)$ and on the local ranks of the letters
-read.  Therefore this number depends only on $(p,L)$.  We write
+the positive sizes of the active and deferred intervals.  We write
 $|L|=\sum_{i=1}^s\ell_i$ and
 $\operatorname{len}(L)=s$.  If $L'$ is a list, $(\ell)L'$ and
-$(a,b)L'$ denote concatenation with the displayed initial entries.  In the
-equations below, each summand stands for reading
-one letter and moving from the current state to the state indexed by the
-summand.  We call such a move a \emph{transition}.  A summand with
-coefficient $2$ stands for two transitions with the same successor, which we
-label by the local rank of the letter read.
+$(a,b)L'$ denote concatenation with the displayed initial entries, and
+$\nz(x_1,\ldots,x_r)$ denotes the list obtained by deleting every zero
+entry.  In the equations below, each summand stands for reading one letter
+and moving from the current state to the state indexed by the summand.  We
+call such a move a \emph{transition}.
 
 \begin{proposition}[One-threshold recurrence]\label{prop:scalar-literal}
-For $L=(\ell)L'$ with $\ell\geq1$,
+For $p\geq0$ and every list $L$ of positive integers, define $W_p(L)$ as
+follows.  For $L=(\ell)L'$ with $\ell\geq1$,
 \begin{align}
 W_p((\ell)L')={}&\sum_{h=0}^{p-1}
- W_h\!\left((\ell+p-1-h)L'\right)+V_\ell(p,L') \label{eq:W}\\
-&+\sum_{\substack{a,b\geq1\\a+b=\ell-1}}W_p((a,b)L'), \notag
+ W_h\!\left((\ell+p-1-h)L'\right)
+ +\sum_{\substack{a,b\geq0\\a+b=\ell-1}}W_p(\nz(a,b)L'), \label{eq:W}
 \end{align}
-where
-\begin{equation}\label{eq:W-endpoint}
- V_\ell(p,L')=
- \begin{cases}
-  W_p(L'),&\ell=1,\\
-  2W_p((\ell-1)L'),&\ell\geq2.
- \end{cases}
-\end{equation}
-The boundary and initial conditions are
+and
 \begin{align}
  W_p(\varnothing)&=
   \begin{cases}
@@ -1042,38 +874,43 @@ The boundary and initial conditions are
   \label{eq:W-boundary}\\
  |\Av_n(1342)|&=W_n(\varnothing). \label{eq:W-initial}
 \end{align}
-These equations count every $1342$-avoiding permutation exactly once, as a
-maximal sequence of transitions from $(n,\varnothing)$.
+For every legal prefix with control $p$ and interval sizes $L$, reading the
+letters of a completion one at a time is a bijection from the completions
+that produce a $1342$-avoiding permutation to the maximal sequences of
+transitions from $(p,L)$, and $W_p(L)$ is their number.  In particular
+\eqref{eq:W-initial} holds.
 \end{proposition}
 
 \begin{proof}
-The avoiding completions are the sequences of legal moves that read every
-unread letter, and the legal moves are the new minima and the letters of the
-active head.  We partition the possible next letters by their location.  If
-the next letter is below $m$, let $h$ be the number of unread letters below
-it.  There is one letter for each $0\leq h<p$.  The new minimum leaves $h$
-unrestricted lower letters, while the $p-1-h$ letters between it and $m$
-join the active head.  This gives the first sum in \eqref{eq:W}.  If the
-active head has size one, it has one endpoint.  If its size is at least two,
-its two endpoints have the same standardized successor.  These choices give
-the endpoint term $V_\ell(p,L')$ of \eqref{eq:W-endpoint}, the coefficient $2$
-standing for the two transitions of local ranks $1$ and $\ell$.  An interior letter replaces the active head by two
-ordered subintervals of sizes $a,b\geq1$ with $a+b=\ell-1$, so that $L$
-becomes $(a,b)L'$, giving the last sum in \eqref{eq:W} by
-\cref{lem:first-letter}.  With an empty stack
-only a new minimum can be read, which gives \eqref{eq:W-boundary}.
-
 The quantity
 \begin{equation}\label{eq:rho-scalar}
  \rho_1(p,L)=p+|L|
 \end{equation}
-decreases by one under every transition, so every maximal transition
-sequence ends at $(0,\varnothing)$.  In the other direction, the selected
-local rank at each step recovers a unique next letter in the current ordered
-alphabet.  Maximal transition sequences and avoiding completions are
-therefore inverse constructions, so the equations count every avoiding
-completion exactly once.  For the empty prefix, $p=n$ and $L=\varnothing$,
-which is \eqref{eq:W-initial}.
+decreases by one under every transition, and $(0,\varnothing)$ is the only
+state without transitions.  Therefore the equations define $W_p(L)$, and by
+induction on $\rho_1$ it is the number of maximal transition sequences from
+$(p,L)$, all of which end at $(0,\varnothing)$.
+
+By \cref{lem:legal-moves}(a), a legal prefix with state $(p,L)$ has
+$\rho_1(p,L)$ unread letters, and we argue by induction on this number.  If
+no letter is unread, the prefix is a permutation, it avoids $1342$ by
+\cref{prop:scan-states}(a), and its state is $(0,\varnothing)$, from which the
+only maximal sequence is empty.  Otherwise we partition the possible next
+letters.  By \cref{prop:scan-states}(b), an illegal letter begins no
+avoiding completion, and the legal letters are the new minima and the
+letters of the active head.  If the next letter is below $m$, let $h$ be the
+number of unread letters below it.  There is one letter for each
+$0\leq h<p$.  The new minimum leaves $h$ unrestricted lower letters, while
+the $p-1-h$ letters between it and $m$ join the active head.  This gives the
+first sum in \eqref{eq:W}.  A letter of the active head of local rank $r$
+replaces the head by its parts below and above it, of sizes $a=r-1$ and
+$b=\ell-r$, so that $L$ becomes $\nz(a,b)L'$ by \cref{def:scan-state}(b).
+This gives the last sum in \eqref{eq:W}, one letter for each pair $(a,b)$
+with $a+b=\ell-1$.  With an empty
+stack only a new minimum can be read, which gives \eqref{eq:W-boundary}.  In
+every case the letter is recovered from its transition by its local rank,
+and the induction hypothesis applies to the successor.  For the empty
+prefix, $p=n$ and $L=\varnothing$, which is \eqref{eq:W-initial}.
 \end{proof}
 
 \begin{example}[All one-threshold moves]\label{ex:1342-state}
@@ -1081,7 +918,7 @@ After the prefix $9,11,10,14,5,12$ of the running example
 \eqref{eq:running-example}, row $6$ of the table in \cref{ex:1342-scan}, the
 unread letters below the current minimum $5$ are $1,2,3,4$ and the stack is
 $\{6,7,8\}\mid\{13\}\mid\{15\}$.  The state is $(p,L)=(4,(3,1,1))$, and
-\eqref{eq:W} gives
+\eqref{eq:W} gives, with the two endpoint terms collected,
 \begin{align*}
  W_4((3,1,1))={}&W_0((6,1,1))+W_1((5,1,1))+W_2((4,1,1))+W_3((3,1,1))\\
  &+2W_4((2,1,1))+W_4((1,1,1,1)).
@@ -1102,7 +939,7 @@ By \eqref{eq:W-initial} and \eqref{eq:W-boundary},
  =W_0((4))+W_1((3))+W_2((2))+W_3((1))+W_4(\varnothing),
 \]
 the five terms corresponding to the first letter $1,2,3,4,5$.  Expanding
-by \eqref{eq:W} and \eqref{eq:W-endpoint} reaches twenty distinct states in
+by \eqref{eq:W} reaches twenty distinct states in
 all, listed here with their values, in increasing order of $\rho_1=p+|L|$:
 \begin{center}
 \small
@@ -1186,172 +1023,105 @@ which leaves $L'$ at control $0$.  Therefore
 The two coefficients count the ways to reach the stack $L'$ at
 controls $1$ and $0$, and they do not depend on $L'$.  Writing them as
 $K_1(1,1)=K_1(1,0)=1$, the identity reads
-$W_1((1)L')=\sum_{t\in\{0,1\}}K_1(1,t)W_t(L')$.  The theorem below shows when such a
-factorization holds for a recurrence on a control set and a
-stack: the transitions before the tail is exposed must leave the tail
-unchanged and must not depend on it.  We state it for an abstract recurrence
-because we apply it twice, to \eqref{eq:W} below and to the recurrence for
-general $d$ in \cref{sec:kernels}.
+$W_1((1)L')=\sum_{t\in\{0,1\}}K_1(1,t)W_t(L')$.  The theorem below shows
+that such a factorization holds for every head size: the transitions before
+the tail is exposed leave the tail unchanged and do not depend on it.
 
-Let $\mathcal C$ be a set and $\mathcal B^*$ the set of finite words over an
-alphabet $\mathcal B$.  In the application below, an element of $\mathcal C$
-records the number of unread values that the obligations so far leave
-unconstrained, and a word in $\mathcal B^*$ lists the sizes of the pending
-intervals, active head first.  A \emph{recurrence} $H$ on
-$\mathcal C\times\mathcal B^*$ assigns to each nonboundary state $(c,Y)$ an
-equation
-\[
- H_c(Y)=\sum_e H_{c_e}(Y_e)
-\]
-with finitely many summands, a summand with coefficient $m$ being written as
-$m$ equal summands, as in \cref{sec:one-threshold}.  A
-boundary state has a prescribed nonnegative-integer value and no equation.
-Each summand is a transition $(c,Y)\to(c_e,Y_e)$, so parallel
-transitions may occur.  A \emph{path} is a finite sequence of consecutive
-transitions, and a \emph{complete path} is one ending at a boundary state.
-The recurrence \emph{terminates} if it has no infinite path.  Then every
-state has finitely many complete paths, and induction along the
-well-founded transition relation shows that $H_c(Y)$ is the sum, over the
-complete paths from $(c,Y)$, of the boundary values at their last states.
-
-For a factorization $Y=UL$ of a stack we write $U\mid L$ when the suffix
-$L$ is the one under consideration.  The marker is a notational device and
-not part of the state.  In the application, $L$ is a tail of the interval
-stack at a separation, chosen freely.  A state is an \emph{exposure} of $L$
-if its stack is exactly $L$, that is, if it has the form
-$(t,\varnothing\mid L)$.  Given a state $s_0=(c,U\mid L)$ with
-$U\ne\varnothing$, we call $L$ \emph{protected before exposure from $s_0$} if
-the following two conditions hold.
-\begin{enumerate}
-\item[(P1)] Every state reachable from $s_0$ by a path containing no
-  exposure of $L$ has the form $(c',U'\mid L)$ with $U'\ne\varnothing$.
-\item[(P2)] For every such state and every word $L^\star\in\mathcal B^*$,
-  replacing $L$ by $L^\star$ induces a bijection between the transitions
-  leaving $(c',U'\mid L)$ and those leaving $(c',U'\mid L^\star)$, with
-  corresponding targets $(c'',V'\mid L)$ and $(c'',V'\mid L^\star)$.
-\end{enumerate}
-Thus (P1) says that the suffix $L$ survives untouched until it is exposed,
-and (P2) says that the transitions before exposure do not depend on it.  We
-call $L$ \emph{necessarily exposed from $s_0$} if every complete path from
-$s_0$ contains an exposure of $L$, possibly as its last state.
+For a stack $UL$ we write $U\mid L$ when the suffix $L$ is the one under
+consideration.  The marker is a notational device and not part of the
+state.  A state is an \emph{exposure} of $L$ if its stack is exactly $L$,
+that is, if it has the form $(t,\varnothing\mid L)$.  A \emph{path} is a
+finite sequence of consecutive transitions.  For a nonempty list $U$, a path
+from $(p,U\mid L)$ is \emph{stopped} if it ends at an exposure of $L$ and
+contains no earlier one, and $K_U^L(p,t)$ denotes the number of stopped
+paths from $(p,U\mid L)$ to $(t,\varnothing\mid L)$.  We write
+$K_\ell^L=K_{(\ell)}^L$, and we let $K_\varnothing$ be the identity kernel
+$\one_{p=t}$, which is $1$ if $p=t$ and $0$ otherwise.  Kernels are
+multiplied as matrices, $(AB)(p,t)=\sum_{u\geq0}A(p,u)B(u,t)$.
 
 \begin{theorem}[Protected-tail factorization]
 \label{thm:protected-tail-principle}
-Let $H$ be a terminating recurrence on
-$\mathcal C\times\mathcal B^*$.  Suppose that, for every
-$c\in\mathcal C$, $x\in\mathcal B$, and $L\in\mathcal B^*$, the marked
-suffix $L$ is protected before exposure from $(c,x\mid L)$ and necessarily
-exposed from that state.
-
-Let $K_x^L(c,t)$ be the number of paths from $(c,x\mid L)$ to
-$(t,\varnothing\mid L)$ whose only exposure of $L$ is their last state.  We
-call these paths \emph{stopped} at the first exposure of $L$.  Then
-$K_x^L(c,t)$ is independent of $L$.  We write $K_x(c,t)$ for it.  If
-$Y=x_1\cdots x_s$ and $G_t=H_t(\varnothing)$, then
-\begin{equation}\label{eq:abstract-factorization}
- H_c(Y)=\sum_{t\in\mathcal C}(K_{x_1}K_{x_2}\cdots K_{x_s})(c,t)G_t.
+For every nonempty list $U$ of positive integers, the number $K_U^L(p,t)$ is
+independent of $L$.  We write $K_U(p,t)$ for it.  Then, for all lists $U$,
+$V$ and $L$ of positive integers,
+\begin{equation}\label{eq:scalar-factorization}
+ W_p(UL)=\sum_{t\geq0}K_U(p,t)W_t(L)
+ \qquad\hbox{and}\qquad K_{UV}=K_UK_V.
 \end{equation}
-Here
-\[
- (AB)(c,t)=\sum_{u\in\mathcal C}A(c,u)B(u,t),
-\]
-and the empty product is the identity kernel $\one_{c=t}$, which is $1$ if
-$c=t$ and $0$ otherwise.  All displayed
-sums are finite by termination.
+In particular $K_{(\ell_1,\ldots,\ell_s)}=K_{\ell_1}\cdots K_{\ell_s}$, and
+for $L=(\ell_1,\ldots,\ell_s)$
+\begin{equation}\label{eq:abstract-factorization}
+ W_p(L)=\sum_{t\geq0}(K_{\ell_1}K_{\ell_2}\cdots K_{\ell_s})(p,t)W_t(\varnothing).
+\end{equation}
 \end{theorem}
 
 \begin{proof}
-By (P1) and (P2) and induction on the number of transitions, replacing $L$
-by $L^\star$ gives a bijection between the paths from $(c,x\mid L)$ that
-contain no exposure of $L$ and the paths from $(c,x\mid L^\star)$ that
-contain no exposure of $L^\star$, with equal controls at corresponding
-states.  The transition that produces the first exposure leaves a state of
-the form $(c',U'\mid L)$ and is matched as well.  Therefore $K_x^L(c,t)$ is
-independent of $L$.  By necessary exposure, every complete path from
-$(c,x\mid L)$ has a unique first exposure of $L$, of the form
-$(t,\varnothing\mid L)$.  Cutting the path there gives a stopped path
-counted by $K_x(c,t)$ followed by a complete path from $(t,L)$, and
-concatenation is the inverse operation.  Summing the boundary values over
-the complete paths from $(c,x\mid L)$ therefore gives
-\[
- H_c(xL)=\sum_{t\in\mathcal C}K_x(c,t)H_t(L).
-\]
-Applying this identity successively to $x_1,\ldots,x_s$ proves
+Both identities are trivial when $U$ or $V$ is empty, so let
+$U\ne\varnothing$.  Before $L$ is exposed, a state has the form
+$(p',U'\mid L)$ with $U'\ne\varnothing$.  By \eqref{eq:W}, its transitions
+change only the control and the blocks before the marker, and they and their
+targets are the same for every choice of $L$.  Replacing $L$ by another list
+therefore maps the stopped paths from $(p,U\mid L)$ bijectively onto those
+for the other list, with the same controls, so $K_U^L(p,t)$ is independent
+of $L$.  By \cref{prop:scalar-literal}, $W_p(UL)$ is the number of maximal
+transition sequences from $(p,UL)$.  Each of them ends at $(0,\varnothing)$,
+whose stack is empty, and changes only the blocks before the marker until
+$L$ is exposed, so it passes through a first exposure
+$(t,\varnothing\mid L)$ of $L$.  Cutting it there gives a stopped path
+counted by $K_U(p,t)$ followed by a maximal sequence from $(t,L)$, counted
+by $W_t(L)$, and concatenation is the inverse operation.  In the same way, a
+stopped path from $(p,UV\mid L)$ leaves $VL$ unchanged until $U$ is used up,
+so it passes through a first exposure $(u,\varnothing\mid VL)$ of $VL$, and cutting it there gives a stopped path
+from $(p,U\mid VL)$ followed by one from $(u,V\mid L)$, so
+$K_{UV}=K_UK_V$.  With $U=L$ and the empty tail, the two identities give
 \eqref{eq:abstract-factorization}.
 \end{proof}
 
 \begin{remark}[Pushdown systems and pop sequences]
 \label{rem:pop-sequences}
-Conditions (P1) and (P2) say that the recurrence is a pushdown system: a
-transition depends only on the control and on the part of the stack before
-the marker, and the part after it is untouched until exposed, which a
-pushdown automaton satisfies by definition.  The kernel $K_x(c,t)$ counts
-the runs that pop $x$ while passing from $c$ to $t$, and
-\cref{thm:protected-tail-principle} is the counting form of the classical
-conversion of a pushdown automaton into a context-free grammar, whose
-variable $[c\,x\,t]$ describes exactly those runs, see Hopcroft, Motwani,
-and Ullman~\cite[Theorem~6.14]{HopcroftMotwaniUllman2001} or
+The proof uses two properties of \eqref{eq:W}: before the marked tail is
+exposed, the transitions depend only on the control and the blocks before
+the marker and leave the tail unchanged, and every maximal transition
+sequence exposes the tail.  They say that the recurrence is a pushdown
+system.  The kernel $K_\ell(p,t)$ counts the runs that pop the block $\ell$
+while passing from $p$ to $t$, and \cref{thm:protected-tail-principle} is the
+counting form of the classical conversion of a pushdown automaton into a
+context-free grammar, whose variable $[p\,\ell\,t]$ describes exactly those
+runs, see Hopcroft, Motwani, and
+Ullman~\cite[Theorem~6.14]{HopcroftMotwaniUllman2001} or
 Sipser~\cite[Lemma~2.27]{Sipser2013}.  The same runs are the pop sequences
 of the weighted pushdown systems of Reps, Schwoon, Jha, and
 Melski~\cite{RepsSchwoonJhaMelski2005}, and
 \eqref{eq:abstract-factorization} is the first-passage decomposition of
 weighted lattice paths, see Flajolet and
-Sedgewick~\cite[Sections~I.5.3 and~V.4]{FlajoletSedgewick2009}.  We state
-and prove the theorem because the control set and the alphabet are infinite
-in our application, so the textbook statements do not apply verbatim.  The
-consequence also differs: with infinitely many controls the construction
-gives an infinite grammar, so the Chomsky--Sch\"utzenberger
-theorem~\cite{ChomskySchutzenberger1963} does not apply and no algebraicity
-follows, and what the factorization provides is a memoization key of
-polynomial size (\cref{thm:main}) rather than a generating function.
+Sedgewick~\cite[Sections~I.5.3 and~V.4]{FlajoletSedgewick2009}.  With
+infinitely many controls the construction gives an infinite grammar, so the
+Chomsky--Sch\"utzenberger theorem~\cite{ChomskySchutzenberger1963} does not
+apply and no algebraicity follows, and what the factorization provides is a
+memoization key of polynomial size (\cref{thm:main}) rather than a
+generating function.  The same two properties hold for the recurrence of
+general $d$, and \cref{sec:kernels} applies the proof there.
 \end{remark}
 
 \subsection{The scalar kernel algorithm}\label{sec:scalar-kernel}
 
-We apply \cref{thm:protected-tail-principle} to the recurrence \eqref{eq:W},
-with $\mathcal C=\N$ the set of values of $p$, with $\mathcal B$ the set of
-positive integers, and with $W$ in the role of the recurrence $H$.
-A word in $\mathcal B^*$ is then the list $L$ of interval sizes.  We place
-the marker before an arbitrary tail $L$ of the stack.  A new minimum can enlarge the active head, an endpoint can shorten
-it, and an interior letter can replace it by two new parts.  None of these
-moves changes $L$ before every part preceding the marker has disappeared.
-Equations \eqref{eq:W} and \eqref{eq:W-endpoint} show that, before exposure,
-the transitions leaving a state and their targets are determined by $p$ and
-the blocks preceding the marker.  Replacing $L$ therefore gives the
-bijection of outgoing transitions required by (P2).  Every move decreases
-\eqref{eq:rho-scalar}, and the only terminal state has an empty stack.  Therefore
-no complete path can terminate before exposing $L$.  Thus
-\cref{thm:protected-tail-principle} applies.
-
-For $\ell\geq1$, let $K_\ell(p,t)$ be the kernel of
-\cref{thm:protected-tail-principle}, the number of stopped paths from
-$(p,(\ell)\mid L)$ to $(t,\varnothing\mid L)$, which does not depend on
-$L$.  Recall that the control $p$ is the number of unread
-letters below the current minimum.  In the kernel we call $p$ the
-\emph{source control}, $t$ a \emph{terminal control}, and
-$K_\ell(p,\mathord\cdot)$ a \emph{scalar kernel row}.  A transition
-that selects an unread letter below the current minimum is a \emph{base
-move}.  A transition that selects a value from the active head is an
-\emph{active-head move}.  Then
-\begin{equation}\label{eq:scalar-factorization}
- W_p((\ell)L)=\sum_{t\geq0}K_\ell(p,t)W_t(L).
-\end{equation}
-Put $K_0(p,t)=\one_{p=t}$ and $G_p=W_p(\varnothing)$.
+Recall that the control $p$ is the number of unread letters below the
+current minimum.  In the kernel $K_\ell(p,\mathord\cdot)$ of
+\cref{thm:protected-tail-principle} we call $p$ the \emph{source control},
+$t$ a \emph{terminal control}, and $K_\ell(p,\mathord\cdot)$ a \emph{scalar
+kernel row}.  A transition that selects an unread letter below the current
+minimum is a \emph{base move}.  A transition that selects a value from the
+active head is an \emph{active-head move}.  Put $K_0=K_\varnothing$, the
+identity kernel, and $G_p=W_p(\varnothing)$.
 
 \begin{proposition}[Scalar kernel recurrences]
 \label{prop:scalar-kernel-recurrence}
 For $\ell\geq1$,
 \begin{align}
 K_\ell(p,t)={}&\sum_{h=0}^{p-1}K_{\ell+p-1-h}(h,t)
- +D_\ell(p,t) \label{eq:scalar-K}\\
-&+\sum_{\substack{a,b\geq1\\a+b=\ell-1}}
-  \sum_{u\geq0}K_a(p,u)K_b(u,t), \notag
+ +\sum_{\substack{a,b\geq0\\a+b=\ell-1}}
+  \sum_{u\geq0}K_a(p,u)K_b(u,t). \label{eq:scalar-K}
 \end{align}
-where
-\begin{equation}\label{eq:scalar-D}
- D_1(p,t)=\one_{p=t},
- \qquad D_\ell(p,t)=2K_{\ell-1}(p,t)\quad(\ell\geq2).
-\end{equation}
 The empty-stack values satisfy
 \begin{equation}\label{eq:scalar-G}
  G_p=
@@ -1364,18 +1134,14 @@ The empty-stack values satisfy
 \end{proposition}
 
 \begin{proof}
-We partition the stopped paths by their first move.  A new minimum leaving
-$h$ lower letters gives the first sum in \eqref{eq:scalar-K}.  If $\ell=1$,
-consuming the only active letter exposes $L$ at the same control.  If
-$\ell\geq2$, either endpoint leaves an active head of size $\ell-1$.  These
-are the terms in \eqref{eq:scalar-D}.  An interior letter creates two parts
-of sizes $a,b\geq1$ with $a+b=\ell-1$.  We move the marker to
-$(p,(a)\mid(b)L)$.  A path stopped at the first exposure of $L$ passes
-through a unique first exposure of $(b)L$, because every transition changes
-the stack only in its current active head.  Cutting there splits the path
-into one counted by $K_a(p,u)$, for some intermediate control $u$, and one
-counted by $K_b(u,t)$.  Concatenation inverts the cut.  Summing over $u$
-gives the double sum in \eqref{eq:scalar-K}.  Finally, \eqref{eq:scalar-G}
+We partition the stopped paths from $(p,(\ell)\mid L)$ by their first move.
+A new minimum leaving $h$ lower letters gives the first sum in
+\eqref{eq:scalar-K}.  A letter of the active head of local rank $r$ leaves
+the stack $\nz(a,b)L$ with $a=r-1$ and $b=\ell-r$, so the rest of the path is
+a stopped path from $(p,\nz(a,b)\mid L)$, or the empty path when
+$\ell=1$.  These are counted by
+$K_{\nz(a,b)}(p,t)=(K_aK_b)(p,t)$, by
+\cref{thm:protected-tail-principle}, which gives the double sum.  Finally, \eqref{eq:scalar-G}
 follows from \eqref{eq:W-boundary}: a new minimum leaving $h$ lower letters
 creates a part of size $p-1-h$, to which \eqref{eq:scalar-factorization}
 applies, and $K_0$ covers the case $h=p-1$.
@@ -1410,7 +1176,7 @@ We call $p+\ell$ the \emph{grade} of the kernel row $K_\ell(p,\mathord\cdot)$.
 \label{ex:scalar-kernel}
 We write each row $K_\ell(p,\mathord\cdot)$ as the vector
 $(K_\ell(p,0),\ldots,K_\ell(p,p))$, which by \cref{lem:scalar-support} lists
-its whole support.  Equations \eqref{eq:scalar-K}--\eqref{eq:scalar-D} give
+its whole support.  Equation \eqref{eq:scalar-K} gives
 \[
  K_1(1,\mathord\cdot)=(1,1),\quad
  K_3(0,\mathord\cdot)=(5),\quad
@@ -1459,9 +1225,9 @@ the cost of multiplying $b$-bit integers, as in \cref{thm:main}.
 We order the kernel rows by grade.  The row in a base term of
 \eqref{eq:scalar-K} has grade
 $h+(\ell+p-1-h)=p+\ell-1$.  In a split term, $p+a<p+\ell$.  If
-$K_a(p,u)\neq0$, then $u\leq p$ by \cref{lem:scalar-support}, and hence
-$u+b\leq p+b<p+\ell$.  The term $D_1$ is initial data, and $D_\ell$ for
-$\ell\geq2$ uses the row of grade $p+\ell-1$.  Thus increasing grade
+$K_a(p,u)\neq0$, then $u\leq p$, by \cref{lem:scalar-support} when $a\geq1$
+and since $K_0$ is the identity when $a=0$, and hence $u+b\leq p+b<p+\ell$.
+Thus increasing grade
 is a topological order for all kernel dependencies: an order in which every
 row comes after all the rows its recurrence uses, so that evaluating the rows
 in this order never meets a row not yet computed.  Equation
@@ -1491,8 +1257,8 @@ For a scalar kernel entry, we take the marked suffix to be empty, by
 suffix independence.  Its initial number of unread letters is then
 $p+\ell\leq N$.  An empty-stack computation also starts with at most $N$
 unread letters.  This number decreases at every transition.  At each state,
-the sum of the outgoing transition multiplicities is the number of legal
-next letters and is at most $N$.  Thus each stored count is
+the number of outgoing transitions is the number of legal next letters and
+is at most $N$.  Thus each stored count is
 at most $(N+1)^N$ and has $O(N\log N)$ bits.  Accounting for integer
 multiplication and for the bit length of every stored entry gives the stated
 bit bounds.  Every product and partial accumulator is a nonnegative
@@ -1521,8 +1287,11 @@ increasing subsequence of length $j$ contained in that prefix, for
 $1\leq j\leq d$.  When the prefix contains no such subsequence, we use the
 virtual value $b_j=n+j$.  Then
 \[
- b_1<b_2<\cdots<b_d.
+ b_1<b_2<\cdots<b_d,
 \]
+since deleting the last entry of an increasing $(j+1)$-subsequence ending at
+a nonvirtual $b_{j+1}$ leaves one of length $j$ ending below $b_{j+1}$, and a
+virtual $b_{j+1}=n+j+1$ exceeds $b_j\leq n+j$.
 We call $b_1,\ldots,b_d$ the \emph{patience-sorting thresholds} of the
 prefix, since they are the top cards of the first $d$ piles when the
 prefix is dealt by patience sorting, see Aldous and
@@ -1546,8 +1315,8 @@ selects a value from $I_1$.  We call a base move from $B_i$ with $i<d-1$ an
 move}.  In the terms of \cref{def:scan-state}, a value
 of $B_i$ with $i<d-1$ is a non-trigger move, a value of $B_{d-1}$ is a
 merger, and a value of $I_1$ is a split (\cref{prop:state-invariant}(b)
-below).  By \cref{lem:least-trigger-frontier} below, the least $d$-trigger
-$q$ of \cref{def:scan-state} is $b_d$ whenever $b_d$ is nonvirtual.  Initially
+below).  By \eqref{eq:bd-q} below, $b_d$ is the least $d$-trigger $q$ of
+\cref{def:scan-state}.  Initially
 $\mathbf p=(n,0,\ldots,0)$.
 
 \begin{figure}[tb]
@@ -1631,25 +1400,16 @@ lies in band $d-1$.  The first $d-1$ bands update one threshold without
 creating an obligation.  The last band also creates a $231$-avoidance
 obligation.
 
-\begin{lemma}[Least-trigger threshold]\label{lem:least-trigger-frontier}
-After a prefix has been read, either $b_d$ is virtual and no $d$-trigger has
-been read, or $b_d$ is the smallest value of a $d$-trigger in the prefix.
-In particular, no unread value below $b_d$ belongs to the projection of any
-earlier trigger, so none is constrained by an obligation created so far.  When $b_d$ is nonvirtual, every
-unread value above $b_d$ belongs to the projection created by the
-trigger $b_d$.
-\end{lemma}
-
-\begin{proof}
-If $b_d$ is virtual, no increasing $d$-subsequence has occurred, so no
-$d$-trigger has been read.  Otherwise $b_d$ is by definition the least final
-value of an increasing $d$-subsequence in the prefix, and hence is itself a
-$d$-trigger, and every other $d$-trigger has value at least $b_d$.  An
-unread value $x<b_d$ is therefore smaller than every earlier trigger and
-occurs in none of their projections.  If $b_d$ is nonvirtual and $x>b_d$ is
-unread, then $x$ occurs after the trigger $b_d$ and belongs to its
-projection.
-\end{proof}
+Since a $d$-trigger is the last entry of an increasing $d$-subsequence,
+$b_d$ is the least $d$-trigger of the prefix when it is nonvirtual, and a
+virtual $b_d=n+d$ means that the prefix has no $d$-trigger.  With $q$ as in
+\cref{def:scan-state}, in both cases
+\begin{equation}\label{eq:bd-q}
+ b_d=q.
+\end{equation}
+In particular, the unread values below $b_d$ belong to the projection of no
+trigger read so far, while every unread value above a nonvirtual $b_d$
+belongs to the projection created by the trigger $b_d$.
 
 For example, in the permutation $316829574$ the entries $3,6$ form an increasing $2$-subsequence, and the subsequent
 projection onto values larger than $6$ is $8,9,7$, an occurrence of $231$.
@@ -1691,12 +1451,9 @@ head, so the stack becomes $\{8,12,13\}\mid\{15\}$.  \Cref{ex:full-state}
 follows the whole running example through such moves.
 
 Let $L=(\ell_1,\ldots,\ell_s)$ be the sizes of the pending intervals,
-active head first.  For a legal prefix (\cref{def:scan-state}) with state
-$(\mathbf p,L)$, let $H_{\mathbf p}(L)$ be the number of completions that
-produce a $\beta_d$-avoiding permutation.  By \cref{prop:state-invariant}(c)
-below, this number depends only on $(\mathbf p,L)$.  For an empty stack
-we interpret $\ell_1=0$ and its tail as empty.  Let $\nz(x_1,\ldots,x_r)$ denote
-the list obtained by deleting every zero entry.
+active head first, and call $(\mathbf p,L)$ the \emph{state} of a legal
+prefix (\cref{def:scan-state}).  For an empty stack
+we interpret $\ell_1=0$ and its tail as empty.
 
 \begin{proposition}[State invariant]\label{prop:state-invariant}
 Let $\sigma$ be a legal prefix with thresholds $b_1<\cdots<b_d$, band sizes
@@ -1704,14 +1461,7 @@ $\mathbf p$, and stack $\mathcal S(\sigma)=(I_1,\ldots,I_s)$ with sizes
 $L=(\ell_1,\ldots,\ell_s)$.
 \begin{enumerate}
 \item[(a)] The stack consists of the unread values above $b_d$, so the
-  ordered layout \eqref{eq:ordered-layout} holds, and a completion $w$ of
-  $\sigma$ satisfies the residual obligations of all $d$-triggers of
-  $\sigma$ exactly when
-  \begin{equation}\label{eq:obligation-language}
-   w\big|_{I_1\cup\cdots\cup I_s}
-   \in
-   \Av(231)(I_1)\oplus\cdots\oplus\Av(231)(I_s).
-  \end{equation}
+  ordered layout \eqref{eq:ordered-layout} holds.
 \item[(b)] The legal moves from $\sigma$, and their effect on
   $(\mathbf p,L)$, are the following.  A value of $B_i$ with $i<d-1$ having
   $h$ unread values of $B_i$ below it is a non-trigger move to
@@ -1720,56 +1470,38 @@ $L=(\ell_1,\ldots,\ell_s)$.
   $(U_h(\mathbf p),\nz(\ell_1+\delta_h,\ell_2,\ldots))$.  A value of $I_1$
   of local rank $r$ is a split to
   $(\mathbf p,\nz(r-1,\ell_1-r,\ell_2,\ldots))$.  No other letter is legal.
-\item[(c)] The set of $\beta_d$-avoiding completions of
-  $\sigma$ is determined, up to standardization, by $(\mathbf p,L)$.
 \end{enumerate}
 \end{proposition}
 
 \begin{proof}
-(a) By \cref{lem:least-trigger-frontier}, $b_d$ is the least $d$-trigger of
-$\sigma$ when it is nonvirtual, and $\sigma$ has no $d$-trigger when $b_d$
-is virtual.  Therefore, by \cref{def:scan-state}, the stack consists of the
-unread values above $b_d$ (no value exceeds a virtual $b_d=n+d$, so
-the two descriptions agree), while the unread values below $b_d$ form the
-bands by definition.  This is \eqref{eq:ordered-layout}.  Then
-\eqref{eq:obligation-language} is \cref{prop:scan-states}(a).
+(a) Since $b_d=q$ by \eqref{eq:bd-q}, the stack consists of the unread
+values above $b_d$ by \cref{lem:legal-moves}(a), while the unread values
+below $b_d$ form the bands by definition.  This is \eqref{eq:ordered-layout}.
 
 (b) We classify the unread letters by \cref{def:scan-state}.  Let
 $x\in B_i$ with $i<d-1$, and let $h$ be the number of unread values of $B_i$
-below $x$.  As observed before \cref{lem:least-trigger-frontier}, $x$ ends
+below $x$.  As observed before \eqref{eq:bd-q}, $x$ ends
 an increasing subsequence of length $i+1$ but none of length $i+2\leq d$, so
 $x$ is not a $d$-trigger of $\sigma x$: reading it is a non-trigger move, and
 the stack is unchanged.  Replacing $b_{i+1}$ by $x$ leaves $h$ values in
 band $i$ and moves the other $p_i-1-h$ values into band $i+1$, giving
 $T_{i,h}(\mathbf p)$.  Next let $x\in B_{d-1}$, with $h$ unread values of
-$B_{d-1}$ below it.  As observed before
-\cref{lem:least-trigger-frontier} with $i=d-1$, the letter $x$ ends an
-increasing $d$-subsequence (for $d=1$, $x$ is itself one) and changes only
-$b_d$.  Since $x<b_d$, it is smaller than every $d$-trigger of
-$\sigma$ by \cref{lem:least-trigger-frontier}.  Reading it is therefore a merger, with
-$q=b_d$ when $b_d$ is nonvirtual.  When $b_d$ is virtual, $\sigma$ has no
-$d$-trigger and, by \cref{def:scan-state}(a), $E$ is the set of all unread
-values above $x$, again the unread values strictly between $x$ and
-$b_d=n+d$.  In both cases $E$ has $\delta_h=p_{d-1}-1-h$ elements, $x$ becomes the new $b_d$ with $h$ values left in the last band,
+$B_{d-1}$ below it.  As observed before \eqref{eq:bd-q} with $i=d-1$, the
+letter $x$ ends an increasing $d$-subsequence (for $d=1$, $x$ is itself one)
+and changes only $b_d$.  Since $x<b_d=q$, reading it is a merger, and $E$,
+the set of unread values strictly between $x$ and $b_d$, has
+$\delta_h=p_{d-1}-1-h$ elements.  The letter $x$ becomes the new $b_d$ with
+$h$ values left in the last band,
 and the stack becomes $\nz(\ell_1+\delta_h,\ell_2,\ldots)$ by
 \cref{def:scan-state}(a).  Finally let $x\in I_1$ have local rank $r$.  As noted after \cref{def:scan-state}, $x$ is a $d$-trigger of
 $\sigma x$ exceeding $b_d$, so reading it is a split.  No threshold changes,
 since $x>b_d$, and the stack becomes $\nz(r-1,\ell_1-r,\ell_2,\ldots)$ by
 \cref{def:scan-state}(b).  Every other unread letter lies in a deferred
 interval and is illegal by \cref{lem:legal-moves}(b).
-
-(c) By \cref{prop:scan-states}(c), the $\beta_d$-avoiding completions of
-$\sigma$ are exactly the sequences of legal moves that read every unread
-letter, and by (b) the legal moves from a legal prefix, their successor
-states and their multiplicities depend only on $(\mathbf p,L)$ and on the
-local ranks of the letters read.  Therefore, by induction on the number of
-unread letters, which drops by one at every move, the standardized set of
-avoiding completions depends only on $(\mathbf p,L)$.
 \end{proof}
 
-For $(\mathbf p,L)\ne(\mathbf0,\varnothing)$, partitioning by the next letter
-gives the following expression for the number of completions that produce a
-$\beta_d$-avoiding permutation.
+For a control $\mathbf p$ and a list $L$ of positive integers with
+$(\mathbf p,L)\ne(\mathbf0,\varnothing)$, we define
 \begin{align}
 H_{\mathbf p}(L)={}&
  \sum_{i=0}^{d-2}\sum_{h=0}^{p_i-1}
@@ -1777,20 +1509,27 @@ H_{\mathbf p}(L)={}&
 &+\sum_{h=0}^{p_{d-1}-1}
  H_{U_h(\mathbf p)}\!\left(
    \nz(\ell_1+\delta_h,\ell_2,\ldots)\right)                       \notag\\
-&+\min(2,\ell_1)
- H_{\mathbf p}\!\left(\nz(\ell_1-1,\ell_2,\ldots)\right)       \notag\\
-&+\sum_{j=2}^{\ell_1-1}
- H_{\mathbf p}\!\left((j-1,\ell_1-j,\ell_2,\ldots)\right).        \notag
+&+\sum_{\substack{a,b\geq0\\a+b=\ell_1-1}}
+ H_{\mathbf p}\!\left(\nz(a,b,\ell_2,\ldots)\right).                \notag
 \end{align}
-The four lines represent, respectively, an early-band move, a last-band
-move, an endpoint choice in the active head, and an interior choice.  The
-first double sum is empty when $d=1$, and the last two lines are absent when
-the stack is empty.
-The initial and terminal conditions are
+The three lines represent, respectively, an early-band move, a last-band
+move, and a letter of the active head, of local rank $a+1$, and as in
+\cref{sec:one-threshold} each summand stands for a transition.  The first
+double sum is empty when $d=1$, and the last line is empty when the stack
+is empty.  The quantity
+\begin{equation}\label{eq:rho}
+ \rho(\mathbf p,L)=\|\mathbf p\|_1+\sum_{j=1}^{s}\ell_j
+\end{equation}
+drops by one on every transition.  An early-band move reduces the control
+mass by one.  A last-band move reduces it by $\delta_h+1$ and adds
+$\delta_h$ to the head.  An active-head move consumes one head value.
+Therefore \eqref{eq:H} and $H_{\mathbf0}(\varnothing)=1$ define
+$H_{\mathbf p}(L)$, and by induction on $\rho$ it is the number of maximal
+transition sequences from $(\mathbf p,L)$, all of which end at the zero
+state.  Theorem~\ref{thm:literal} below shows that
 \begin{equation}\label{eq:initial-terminal}
  a_n^{(d)}:=|\Av_n(\beta_d)|
- =H_{(n,0,\ldots,0)}(\varnothing),
- \qquad H_{\mathbf0}(\varnothing)=1.
+ =H_{(n,0,\ldots,0)}(\varnothing).
 \end{equation}
 For $d=1$, identify $H_{(p)}(L)=W_p(L)$.  The early-band sum is empty,
 $U_h((p))=(h)$, and \eqref{eq:H}--\eqref{eq:initial-terminal} reduce to
@@ -1888,31 +1627,25 @@ occur between them.  The scan continues with $3$.
 \end{example}
 
 \begin{theorem}[Literal recurrence]\label{thm:literal}
-For every $d\geq1$, equations \eqref{eq:H} and
-\eqref{eq:initial-terminal} count every $\beta_d$-avoiding permutation
-exactly once, as a maximal sequence of transitions from
-$((n,0,\ldots,0),\varnothing)$.
+Let $d\geq1$.  For every legal prefix with state $(\mathbf p,L)$, reading the
+letters of a completion one at a time is a bijection from the completions
+that produce a $\beta_d$-avoiding permutation to the maximal sequences of
+transitions from $(\mathbf p,L)$, and $H_{\mathbf p}(L)$ is their number.  In
+particular \eqref{eq:initial-terminal} holds.
 \end{theorem}
 
 \begin{proof}
-By \cref{prop:scan-states}(c), the $\beta_d$-avoiding permutations are
-exactly the words all of whose prefixes are legal, and by
-\cref{prop:state-invariant}(b) the four types of terms in \eqref{eq:H} are
-exactly the legal moves.  Local ranks identify letters uniquely,
-except that two distinct endpoints have the same standardized successor and
-are recorded with multiplicity two.  As in \cref{sec:one-threshold}, the
-coefficient $2$ stands for two transitions, labelled by the local ranks $1$
-and $\ell_1$.
-The quantity
-\begin{equation}\label{eq:rho}
- \rho(\mathbf p,L)=\|\mathbf p\|_1+\sum_{j=1}^{s}\ell_j
-\end{equation}
-drops by one on every transition.  An early-band move reduces the control mass by
-one.  A last-band move reduces it by $\delta_h+1$ and adds $\delta_h$ to the
-head.  An active-head move consumes one head value.  Therefore every maximal
-sequence of transitions ends at the unique zero state.  Reading the chosen local
-ranks along such a path reconstructs one permutation, inverse to scanning
-that permutation.
+By \cref{prop:state-invariant}(a), the unread values of a legal prefix with
+state $(\mathbf p,L)$ are the $\rho(\mathbf p,L)$ values of its bands and
+its stack, and we argue by induction on this number, as in the proof of
+\cref{prop:scalar-literal}.  If no value is unread, the prefix is a
+permutation, it avoids $\beta_d$ by \cref{prop:scan-states}(a), and its
+state is the zero state.  Otherwise, by \cref{prop:scan-states}(b) an
+illegal letter begins no avoiding completion, and by
+\cref{prop:state-invariant}(b) the legal letters and their successor states
+are the terms of \eqref{eq:H}, one letter for each term.  The induction
+hypothesis applies to the successors.  The empty prefix has the state
+$((n,0,\ldots,0),\varnothing)$.
 \end{proof}
 
 The stack can be read off the scanned prefix.  Recall that two unread
@@ -1936,8 +1669,9 @@ satisfy (ii).
 \end{corollary}
 
 \begin{proof}
-We prove that (ii) implies (iii), that (iii) implies (i), and that (i)
-implies (ii).
+Since $b_d=q$ by \eqref{eq:bd-q}, (i) and (ii) are equivalent by
+\cref{lem:separators}.  We prove that (ii) implies (iii) and that (iii)
+implies (i).
 
 Suppose (ii) holds, and let $c$ be the trigger.  If $v$ preceded $u$ in a
 completion, an increasing $d$-subsequence ending at $c$, followed by
@@ -1947,39 +1681,12 @@ Suppose (i) fails, so that $u$ and $v$ lie in the same interval.  The
 avoiding completion constructed in the proof of \cref{prop:scan-states}(c)
 reads each interval in decreasing order, and so reads $v$ before $u$.
 Therefore (iii) fails.
-
-To see that (i) implies (ii), we show along the scan that (i) and (ii) agree for
-every adjacent pair above $b_d$.  The induction repeats that of
-\cref{lem:1342-separators} with $m$ replaced by $b_d$.  We give it in full
-because of the additional early-band case.  Initially the stack is empty
-and no trigger has been read.  Let $x$ be the letter read next.  In an early-band
-move, which does not occur when $d=1$, $x<b_d$ is not a $d$-trigger and
-lies below every unread value above $b_d$, so the stack and both
-conditions are unchanged.  In a last-band move, $x$ becomes the least
-trigger, and $E$ joins the head or becomes the whole stack when the old
-stack was empty.  An adjacent pair $u<v$ above $x$ that was not an adjacent
-pair above the old $b_d$ has $u\in E$, so $u$ is smaller than every trigger
-read before $x$, and every letter between $u$ and $v$ was read before $x$.
-Therefore (ii) fails, and (i) fails because $u$ and $v$ lie in the single
-interval $E\cup I_1$, or $E$.  All other pairs keep their members, their
-intervals, and the letters between them, and $x$ lies below them, so both
-conditions are unchanged for them.  In an active-head move the stack
-is nonempty, so $b_d$ is a $d$-trigger by
-\cref{lem:least-trigger-frontier}, and $x\in I_1$ is read after it.  Only
-the unread neighbours $u<x<v$ of $x$, when both exist and $u>b_d$, can form
-a new adjacent pair.  Then $u$ lies in the part of $I_1$ below $x$, while
-$v$ lies in the part above $x$ or, if $x=\max I_1$, is the least element
-of $I_2$.  Thus $u$ and $v$ lie in different intervals, and $x$ witnesses
-(ii) with the trigger $b_d<u$.  All other pairs are unaffected.
 \end{proof}
 
 Condition (ii) locates the separations, not the letters that produced
 them: several letters between $u$ and $v$ may satisfy (ii), and the letter
-whose split created the separation need not be among them.  By
-\cref{prop:state-invariant}(c), the control $\mathbf p$ together with these
-separations determines the completions up to standardization.  Adjacency is
-needed only in (ii), as the example after
-\cref{lem:1342-separators} shows.  For arbitrary unread $u<v$ above $b_d$,
+whose split created the separation need not be among them.  Adjacency is
+needed only in (ii), as the example before \cref{ex:1342-scan} shows.  For arbitrary unread $u<v$ above $b_d$,
 conditions (i) and (iii) remain equivalent, and they hold exactly when some
 pair $a<c$ of adjacent unread values with $u\leq a<c\leq v$ satisfies (ii).
 
@@ -2013,28 +1720,30 @@ The literal state space is therefore exponential in $n$.
 \section{Protected tails and transfer kernels}\label{sec:kernels}
 
 In this section we factor the literal recurrence through transfer kernels and
-derive recurrences for the kernels and for the empty-stack values.  We apply \cref{thm:protected-tail-principle} to the recurrence \eqref{eq:H},
-with $\mathcal C=\N^d$ the set of controls and $\mathcal B$ the set of
-positive integers.  We place the marker before an arbitrary tail $L$ of the
-stack.  An early-band move changes only the control.  A last-band move can
-enlarge the active head, an endpoint can shorten it, and an interior letter
-can replace it by two parts.  None of these transitions changes $L$ before
-exposure, and \eqref{eq:H} shows that the transitions leaving a state and
-their targets depend only on $\mathbf p$ and the blocks preceding the
-marker.  Replacing $L$ therefore gives the bijection of outgoing transitions
-required by (P2).  The quantity \eqref{eq:rho} drops at every transition, so
-the recurrence terminates, and the only terminal state has an empty stack.
-Therefore no complete path can terminate before exposing $L$.  Thus the
-hypotheses of \cref{thm:protected-tail-principle} hold.  We let
-$K_\ell^L(\mathbf p,\mathbf t)$ be the number of stopped paths from
-$(\mathbf p,(\ell)\mid L)$ to $(\mathbf t,\varnothing\mid L)$.
+derive recurrences for the kernels and for the empty-stack values.  By
+\cref{thm:literal}, $H_{\mathbf p}(L)$ is the number of maximal transition
+sequences from $(\mathbf p,L)$.  We mark an arbitrary tail $L$ of the stack
+and define exposures, stopped paths and the identity kernel $K_\varnothing$
+as in \cref{sec:obligations}.  An early-band move changes only the control.
+A last-band move can enlarge the active head, and a letter of the active
+head replaces it by its parts below and above that letter.  Thus,
+before $L$ is exposed, the transitions change only the control and the
+blocks before the marker, and \eqref{eq:H} shows that they and their targets
+are the same for every $L$.  Every maximal transition sequence ends at the
+zero state, whose stack is empty.  These are the two properties used in the
+proof of \cref{thm:protected-tail-principle}, and the same proof gives the
+following corollary.  For a nonempty list $U$ we let
+$K_U^L(\mathbf p,\mathbf t)$ be the number of stopped paths from
+$(\mathbf p,U\mid L)$ to $(\mathbf t,\varnothing\mid L)$, and we write
+$K_\ell^L=K_{(\ell)}^L$ and $K_0=K_\varnothing$.
 
 \begin{corollary}[Permutation-stack factorization]\label{cor:protected-tail}
-The number $K_\ell^L(\mathbf p,\mathbf t)$ is independent of $L$.  We write
-$K_\ell(\mathbf p,\mathbf t)$ for it.  Then
+The number $K_U^L(\mathbf p,\mathbf t)$ is independent of $L$.  We write
+$K_U(\mathbf p,\mathbf t)$ for it.  Then, for all lists $U$, $V$ and $L$,
 \begin{equation}\label{eq:factorization}
- H_{\mathbf p}((\ell)L)=
- \sum_{\mathbf t\in\N^d}K_\ell(\mathbf p,\mathbf t)H_{\mathbf t}(L).
+ H_{\mathbf p}(UL)=
+ \sum_{\mathbf t\in\N^d}K_U(\mathbf p,\mathbf t)H_{\mathbf t}(L)
+ \qquad\hbox{and}\qquad K_{UV}=K_UK_V.
 \end{equation}
 In particular, for $L=(\ell_1,\ldots,\ell_s)$,
 \begin{equation}\label{eq:matrix-product}
@@ -2061,35 +1770,21 @@ K_\ell(\mathbf p,\mathbf t)={}&
  \sum_{i=0}^{d-2}\sum_{h=0}^{p_i-1}
  K_\ell(T_{i,h}(\mathbf p),\mathbf t)                               \label{eq:K}\\
 &+\sum_{h=0}^{p_{d-1}-1}
- K_{\ell+\delta_h}(U_h(\mathbf p),\mathbf t)
- +D_\ell(\mathbf p,\mathbf t)                                      \notag\\
-&+\sum_{\substack{a,b\geq1\\a+b=\ell-1}}
+ K_{\ell+\delta_h}(U_h(\mathbf p),\mathbf t)                        \notag\\
+&+\sum_{\substack{a,b\geq0\\a+b=\ell-1}}
   \sum_{\mathbf u\in\N^d}K_a(\mathbf p,\mathbf u)
-  K_b(\mathbf u,\mathbf t),                                         \notag
+  K_b(\mathbf u,\mathbf t).                                         \notag
 \end{align}
-where
-\begin{equation}\label{eq:D}
- D_1(\mathbf p,\mathbf t)=\one_{\mathbf p=\mathbf t},
- \qquad
- D_\ell(\mathbf p,\mathbf t)=2K_{\ell-1}(\mathbf p,\mathbf t)
- \quad(\ell\geq2).
-\end{equation}
 \end{proposition}
 
 \begin{proof}
-We partition the stopped paths by their first move.  Early- and last-band
-moves give the first two sums in \eqref{eq:K}.  If $\ell=1$, consuming the
-only head value exposes $L$ at the same control.  If $\ell\geq2$, the two
-endpoint choices give the same smaller head.  These are the terms in
-\eqref{eq:D}.  An interior choice produces two parts of sizes $a,b\geq1$
-with $a+b=\ell-1$.  We move the marker to $(\mathbf p,(a)\mid(b)L)$.  As in
-the scalar case, a path stopped at the first exposure of $L$ passes through
-a unique first exposure of $(b)L$.  Cutting there and summing over the
-intermediate control gives the double sum in \eqref{eq:K}.
+The first-move partition of the proof of \cref{prop:scalar-kernel-recurrence}
+applies, with \cref{cor:protected-tail} in place of
+\cref{thm:protected-tail-principle}.  Early-band moves give the first sum,
+and a last-band move enlarges the head by $\delta_h$.
 \end{proof}
 
 We now connect the kernels to an empty stack.  Put
-$K_0(\mathbf p,\mathbf t)=\one_{\mathbf p=\mathbf t}$ and
 $G_{\mathbf p}=H_{\mathbf p}(\varnothing)$.
 
 \begin{corollary}[Empty-stack recurrence]\label{cor:empty-stack-recurrence}
@@ -2141,10 +1836,8 @@ For every $\ell\geq1$,
 \end{lemma}
 
 \begin{proof}
-Every base move consumes a letter and hence strictly lowers control mass.
-Active-head moves leave the control unchanged.  If no base move occurs,
-the terminal control is $\mathbf p$.  If at least one base move occurs, the
-terminal control has mass at most $\|\mathbf p\|_1-1$.
+As in the proof of \cref{lem:scalar-support}, a base move strictly lowers
+the control mass and an active-head move leaves the control unchanged.
 \end{proof}
 
 In the algorithm below, each row operation is coefficientwise, and every row
@@ -2153,7 +1846,7 @@ not yet computed is zero.
 \paragraph{Kernel phase.}
 For $w=1,2,\ldots,N$, and every $\mathbf p\in\N^d$, $\ell\geq1$ with
 $\|\mathbf p\|_1+\ell=w$, evaluate \eqref{eq:K} coefficientwise and store
-the resulting sparse row.  In each split term, for every $a,b\geq1$ with
+the resulting sparse row.  In each split term, for every $a,b\geq0$ with
 $a+b=\ell-1$ and
 $\mathbf u\in\supp K_a(\mathbf p,\mathord\cdot)$, add the scalar multiple
 $K_a(\mathbf p,\mathbf u)K_b(\mathbf u,\mathord\cdot)$ to the row being
@@ -2165,37 +1858,33 @@ $\mathbf p\in\N^d$ with $\|\mathbf p\|_1=m$, evaluate \eqref{eq:G}, using
 $K_0$ when $\delta_h=0$.  Return
 $(G_{(n,0,\ldots,0)})_{0\leq n\leq N}$.
 
-In the kernel phase, the early- and last-band rows in \eqref{eq:K} have
-grade $w-1$, for a last-band term because
+As in the proof of \cref{thm:scalar-algorithm}, with \cref{lem:support} in
+place of \cref{lem:scalar-support}, increasing $w$ is a topological order
+for the kernel phase and increasing $m$ for the empty-stack phase.  The new
+terms are the early-band rows of \eqref{eq:K}, of grade $w-1$ since
+$\|T_{i,h}(\mathbf p)\|_1=\|\mathbf p\|_1-1$, and the last-band rows, of
+grade $w-1$ since
 \[
  \|U_h(\mathbf p)\|_1+(\ell+\delta_h)
  =\|\mathbf p\|_1-(\delta_h+1)+\ell+\delta_h=w-1.
 \]
-The term $D_1$ is initial data, while $D_\ell$ for $\ell\geq2$ uses a row of
-grade $w-1$.  In a split term, $\|\mathbf p\|_1+a<w$ and, by
-\cref{lem:support}, $\|\mathbf u\|_1+b\leq\|\mathbf p\|_1+b<w$.  Therefore
-increasing $w$ is a topological order.  In the empty-stack phase every
-terminal control used at mass $m$ has smaller mass, including
-$U_h(\mathbf p)$ when $K_0$ occurs, so increasing $m$ is a topological order
-as well.
-
-For the coefficients with $n\leq N$, we use the padded region
-\begin{equation}\label{eq:source-region}
- \mathbf p\in\N^d,\qquad \ell\geq1,\qquad
- \|\mathbf p\|_1+\ell\leq N.
-\end{equation}
-The region contains exactly
+In \eqref{eq:G}, the early-band controls have mass $m-1$, and by
+\cref{lem:support} every terminal control $\mathbf t$ of
+$K_{\delta_h}(U_h(\mathbf p),\mathord\cdot)$ has
+$\|\mathbf t\|_1\leq\|U_h(\mathbf p)\|_1=m-1-\delta_h$, trivially when
+$\delta_h=0$.
+The kernel phase computes the rows of the \emph{padded region}
+$\|\mathbf p\|_1+\ell\leq N$, $\ell\geq1$, which by stars and bars has
 \begin{equation}\label{eq:row-count}
  \binom{N+d}{d+1}=O_d(N^{d+1})
 \end{equation}
-rows, by stars and bars.  By \cref{lem:support}, a row has at most
+rows.  By \cref{lem:support}, a row has at most
 $1+\binom{\|\mathbf p\|_1+d-1}{d}=O_d(N^d)$ possible terminal controls.
 
 \begin{proof}[Proof of \cref{thm:main}]
-Correctness follows from \cref{thm:literal,cor:protected-tail}: equations
-\eqref{eq:K} and \eqref{eq:G} are the first-step evaluations of the
-factorization \eqref{eq:factorization}, and the preceding topological orders
-evaluate all of their dependencies.  We now bound the resources.
+Correctness follows from \cref{thm:literal,cor:protected-tail,prop:kernel-recurrence,cor:empty-stack-recurrence}:
+the algorithm evaluates \eqref{eq:K} and \eqref{eq:G} in the preceding
+topological orders and returns the values \eqref{eq:answer-G}.  We now bound the resources.
 
 There are $O_d(N^{d+1})$ source rows and $O_d(N^d)$ possible entries per
 row, giving $O_d(N^{2d+1})$ stored integers.  In a split term there
@@ -2210,19 +1899,12 @@ so the $G$ table costs
 $O_d(N^{2d+1})$.  For $d\geq1$, the exponents $2d+2$ and $2d+1$ are both
 smaller than $3d+2$.
 
-We call the quantity \eqref{eq:rho} of a state of \eqref{eq:H} its
-\emph{workload}.  On a stopped kernel path the workload of a state is its
-control mass plus the sizes of the blocks before the marker.  Each initial
-workload is at most $N$ and decreases by one at every transition.  At a
-state of \eqref{eq:H}, the number of outgoing transitions is the number of
-legal next letters and is at most the workload.  Therefore a path has at
-most $N$ transitions and at most $N$ labeled choices at each nonterminal state.
-Each stored $G_{\mathbf p}$ counts complete paths in \eqref{eq:H}, while each
-stored kernel entry counts stopped kernel paths.  Every such integer is at most
-$(N+1)^N$ and has
-$O(N\log N)$ bits.  Every intermediate product and partial sum is a
-nonnegative contribution to a stored value and obeys the same bound.
-Replacing integer multiplication by its
+By the argument in the last paragraph of the proof of
+\cref{thm:scalar-algorithm}, where a state now has at most
+$\rho(\mathbf p,L)\leq N$ unread values and as many legal next letters, every
+stored
+integer and every intermediate product and partial sum is at most
+$(N+1)^N$ and has $O(N\log N)$ bits.  Replacing integer multiplication by its
 $M(N\log N)$ bit cost proves the stated bit time.  The bit storage is
 $O_d(N^{2d+2}\log N)$.
 \end{proof}
@@ -2239,8 +1921,8 @@ symmetry that improves the $d=2$ specialization $O(N^8)$ and $O(N^5)$
 of \cref{thm:main} to the $O(N^7)$ and $O(N^4)$ of \cref{cor:d2-complexity}.
 The second is a partial translation in the upper coordinate.  It leaves
 those exponents unchanged and halves the leading constant in the storage count.
-We first determine the support of a kernel row: the bound of
-\cref{lem:support} is attained exactly as follows.
+We first determine the support of a kernel row exactly, which refines the
+bound of \cref{lem:support}.
 
 \begin{lemma}[Exact two-threshold support]\label{lem:d2-exact-support}
 For every $\ell\geq1$,
@@ -2323,7 +2005,10 @@ the two factors become
 \[
  R_{\ell_1,a-c}(q,m)R_{\ell_2,c}(m,s).
 \]
-Writing $a_1=a-c$ and $a_2=c$ therefore gives the reduced recurrence
+The split terms of \eqref{eq:K} with a factor $K_0$ contribute
+$\one_{\mathbf p=\mathbf t}$ when $\ell=1$ and $2K_{\ell-1}(\mathbf p,\mathbf t)$
+when $\ell\geq2$, and we collect them into a term $D_{\ell,a}$.  Writing
+$a_1=a-c$ and $a_2=c$ therefore gives the reduced recurrence
 \begin{align}
 R_{\ell,a}(q,s)={}&
  \sum_{h=0}^{a-1}R_{\ell,h}(a+q-h-1,s)
@@ -2364,13 +2049,7 @@ For $\ell\geq1$ and $a,q,s\geq0$, whenever $s\geq a-1$,
 
 \begin{proof}
 Let $\gamma=\ell+a+q+1$ be the reduced grade of the left-hand side.  We argue
-by induction on $\gamma\geq2$.  If $\gamma=2$, then $(\ell,a,q)=(1,0,0)$, and
-\eqref{eq:R-recurrence} gives
-\[
- R_{1,0}(1,s+1)=\one_{s=0}=R_{1,0}(0,s).
-\]
-Assume henceforth that $\gamma>2$ and that the claim holds at every smaller
-reduced grade.  The $h$th term of the first sum on the left is
+by induction on $\gamma$, assuming the claim at every smaller reduced grade.  The $h$th term of the first sum on the left is
 $R_{\ell,h}(a+q-h,s+1)$.  Since $s\geq a-1\geq h-1$, induction translates
 this to $R_{\ell,h}(a+q-h-1,s)$, the corresponding term on the right.
 
@@ -2433,7 +2112,8 @@ $0\leq s<a$ when $a\geq1$.  The exact number of retained entries is
  &=\frac{N(N+1)(N^2+N+10)}{24}.             \label{eq:d2-reduced-counts}
 \end{align}
 Thus the second translation halves the leading storage constant relative to
-the first-coordinate quotient.  Exact polynomials for loop iterations and
+the first-coordinate quotient, and each omitted entry is recovered from
+\eqref{eq:d2-second-translation} in $O(1)$ operations.  Exact polynomials for loop iterations and
 stored entries are recorded in the computation report in the supplement.
 
 \begin{corollary}[Sharpened $12453$ bound]\label{cor:d2-complexity}
@@ -2453,12 +2133,10 @@ the block split $\ell_1$, $O(N)$ choices for the control split $a_1$, and
 $O(N)$ possible intermediate second coordinates $m$.  For each such triple,
 adding the row $R_{\ell_2,a_2}(m,\mathord\cdot)$ uses $O(N)$ possible terminal
 coordinates.  Thus one source row costs $O(N^4)$ operations and all split
-terms cost $O(N^7)$.  The second-coordinate translation can reduce the
-storage constant.  Each omitted entry is recovered from
-\eqref{eq:d2-second-translation} in $O(1)$ operations.  Evaluating
+terms cost $O(N^7)$.  Evaluating
 the nonsplit kernel terms costs at most $O(N^5)$.  The empty-stack table has
 $O(N^2)$ source controls, $O(N)$ last-band choices, and $O(N^2)$ possible
-terminal controls, so it also costs $O(N^5)$.  The workload argument
+terminal controls, so it also costs $O(N^5)$.  The bit-size argument
 in the proof of \cref{thm:main} gives $O(N\log N)$ bits per integer, which
 gives the stated bit bounds.
 \end{proof}
@@ -2524,8 +2202,7 @@ We evaluated the reduced recurrence modulo pairwise distinct primes and
 reconstructed the values over the integers.  The programs
 \path{av12453_fast_rns.cpp} and \path{reconstruct_av12453_rns.py} in the
 supplement perform the modular evaluation, the check of the coefficient
-bound, and the reconstruction.  Complete source, execution logs, residues,
-and machine-readable output are included in the supplement.
+bound, and the reconstruction.
 
 The reconstruction rests on a bound for the coefficients.  Put
 $b_m=|\Av_m(1342)|$ and
@@ -2605,8 +2282,8 @@ The paragraph before the proposition shows that the distribution is uniform.  A 
 produced by $n$ letter choices.  Each choice scans the summands of one
 instance of \eqref{eq:G} or \eqref{eq:K} in a fixed order and stops at the first summand whose running
 total exceeds a uniformly random integer $U$ with $0\leq U<T$, where $T$ is
-the stored value of the state.  Every summand is one stored entry, twice
-one, or a product of two, by \cref{lem:d2-translation}.  Every state
+the stored value of the state.  Every summand is one stored entry or a
+product of two, by \cref{lem:d2-translation}.  Every state
 reached from $(n,0)$ has grade at most $n$.  At an empty-stack state the
 last-band terms range over the band position and the terminal control,
 $O(n^3)$ summands.  Inside a kernel the interior terms range over the split
@@ -2632,8 +2309,7 @@ with the script that draws the heatmaps of the PermPAL database
 \cite{PermPAL,AlbertEtAl2026}, beside one of the samples.  The first letter
 has mean $291.9$ over the sample.  The dark band from the top left to the bottom
 right shows that a typical avoider stays close to a decreasing curve.  The
-left-to-right minima, whose deletion leaves a $1342$-avoider, as
-B\'ona~\cite{Bona2005} observed, lie below it, and their mean number is $77.5$.  The single
+left-to-right minima lie below it, and their mean number is $77.5$.  The single
 sample shows the same features: a decreasing band of letters with the
 left-to-right minima scattered below it, and above it the letters
 exceeding the first letter, which form a $1342$-avoider.
@@ -2675,24 +2351,28 @@ evaluated by the algorithm of \cref{sec:algorithm} count $\Av_n(1342)$ and
 $\Av_n(12453)$.
 
 A reader who wants to verify this needs to do two things.  The first
-is to run the script \path{check.sh}.  It builds the development and checks
-that it contains no unproved statement and that every theorem depends only
-on Lean's three standard axioms.  The second is to compare with this paper
-the definitions that occur in the four statements: pattern avoidance, the
-patterns $\beta_d$, and the recurrences.  These definitions occupy about
-seventy lines of Lean.  The proofs need not be read.
+is to run the scripts \path{check.sh} and \path{comparator.sh}.  The first
+builds the development and checks that it contains no unproved statement and
+that every theorem depends only on Lean's three standard axioms.  The second
+checks, with Lean's kernel and two independent kernels, that the proofs in
+\path{Solution.lean} prove exactly the statements of the file
+\path{Challenge.lean}.  The second task is to read \path{Challenge.lean}, about
+180 lines that import only Mathlib and contain the four statements together
+with every definition they use: pattern containment, the patterns $1342$ and
+$12453$, and the recurrences.  The proofs need not be read.
 
 The proofs follow the paper.  The state of a scanned prefix is defined from
-the prefix, the separation criterion of
-\cref{lem:1342-separators,cor:separators} is the inductive invariant, and
-the recurrences follow by induction on the number of unread values.  The
-factorization \eqref{eq:factorization} is proved from the equations of $H$,
-without the general \cref{thm:protected-tail-principle}.  Not formalized are
-the complexity statements of \cref{thm:main,cor:d2-complexity}, the
-translation quotients of \cref{sec:d2-support} and hence the programs of
-\cref{sec:computations}, \cref{thm:protected-tail-principle} in its general
-form, and the family for $d\geq3$.  \Cref{app:lean} describes the
-development in more detail.
+the prefix, the separation criterion of \cref{lem:separators} is the
+inductive invariant, \cref{prop:scan-states}(a) and (b) are derived from it,
+and the recurrences follow by induction on the number of unread values.  The
+kernels are defined by their recurrences, and the factorization
+\eqref{eq:factorization} is proved from the equations of $H$ by induction on
+the grade rather than by cutting paths.  Not formalized are the complexity
+statements of \cref{thm:main,cor:d2-complexity}, the translation quotients
+of \cref{sec:d2-support} and hence the programs of \cref{sec:computations},
+condition (iii) of \cref{cor:separators}, \cref{prop:exponential}, and the
+family for $d\geq3$.  \Cref{app:lean} describes the development in more
+detail.
 
 \section{Consequences and outlook}\label{sec:discussion}
 
@@ -2861,9 +2541,6 @@ value zero are skipped.  If no group has $A_g>y$, the sampler scans again
 with $y$ multiplied by $A/\hat T$, where $A$ is the total of the scan, and if
 that also falls short it takes the last candidate of positive value.
 
-The floating-point values $G_{(n,0)}$ agree with the coefficients of
-\cref{tab:terms-150} through $n=150$ to about $10^{-11}$ relative error.
-
 \subsection{The error bound}\label{app:float-bound}
 
 We write $\mathrm{fl}(z)$ for $z$ rounded to binary64, $u=2^{-53}$ for the
@@ -2885,7 +2562,8 @@ The two factors of a split term together have $\lambda-1$ letters, since the
 split reads one letter itself, and the same holds for the two factors of a
 term of the last sum of \eqref{eq:G-reduced}.  Put $\nu=3\,352\,801$.
 Counting the summands of \eqref{eq:R-recurrence} for fixed $s$, and of
-\eqref{eq:G-reduced}, shows that no value has more than $\nu-1$ summands
+\eqref{eq:G-reduced}, with every index in the support of
+\cref{lem:d2-exact-support}, shows that no value has more than $\nu-1$ summands
 and no letter choice has more than $\nu-1$ candidates.  The maximum is
 attained by $G_{(149,151)}$.
 
@@ -3008,8 +2686,9 @@ $n(g/(1-g)+7\nu u)$.  At $n=300$ this is $3.43\cdot10^{-5}$.
 \end{proof}
 
 The bound of \cref{lem:float-tables} is far from the observed error: at
-$n=150$ it gives about $6\cdot10^{-8}$ for $G_{(n,0)}$, against the observed
-$10^{-11}$.
+$n=150$ it gives about $6\cdot10^{-8}$ for $G_{(n,0)}$, while the
+floating-point values $G_{(n,0)}$ agree with the coefficients of
+\cref{tab:terms-150} through $n=150$ to about $10^{-11}$ relative error.
 
 \section{The Lean development}\label{app:lean}
 
@@ -3024,9 +2703,10 @@ the one-threshold recurrence $W$ of
 \eqref{eq:W}, the literal recurrence $H$ of \eqref{eq:H} for $d=2$, and the
 kernel recurrences \eqref{eq:scalar-K}--\eqref{eq:scalar-G} for $d=1$ and
 \eqref{eq:K}--\eqref{eq:G} for $d=2$.  In the two kernel systems every sum
-over controls is restricted to the controls of mass at most $\|\mathbf p\|_1$
-(to $\{0,\ldots,p\}$ for $d=1$), which
-\cref{lem:scalar-support,lem:support} show loses nothing.
+over intermediate or terminal controls is restricted to the controls of mass
+at most that of the source control of its kernel row (for $d=1$, to
+$u\leq p$ in \eqref{eq:scalar-K} and to $t\leq h$ in \eqref{eq:scalar-G}),
+which \cref{lem:scalar-support,lem:support} show loses nothing.
 The four main theorems of \cref{sec:formal} are named
 \texttt{av1342\_count}, \texttt{av1342\_count\_kernel},
 \texttt{av12453\_count}, and \texttt{av12453\_count\_kernel}.
@@ -3035,50 +2715,36 @@ The four main theorems of \cref{sec:formal} are named
 
 The Lean project \path{formal/Av12453/} builds two libraries from one
 source tree.  The library \path{PermPatterns/} holds the generic apparatus
-in ten modules: words and order isomorphism, containment and avoidance,
-restriction, local rank and standardization, the patterns $231$ and
-$\iota_d$ with increasing subsequences and triggers, direct and skew sums,
-decidability of containment, the finite sets of permutations and of
-avoiders of a basis, the passage between words and Mathlib's permutations
-of $\{0,\ldots,n-1\}$, the symmetries of reversal, complementation, and
-inversion with the equalities of avoider counts they induce, and
-\cref{lem:first-letter}.  Nothing in it refers to the family $\beta_d$.  The
-library \path{Av12453/} holds the development specific to this paper in
-twenty modules.  The modules \path{Basic.lean} and \path{Trigger.lean}
-define the patterns $\beta_d$ and prove \cref{lem:trigger}.  The eight modules of
-\path{OneThreshold/} treat $d=1$.  The module \path{Defs.lean} defines the
-scan, its state $(p,L)$, and $W$.  The modules \path{Invariant.lean},
-\path{Semantics.lean}, and \path{Counting.lean} prove the separation
-invariant of
-\cref{lem:1342-separators}, parts (b) and (c) of \cref{prop:scan-states}, and
-\texttt{av1342\_count}.  The modules \path{Kernel.lean},
-\path{KernelSupport.lean}, \path{KernelFactor.lean}, and
-\path{KernelCount.lean} define $K$, $D$, and
-$G$, and prove \cref{lem:scalar-support}, the factorization
-\eqref{eq:scalar-factorization}, and \texttt{av1342\_count\_kernel}.  The
-nine modules of \path{TwoThreshold/} repeat this for $d=2$, with
-\path{Thresholds.lean} for the two thresholds and their bands
-(\cref{sec:frontier}) and \path{Defs.lean} for $H$.  The directory
-also contains \path{Axioms.lean}, which walks every constant declared in
-every module of the two libraries and fails if any depends on
-\texttt{sorryAx} or on an axiom other than propositional extensionality,
-choice, and quotient soundness.  The sweep finds its list of modules in the
-environment rather than in a hand-written list, so a module cannot drop out
-of it silently.
-The script \path{check.sh} builds the project, requires the build to
-be free of warnings, runs the axiom sweep, and rejects any occurrence of
-\texttt{sorry} or \texttt{native\_decide} in the sources.  There is also a
-\path{README.md} with a table of the modules and their headline theorems, and an audit report.  The Lean toolchain (version 4.33.1) and the Mathlib revision
-are pinned in the project files.
+(words, containment and avoidance, standardization, the patterns $231$ and
+$\iota_d$, sums, symmetries, and the passage to Mathlib's permutations of
+$\{0,\ldots,n-1\}$) in ten modules, and nothing in it refers to the family
+$\beta_d$.  The library \path{Av12453/} holds the development specific to
+this paper in twenty modules, eight for $d=1$ in \path{OneThreshold/} and
+nine for $d=2$ in \path{TwoThreshold/}.  The file \path{README.md} lists the
+modules and their headline theorems, and an audit report describes the
+trusted base.  \Cref{lem:trigger,lem:first-letter} are formalized, but the
+four main theorems do not use them.  The module \path{Axioms.lean} walks
+every constant declared in every module of the two libraries and fails if
+any depends on \texttt{sorryAx} or on an axiom other than propositional
+extensionality, choice, and quotient soundness.  It finds its list of
+modules in the environment rather than in a hand-written list, so a module
+cannot drop out of it silently.  The script \path{check.sh} builds the
+project, requires the build to be free of warnings, runs the axiom sweep,
+rejects any occurrence of \texttt{sorry} or \texttt{native\_decide} in the
+sources, and ends with the line \texttt{CERTIFICATE CHECK PASSED}.  Every
+file uses Lean's module system.  The Lean toolchain (version 4.35.0-rc2) and
+the Mathlib revision are pinned in the project files.
 
 \subsection{What must be read}
 
-The first of the two tasks of \cref{sec:formal} is to run \path{check.sh},
-or equivalently \texttt{lake build} followed by the axiom sweep, and see it
-end with the line \texttt{CERTIFICATE CHECK PASSED}.  The second is to read,
-against this paper, the definitions that occur in the four theorem
-statements.  Nothing else needs to be read to know what the theorems say.
-They are listed by file.  In the library \path{PermPatterns/}, the module
+The file \path{Challenge.lean} states the four theorems for Mathlib's
+permutations of $\{0,\ldots,n-1\}$, with pattern containment
+\texttt{PermContains} and the patterns written as products of transpositions,
+together with the definitions of \texttt{W}, \texttt{H}, \texttt{K}, and
+\texttt{G}, and \path{comparator.sh} checks that these definitions are identical
+to those of the development.  The development states the theorems for the
+finite sets \texttt{avoiders n \{beta d\}}, and the definitions they use are the
+following, listed by file.  In the library \path{PermPatterns/}, the module
 \path{Word.lean} defines \texttt{IsPermOf} and \texttt{OrderIsomorphic},
 \path{Containment.lean} defines \texttt{Contains}, \texttt{Avoids}, and
 \texttt{AvoidsAll},
@@ -3091,14 +2757,19 @@ and \path{TwoThreshold/Defs.lean} defines \texttt{H}.  The module
 \path{OneThreshold/Kernel.lean} defines \texttt{K}, \texttt{D}, and
 \texttt{G} for $d=1$, and \path{TwoThreshold/Kernel.lean} defines the control
 sets \texttt{ctrls} and \texttt{S} and \texttt{K}, \texttt{D}, and \texttt{G}
-for $d=2$.  These definitions occupy about seventy lines of Lean in all.  The recurrences are written with a recursion bound.  The definitions
+for $d=2$.  The recurrences are written with a recursion bound.  The definitions
 \texttt{W}, \texttt{H}, \texttt{K}, and \texttt{G} evaluate an auxiliary
-function at a bound exceeding the grade of the argument, and the development
+function at a bound exceeding, respectively, the number of unread values,
+the number of unread values, the grade, and the control mass of the
+argument, and the development
 proves that every sufficient bound gives the same value.  So the reader need
 only compare
 the equations of the auxiliary functions with the displays \eqref{eq:W},
 \eqref{eq:H}, \eqref{eq:scalar-K}--\eqref{eq:scalar-G}, and
-\eqref{eq:K}--\eqref{eq:G}.  Each definition carries a docstring giving
+\eqref{eq:K}--\eqref{eq:G}.  The Lean writes the terms with $a=0$ or $b=0$
+of the split sums of these displays as a separate endpoint term, \texttt{D}
+in the kernel recurrences, which is the same sum.  Each definition carries a
+docstring giving
 this dictionary, with the $0$-based conventions spelled out, and the
 displays are also restated as proved theorems
 (\texttt{K\_succ\_eq}, \texttt{G\_eq}, and their analogues), which serve as
@@ -3106,25 +2777,18 @@ reading aids but are not part of what must be trusted.
 
 \subsection{Proofs and checks}
 
-In more detail, the state of a scanned prefix is defined from
-the prefix: the thresholds $b_1,b_2$ as the least final values of increasing
-subsequences, the bands, and the interval stack by the legal moves of
-\cref{def:scan-state}, justified by \cref{lem:first-letter,lem:legal-moves,lem:merger}.  The inductive invariant is the
-separation criterion of \cref{lem:1342-separators,cor:separators}, from
-which two facts are derived, \cref{prop:scan-states}(b) and (c): a letter
-from a deferred interval leaves no avoiding completion, and every complete
-word produced by legal moves avoids $\beta_d$.  The completion counts then satisfy the literal recurrence by
-induction on the number of unread values, and the factorization
-\eqref{eq:factorization} is proved directly from the equations of $H$ by
-induction on the grade, without the abstract
-\cref{thm:protected-tail-principle}.  The kernels are defined by their
-recurrences, so the theorems concern the recurrences as displayed.  The
-restriction of the control sums is proved lossless, and it is also what
-makes the grade a well-founded order for \eqref{eq:K} read as a definition.
+The thresholds $b_1,b_2$ are defined as the least final values of
+increasing subsequences, and the interval stack by the moves of
+\cref{prop:state-invariant}(b), which classify a letter by the band or
+interval containing it, so \cref{lem:separators} and
+\cref{prop:scan-states}(a) and (b) are proved for this notion of legal
+prefix.  Since the kernels are defined by their recurrences,
+\cref{prop:kernel-recurrence} is not needed.  The restriction of the
+control sums is proved lossless, and it is also what makes the grade a
+well-founded order for \eqref{eq:K} read as a definition.
 
-The development has over eleven thousand lines in thirty modules, contains no
-unproved statement, and each theorem depends only on Lean's three standard
-axioms, as reported by the axiom sweep.  The definitions were also
+The development has over eleven thousand lines in thirty modules.  The
+definitions were also
 exercised by kernel evaluation: the scans of the running example
 \eqref{eq:running-example} reproduce the rows of
 \cref{ex:1342-scan,ex:full-state}, kernel evaluation of the recurrences

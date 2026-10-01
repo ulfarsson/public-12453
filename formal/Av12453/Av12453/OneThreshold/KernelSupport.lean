@@ -3,7 +3,11 @@ Copyright (c) 2026 Henning Ulfarsson. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Henning Ulfarsson
 -/
-import Av12453.OneThreshold.Kernel
+module
+
+public import Av12453.OneThreshold.Kernel
+
+@[expose] public section
 
 /-!
 # Exact support of the scalar kernel rows
@@ -62,7 +66,8 @@ namespace OneThreshold
 Mathlib's `catalan_succ` is Segner's recurrence `C_{m+1} = ∑_{i=0}^{m} C_i C_{m-i}` over
 `Fin (m+1)`.  The kernel recurrence \eqref{eq:scalar-K} produces the same sum with its two
 extreme summands `i = 0` and `i = m` already separated (they are the two endpoint choices of
-\eqref{eq:scalar-D}), so `catalan_split` is the form we need.  `catalan_pos` is not in
+the endpoint terms of \eqref{eq:scalar-K}), so `catalan_split` is the form we need.  `catalan_pos`
+is not in
 Mathlib; it follows from `succ_mul_catalan_eq_centralBinom`. -/
 
 /-- Segner's recurrence over `Finset.range`, rather than over `Fin`. -/
@@ -75,7 +80,7 @@ private theorem catalan_succ_range (m : ℕ) :
 `C_{m+1} = 2 C_m + ∑_{a=1}^{m-1} C_a C_{m-a}`: the summands `a = 0` and `a = m` of
 `catalan_succ` both contribute `C_0 C_m = C_m`.  This is exactly the shape in which
 \eqref{eq:scalar-K} produces `K_{m+1}(p, p)`, the two extreme summands being the two
-endpoint choices of \eqref{eq:scalar-D}. -/
+endpoint choices of \eqref{eq:scalar-K} (its terms `a = 0` and `b = 0`). -/
 private theorem catalan_split {m : ℕ} (hm : 1 ≤ m) :
     catalan (m + 1) = 2 * catalan m + ∑ a ∈ Finset.Ico 1 m, catalan a * catalan (m - a) := by
   rw [catalan_succ_range, Finset.sum_range_succ, Nat.sub_self, catalan_zero, Nat.mul_one,

@@ -3,16 +3,20 @@ Copyright (c) 2026 Henning Ulfarsson. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Henning Ulfarsson
 -/
-import PermPatterns.Word
-import PermPatterns.Containment
-import PermPatterns.Standardize
-import PermPatterns.Patterns
-import PermPatterns.Sums
-import PermPatterns.Decidable
-import PermPatterns.Avoiders
-import PermPatterns.Perm
-import PermPatterns.Symmetry
-import PermPatterns.FirstLetter
+module
+
+public import PermPatterns.Word
+public import PermPatterns.Containment
+public import PermPatterns.Standardize
+public import PermPatterns.Patterns
+public import PermPatterns.Sums
+public import PermPatterns.Decidable
+public import PermPatterns.Avoiders
+public import PermPatterns.Perm
+public import PermPatterns.Symmetry
+public import PermPatterns.FirstLetter
+
+@[expose] public section
 
 /-!
 # `PermPatterns`: a reusable core for classical permutation patterns

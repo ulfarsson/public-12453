@@ -1,0 +1,124 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/mathlib-initiative/formalization.yaml/main/schema/formalization.schema.json
+version: "v0.4"
+
+project:
+  name: "Polynomial-time enumeration of Av(1342) and Av(12453)"
+  description: >-
+    The counting recurrences for the permutation classes Av(1342) and
+    Av(12453): the one-threshold recurrence and the scalar kernel algorithm
+    for 1342, and the literal two-threshold recurrence and the transfer-kernel
+    algorithm for 12453, each proved to compute the number of permutations of
+    length n avoiding the pattern, for every n.  These are the cases d = 1 and
+    d = 2 of the paper's algorithm for the family Av(12...d + 231).
+  authors:
+    - "Henning Arnór Skeggi Úlfarsson"
+  license: "Apache-2.0"
+  responsible_maintainers:
+    - "Henning Arnór Skeggi Úlfarsson"
+
+classification:
+  arxiv: ["math.CO"]
+  msc2020: ["05A05", "05A15", "68W40"]
+
+sources:
+  - title: "Protected tails and polynomial-time enumeration of permutations avoiding a direct sum of an increasing pattern and 231"
+    authors:
+      - "Henning Arnór Skeggi Úlfarsson"
+    id: "arXiv:2609.15642"
+    type: "paper"
+    location: "https://arxiv.org/abs/2609.15642"
+    relationship: "formalizes"
+    license: "CC BY 4.0"
+    author_endorsement: "participated"
+
+related_formalizations: []
+
+status:
+  scope: >-
+    Formalized: the counting theorems for d = 1 and d = 2, namely that the
+    one-threshold recurrence W and the scalar kernel algorithm G compute
+    |Av_n(1342)| (Proposition 2.10 and Theorem 2.19 of the paper), and that the
+    literal recurrence H and the kernel algorithm G compute |Av_n(12453)|
+    (Theorem 4.3 and Theorem 1.1 at d = 2), stated for permutations of Fin n
+    with Mathlib's Equiv.Perm and Nat.card.  The kernel recurrences are taken
+    as definitions, with the endpoint terms written separately and the sums
+    over controls restricted to controls of mass at most that of the source
+    control; the paper's support lemmas show that this loses nothing.  Not
+    formalized: the complexity bounds of Theorem 1.1 and Corollary 7.4, the
+    translation quotients of Section 7, the programs of Section 8, the general
+    family d >= 3, and Corollary 4.4(iii) and Proposition 4.5.
+  sorry_count: 0
+  sorry_in_definitions: 0
+  axioms: []
+
+automation:
+  methods:
+    - method: "agent"
+      models: ["Claude Opus", "Claude Fable", "GPT Sol"]
+      framework: "Claude Code; Codex"
+      tool_setup: >-
+        AI coding agents under the author's direction wrote the Lean development
+        from the paper, ran Lean and Mathlib locally, and checked every
+        statement against brute-force computations; the author specified the
+        mathematics and audited the statement file.
+      cost:
+        wall_time: "about four weeks, part time"
+        spend_usd: "subscription-based"
+        hardware: "local machine"
+      prompting_notes: "n/a"
+  spend_usd: "subscription-based"
+  notes: >-
+    The development was written by AI agents under the author's direction
+    from the paper's definitions and proofs, as stated in the paper's AI
+    statement.  The author specified the mathematics and is responsible for
+    the statement file Challenge.lean.  An independent Python walkthrough
+    checks every combinatorial statement of the paper with finite content for
+    all permutations of length at most 8 against brute force.
+
+fidelity:
+  divergences: >-
+    Values are 0-based.  The recurrences are evaluated with fuel (a recursion
+    bound larger than the measure every step decreases); the development
+    proves that every sufficient bound gives the same value.  The kernel
+    recurrences keep the endpoint terms separate from the split sums, which
+    the paper writes as the terms a = 0 and b = 0 of the split sums.  The
+    patterns are written as products of transpositions.  The paper defines the
+    kernels as counts of stopped paths and proves their recurrences; here the
+    recurrences are the definitions and the factorization is proved from them
+    by induction on the grade.
+
+review:
+  status: "self-assessed"
+  reviewers:
+    - "none"
+  notes: >-
+    The statement file was compared by hand with the paper's displays; an
+    agent-assisted audit of the trusted base is in AUDIT_2026-09-05.md; the
+    recurrences evaluated by kernel computation reproduce the paper's worked
+    examples and the first terms of both counting sequences.
+
+alignment:
+  namespace: "Av12453"
+  statements:
+    - source: "Proposition 2.10 (one-threshold recurrence)"
+      lean: "Av12453.count_1342_literal"
+      module: "Challenge"
+      status: "proved"
+      note: "W_n(empty) = |Av_n(1342)|."
+    - source: "Theorem 2.19 and eq. (13) (scalar kernel algorithm)"
+      lean: "Av12453.count_1342_kernel"
+      module: "Challenge"
+      status: "proved"
+      note: "G_n = |Av_n(1342)|; the complexity bound is not formalized."
+    - source: "Theorem 4.3 at d = 2 (literal recurrence)"
+      lean: "Av12453.count_12453_literal"
+      module: "Challenge"
+      status: "proved"
+      note: "H_(n,0)(empty) = |Av_n(12453)|."
+    - source: "Theorem 1.1 and eq. answer-G at d = 2 (kernel algorithm)"
+      lean: "Av12453.count_12453_kernel"
+      module: "Challenge"
+      status: "proved"
+      note: "G_(n,0) = |Av_n(12453)|; the complexity bounds are not formalized."
+
+acknowledgements: "Mathlib and the Lean FRO; Permuta for the brute-force checks."

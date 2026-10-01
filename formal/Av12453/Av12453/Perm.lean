@@ -3,9 +3,16 @@ Copyright (c) 2026 Henning Ulfarsson. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Henning Ulfarsson
 -/
-import PermPatterns.Perm
-import Av12453.OneThreshold.KernelCount
-import Av12453.TwoThreshold.KernelCount
+module
+
+public import PermPatterns.Perm
+public import Av12453.OneThreshold.KernelCount
+public import Av12453.TwoThreshold.KernelCount
+meta import PermPatterns.Perm
+meta import Av12453.OneThreshold.KernelCount
+meta import Av12453.TwoThreshold.KernelCount
+
+@[expose] public section
 
 /-!
 # The headline counts, restated for Mathlib's `Equiv.Perm (Fin n)`

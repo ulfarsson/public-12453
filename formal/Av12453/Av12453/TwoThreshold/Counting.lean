@@ -3,7 +3,12 @@ Copyright (c) 2026 Henning Ulfarsson. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Henning Ulfarsson
 -/
-import Av12453.TwoThreshold.Semantics
+module
+
+public import Av12453.TwoThreshold.Semantics
+meta import Av12453.TwoThreshold.Semantics
+
+@[expose] public section
 
 /-!
 # Component 3b, theorem (D): the two-threshold recurrence counts the completions
@@ -22,7 +27,8 @@ The proof is the induction of \cref{thm:literal} at `d = 2`, run on the measure
 `ρ(𝐩, L) = p₀ + p₁ + |L|` of \eqref{eq:rho}, which by `rho_eq` is the number of unread
 values and by `card_unread_succ` drops by one at every move.  The prefix partition `A_succ`
 writes `A n σ` as a sum over the unread values, and `sum_unread_split` together with the
-layout invariant regroups that sum exactly as the four lines of \eqref{eq:H}:
+layout invariant regroups that sum exactly as the four groups (early band, last band, endpoints,
+interior) of \eqref{eq:H}:
 
 * the **early-band letters** `x ∈ B₀`, reindexed by the number `h = below0 n σ x` of
   band-`0` values below them, `h = 0, …, p₀-1` (`sum_below0_eq`); each contributes
@@ -31,11 +37,12 @@ layout invariant regroups that sum exactly as the four lines of \eqref{eq:H}:
 * the **last-band letters** `x ∈ B₁`, reindexed by `h = below1 n σ x`, `h = 0, …, p₁-1`
   (`sum_below1_eq`); each contributes `H (p₀, h) (nz ((ℓ₁ + δ_h) :: L'))` with
   `δ_h = p₁ - 1 - h`, i.e. `H_{U_h(𝐩)}(\nz(ℓ₁+δ_h, ℓ₂, …))` by \eqref{eq:U} and
-  \cref{lem:merger}.  At an empty stack `ℓ₁ = 0` and `\nz` deletes an empty merger set;
+  \cref{def:scan-state}(a).  At an empty stack `ℓ₁ = 0` and `\nz` deletes an empty merger set;
 * the **active-head letters** `x ∈ I₁`, reindexed by their local rank
   `r = 0, …, ℓ₁-1` (`sum_rank_eq`); the two endpoints `r = 0` and `r = ℓ₁-1` give the
-  endpoint term `Eend ℓ₁ 𝐩 L'` of line 3 (two letters when `ℓ₁ ≥ 2`, one when `ℓ₁ = 1`),
-  and each interior rank gives one term of line 4 (`sum_rank_split`);
+  endpoint term `Eend ℓ₁ 𝐩 L'` (the terms `a = 0`, `b = 0` of line 3; two letters when `ℓ₁ ≥ 2`,
+  one when `ℓ₁ = 1`),
+  and each interior rank gives one interior term of line 3 (`sum_rank_split`);
 * the **deferred letters**, in an interval `I_j` with `j ≥ 2`, which contribute `0` by
   theorem (B).
 
@@ -104,14 +111,14 @@ theorem nz_two_zero_zero : nz [(0 : ℕ), 0] = [] := by
 
 /-! ### The active head: local ranks give the endpoint and interior terms
 
-`sum_rank_split` is the arithmetic heart of the regrouping, and is line 3 plus line 4 of
+`sum_rank_split` is the arithmetic heart of the regrouping, and is line 3 of
 \eqref{eq:H}.  Reading the value of local rank `r` of an active head of size `ℓ` leaves the
 two pieces of sizes `r` and `ℓ - 1 - r`, with empty pieces deleted (`pL_succ_active`).  The
 extreme ranks `r = 0` and `r = ℓ - 1` both leave the single piece of size `ℓ - 1` -- these
 are the paper's two endpoints, counted with multiplicity two in `min(2, ℓ₁)`, and they
 coincide only when `ℓ = 1`, where there is one endpoint and no piece at all.  The remaining
 ranks `r = 1, …, ℓ - 2` leave two nonempty pieces `(a, b)` with `a + b = ℓ - 1`, which under
-`a = j - 1` are the interior terms `j = 2, …, ℓ₁ - 1` of line 4. -/
+`a = j - 1` are the interior terms `j = 2, …, ℓ₁ - 1` of line 3. -/
 
 theorem sum_rank_split (q : ℕ × ℕ) (T : List ℕ) :
     ∀ ℓ : ℕ, 1 ≤ ℓ →
@@ -267,7 +274,7 @@ theorem A_eq_H_of (hDef : DeferredHyp) (hCplt : CompleteHyp) {n : ℕ} :
         H_eq_nil (p n σ), if_neg hpne]
       omega
     | cons I₁ tail =>
-      -- A nonempty stack: all four lines of \eqref{eq:H}, plus the deferred letters.
+      -- A nonempty stack: all four groups of \eqref{eq:H}, plus the deferred letters.
       have hI₁mem : I₁ ∈ stack n σ := by rw [hst]; exact List.mem_cons_self
       have hLcons : L n σ = I₁.card :: tail.map Finset.card := by
         rw [L, hst, List.map_cons]

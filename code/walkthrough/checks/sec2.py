@@ -19,7 +19,6 @@ import sys
 import time
 from collections import defaultdict
 from functools import lru_cache
-from itertools import permutations, product
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from checks import common as C  # noqa: E402
@@ -113,88 +112,6 @@ def legal_states(n, d):
     return out
 
 
-# ----------------------------------------------- residual obligations, stacks
-
-def creates_231(w, y):
-    """True if appending y to the 231-avoiding word w creates a 231, i.e. if
-    w has an increasing pair above y."""
-    best = None
-    for v in w:
-        if v > y:
-            if best is not None and v > best:
-                return True
-            if best is None or v < best:
-                best = v
-    return False
-
-
-def allowed_orders(prefix, n, d):
-    """Brute force.  All orders w of the unread letters above the least
-    d-trigger q of the prefix such that every residual obligation of every
-    d-trigger c of the prefix holds, i.e. (sigma_{j+1}..sigma_k w)|_{x>c}
-    avoids 231.  (Letters below q occur in no such projection.)  Built by
-    depth-first search with the monotone pruning `no obligation is violated
-    by the part read so far'."""
-    prefix = tuple(prefix)
-    trig = sorted(triggers(prefix, d))
-    if not trig:
-        return {()}
-    q = trig[0]
-    vals = tuple(v for v in unread_letters(prefix, n) if v > q)
-    fixed = {c: tuple(v for v in prefix[j + 1:] if v > c)
-             for j, c in enumerate(prefix) if c in trig}
-    out = set()
-
-    def rec(cur, rest):
-        if not rest:
-            out.add(cur)
-            return
-        for i, y in enumerate(rest):
-            ok = True
-            for c in trig:
-                if y > c and creates_231(fixed[c] + tuple(v for v in cur if v > c), y):
-                    ok = False
-                    break
-            if ok:
-                rec(cur + (y,), rest[:i] + rest[i + 1:])
-
-    rec((), vals)
-    return out
-
-
-@lru_cache(maxsize=None)
-def av231_patterns(k):
-    return tuple(p for p in permutations(range(k)) if avoids_231(p))
-
-
-def language(stack):
-    """Av(231)(I_1) (+) ... (+) Av(231)(I_s) as a set of words."""
-    blocks = []
-    for I in stack:
-        vals = sorted(I)
-        blocks.append([tuple(vals[i] for i in pat) for pat in av231_patterns(len(vals))])
-    return {tuple(v for blk in combo for v in blk) for combo in product(*blocks)}
-
-
-def stack_from_orders(vals, orders):
-    """The stack determined by a set of allowed orders: consecutive values are
-    cut apart exactly when the smaller one precedes the larger one in every
-    allowed order.  Returns None if no stack has this language."""
-    vals = sorted(vals)
-    stack, cur = [], [vals[0]] if vals else []
-    for u, v in zip(vals, vals[1:]):
-        always = all(w.index(u) < w.index(v) for w in orders)
-        if always:
-            stack.append(tuple(cur))
-            cur = [v]
-        else:
-            cur.append(v)
-    if cur:
-        stack.append(tuple(cur))
-    stack = tuple(stack)
-    return stack if language(stack) == set(orders) else None
-
-
 # ================================================= the paper's scalar formulas
 
 def nz(*xs):
@@ -203,32 +120,26 @@ def nz(*xs):
 
 @lru_cache(maxsize=None)
 def W(p, L):
-    """W_p(L) from (eq:W), (eq:W-endpoint) and (eq:W-boundary)."""
+    """W_p(L) from (eq:W) and (eq:W-boundary)."""
     if not L:                                                    # (eq:W-boundary)
         return (1 if p == 0 else 0) + sum(W(h, nz(p - 1 - h)) for h in range(p))
     ell, Lp = L[0], L[1:]
     total = sum(W(h, (ell + p - 1 - h,) + Lp) for h in range(p))  # base moves
-    total += W(p, Lp) if ell == 1 else 2 * W(p, (ell - 1,) + Lp)  # (eq:W-endpoint)
-    for a in range(1, ell - 1):                                   # interior choices
-        total += W(p, (a, ell - 1 - a) + Lp)
+    for a in range(ell):                          # head letter of local rank a + 1
+        total += W(p, nz(a, ell - 1 - a) + Lp)
     return total
 
 
 @lru_cache(maxsize=None)
 def Krow(ell, p):
-    """K_ell(p, .) from (eq:scalar-K) and (eq:scalar-D), as a dict t -> value."""
+    """K_ell(p, .) from (eq:scalar-K), K_0 the identity, as a dict t -> value."""
     if ell == 0:
         return {p: 1}
     res = defaultdict(int)
     for h in range(p):
         for t, v in Krow(ell + p - 1 - h, h).items():
             res[t] += v
-    if ell == 1:
-        res[p] += 1
-    else:
-        for t, v in Krow(ell - 1, p).items():
-            res[t] += 2 * v
-    for a in range(1, ell - 1):
+    for a in range(ell):                          # a, b >= 0, a + b = ell - 1
         b = ell - 1 - a
         for u, va in Krow(a, p).items():
             for t, vb in Krow(b, u).items():
@@ -250,8 +161,7 @@ def kernel_by_paths(ell, p, L):
     """K_ell(p, .) by brute force: enumerate the paths of the recurrence graph
     of (eq:W) that start at (p, (ell)|L) and are stopped at the first exposure
     of L, and record the control there.  Every summand of (eq:W) is one
-    transition; the coefficient-2 endpoint term of (eq:W-endpoint) is two
-    transitions."""
+    transition."""
     counts = defaultdict(int)
 
     def walk(p_cur, S):
@@ -454,127 +364,45 @@ def check_legal_moves(nmax, ds=(1, 2, 3)):
         time.time() - t0)
 
 
-# ================================================= Definition 2.6 / Lemma 2.8
-
-def check_merger(nmax, ds=(1, 2, 3)):
-    """Definition 2.6 and Lemma 2.8 (stack merger).  `(a) If sigma has no
-    d-trigger then S is empty and (E), E the unread letters above x, is
-    faithful to sigma x.  (b) Otherwise E is empty or an interval of the unread
-    alphabet; if s >= 1 then E < I_1 and E u I_1 is an interval of the unread
-    alphabet; and (E u I_1, I_2, ..., I_s) is faithful to sigma x, only the
-    active head changing.'
-
-    Compared: the stack the lemma predicts, versus the faithful stack of
-    sigma x computed from Definition 2.6 by brute force -- the set A of orders
-    of the unread letters above x satisfying the residual obligations of every
-    d-trigger of sigma x is enumerated directly from the definition of a
-    residual obligation, the unique stack whose language is A is reconstructed
-    from A, and the two stacks are compared.  The interval claims of (b) are
-    checked against the unread alphabet of sigma x.
-    """
-    t0 = time.time()
-    checks, bad = 0, None
-    cases = {"a": 0, "b": 0}
-    for d in ds:
-        for n in range(1, nmax + 1):
-            for prefix, stack in states_cached(n, d):
-                trig = triggers(prefix, d)
-                q = min(trig) if trig else None
-                for x in unread_letters(prefix, n):
-                    if not is_trigger_of(prefix, x, d):
-                        continue
-                    if q is not None and x > q:
-                        continue
-                    # x is a d-trigger of sigma x smaller than every d-trigger of sigma
-                    rest = [v for v in unread_letters(prefix, n) if v != x]
-                    if q is None:                                 # case (a)
-                        E = tuple(v for v in rest if v > x)
-                        predicted = (E,) if E else ()
-                        cases["a"] += 1
-                        assert stack == ()
-                    else:                                         # case (b)
-                        E = tuple(v for v in rest if x < v < q)
-                        if stack:
-                            predicted = (tuple(sorted(E + stack[0])),) + stack[1:]
-                        else:
-                            predicted = (E,) if E else ()
-                        cases["b"] += 1
-                        above = [v for v in rest if v > x]
-                        checks += 1
-                        E_interval = (not E) or all(v in E for v in above
-                                                    if min(E) < v < max(E))
-                        head_ok = True
-                        if stack:
-                            head = sorted(E + stack[0])
-                            head_ok = (not E or max(E) < min(stack[0])) and all(
-                                v in head for v in above if head[0] < v < head[-1])
-                            head_ok = head_ok and predicted[1:] == stack[1:]
-                        if bad is None and not (E_interval and head_ok):
-                            bad = "d=%d n=%d sigma=%s x=%d: interval claims of 2.8(b) fail" % (
-                                d, n, prefix, x)
-                    orders = allowed_orders(prefix + (x,), n, d)
-                    vals = [v for v in rest if v > x]
-                    faithful = stack_from_orders(vals, orders)
-                    checks += 1
-                    if bad is None and (faithful is None or faithful != predicted):
-                        bad = "d=%d n=%d sigma=%s x=%d: lemma gives %s, brute force gives %s" % (
-                            d, n, prefix, x, predicted, faithful)
-    return result(
-        "Definition 2.6 / Lemma 2.8 (stack merger)", "lem:merger",
-        "%s; every legal word of [n] for n <= %d (its stack is faithful, "
-        "checked in Proposition 2.10(a)) and every unread letter triggering a merger: "
-        "%d instances of case (a), %d of case (b)" % (dlist(ds), nmax, cases["a"], cases["b"]),
-        checks, bad is None,
-        bad or "the merged stack of Lemma 2.8 equals the faithful stack obtained by "
-               "brute force from the conjunction of the residual obligations, and the "
-               "interval claims of (b) hold",
-        time.time() - t0)
-
-
-# ========================================================= Proposition 2.10
+# ========================================================= Proposition 2.8
 
 def check_scan_states_a(nmax, ds=(1, 2, 3)):
-    """Proposition 2.10(a).  `The stack S(sigma) is faithful to sigma: a
-    completion w of sigma satisfies the residual obligations of all d-triggers
-    of sigma if and only if w|_{I_1 u ... u I_s} lies in
-    Av(231)(I_1) (+) ... (+) Av(231)(I_s).'
+    """Proposition 2.8(a).  `The word sigma avoids beta_d' (as a word; this
+    includes incomplete prefixes, not just completed permutations).
 
-    Compared: the language Av(231)(I_1) (+) ... (+) Av(231)(I_s) of the stack
-    produced by the legal moves of Definition 2.4, versus the set of orders of
-    the unread letters above the least d-trigger that satisfy every residual
-    obligation, enumerated directly from the definition of a residual
-    obligation (`(sigma_{j+1}...sigma_k w)|_{x>c} avoids 231').
+    Compared: every legal word sigma, generated from the initial state by the
+    moves of Definition 2.4 alone, tested for avoidance of beta_d by
+    brute-force classical pattern containment on the word itself (standardize
+    every length-|beta_d| subword and compare with beta_d).
     """
     t0 = time.time()
     checks, bad = 0, None
     for d in ds:
+        pat = C.beta(d)
         for n in range(1, nmax + 1):
             for prefix, stack in states_cached(n, d):
-                lhs = language(stack)
-                rhs = allowed_orders(prefix, n, d)
                 checks += 1
-                if bad is None and lhs != rhs:
-                    diff = sorted(lhs ^ rhs)[:1]
-                    bad = "d=%d n=%d sigma=%s stack=%s: languages differ, e.g. %s" % (
-                        d, n, prefix, stack, diff)
+                if bad is None and not C.avoids(prefix, pat):
+                    bad = "d=%d n=%d sigma=%s: contains beta_%d as a word" % (
+                        d, n, prefix, d)
     return result(
-        "Proposition 2.10(a) (stacks of legal words are faithful)", "prop:scan-states",
-        "%s; every legal word of [n] for n <= %d, comparing the whole "
-        "language of its stack with the whole set of allowed orders" % (dlist(ds), nmax),
+        "Proposition 2.8(a) (legal words avoid beta_d as a word)", "prop:scan-states",
+        "%s; every legal word of [n] (generated by the moves of Definition 2.4 "
+        "from the initial state) for n <= %d, tested by brute-force word "
+        "containment" % (dlist(ds), nmax),
         checks, bad is None,
-        bad or "the language of S(sigma) equals the set of orders satisfying all "
-               "residual obligations, for every legal word tested",
+        bad or "every legal word avoids beta_d as a word, for every legal word tested",
         time.time() - t0)
 
 
 def check_scan_states_b(nmax, ds=(1, 2, 3)):
-    """Proposition 2.10(b).  `If reading the unread letter x from sigma is
+    """Proposition 2.8(b).  `If reading the unread letter x from sigma is
     illegal, then no beta_d-avoiding permutation has the prefix sigma x.'
 
     Compared: illegality of x from the scan state (Definition 2.4), versus the
     number of beta_d-avoiding permutations of [n] with prefix sigma x, counted
     by enumerating Av_n(beta_d) with permuta.  (The converse, that a legal
-    letter does extend to an avoider, is part of Proposition 2.10(c).)
+    letter does extend to an avoider, is part of Proposition 2.8(c).)
     """
     t0 = time.time()
     checks, bad = 0, None
@@ -590,7 +418,7 @@ def check_scan_states_b(nmax, ds=(1, 2, 3)):
                                   "have that prefix" % (d, n, prefix, x,
                                                         counts[prefix + (x,)])
     return result(
-        "Proposition 2.10(b) (an illegal letter kills every completion)",
+        "Proposition 2.8(b) (an illegal letter kills every completion)",
         "prop:scan-states",
         "%s; every illegal (scan state, unread letter) pair with n <= %d, "
         "against the avoiders of length n listed by permuta" % (dlist(ds), nmax),
@@ -619,7 +447,7 @@ def reachable_permutations(prefix, stack, n, d):
 
 
 def check_scan_states_c(nmax, ds=(1, 2, 3), rmax=6):
-    """Proposition 2.10(c).  `R(sigma) is the set of beta_d-avoiding
+    """Proposition 2.8(c).  `R(sigma) is the set of beta_d-avoiding
     permutations of [n] with prefix sigma; in particular R(empty) = Av_n(beta_d),
     and a word is legal if and only if it is a prefix of a beta_d-avoiding
     permutation.'
@@ -658,7 +486,7 @@ def check_scan_states_c(nmax, ds=(1, 2, 3), rmax=6):
                           "have that prefix" % (d, n, prefix, len(got),
                                                 len(byprefix[prefix]))
     return result(
-        "Proposition 2.10(c) (R(sigma) is the set of avoiders with prefix sigma)",
+        "Proposition 2.8(c) (R(sigma) is the set of avoiders with prefix sigma)",
         "prop:scan-states",
         "%s; the set of legal words compared with the set of prefixes of "
         "Av_n(beta_d) for every n <= %d; and R(sigma) compared with the avoiders having "
@@ -670,74 +498,88 @@ def check_scan_states_c(nmax, ds=(1, 2, 3), rmax=6):
         time.time() - t0)
 
 
-# ============================================================= Lemma 2.11
+# ============================================================= Lemma 2.7
 
-def check_separators(nmax):
-    """Lemma 2.11 (separations of the one-threshold stack).  `After a legal
-    prefix has been read, let u < v be adjacent unread letters above m.  Then u
-    and v lie in different intervals of the stack if and only if some letter x
-    with u < x < v was read after a letter smaller than u.'
+def check_separators(nmax, ds=(1, 2, 3)):
+    """Lemma 2.7 (separations of the stack).  `Let sigma be a legal word with
+    a d-trigger, let q be its least d-trigger, and let u < v be adjacent
+    unread letters above q.  Then u and v lie in different intervals of
+    S(sigma) if and only if some letter x with u < x < v was read after a
+    d-trigger smaller than u.'
 
     Compared: `u and v lie in different intervals of S(sigma)', S(sigma) being
     produced by the legal moves of Definition 2.4, versus the condition read
-    off the prefix alone (some read x with u < x < v whose position is preceded
-    by a letter smaller than u).  Also compared: the whole stack, versus the
-    increasing list of unread letters above m cut at exactly the adjacent pairs
-    satisfying the condition.
+    off the prefix alone -- some position i with u < prefix[i] < v such that an
+    earlier position j < i has prefix[j] < u and prefix[j] is itself a
+    d-trigger of the prefix read up to and including j (a d-trigger is the
+    last entry of an increasing subsequence of length d, `is_trigger_of`).
+    Also compared, for every legal word with a d-trigger: the whole stack,
+    versus the increasing list of unread letters above q cut at exactly the
+    adjacent pairs satisfying the condition.
     """
     t0 = time.time()
     checks, bad = 0, None
-    d = 1
-    for n in range(1, nmax + 1):
-        for prefix, stack in states_cached(n, d):
-            if not prefix:
-                continue
-            m = min(prefix)
-            above = [v for v in unread_letters(prefix, n) if v > m]
-            where = {}
-            for i, I in enumerate(stack):
-                for v in I:
-                    where[v] = i
-            cut = []
-            for u, v in zip(above, above[1:]):
-                witness = any(u < x < v and any(y < u for y in prefix[:i])
-                              for i, x in enumerate(prefix))
-                checks += 1
-                if bad is None and (where[u] != where[v]) != witness:
-                    bad = "n=%d sigma=%s stack=%s u=%d v=%d: different intervals=%s, " \
-                          "lemma condition=%s" % (n, prefix, stack, u, v,
-                                                  where[u] != where[v], witness)
-                cut.append(witness)
-            rebuilt, cur = [], []
-            for k, v in enumerate(above):
-                if k and cut[k - 1]:
+    for d in ds:
+        for n in range(1, nmax + 1):
+            for prefix, stack in states_cached(n, d):
+                trig = triggers(prefix, d)
+                if not trig:
+                    continue
+                q = min(trig)
+                lis = C.lis_ending(prefix)
+                is_trig_at = [l >= d for l in lis]  # prefix[j] a d-trigger of prefix[:j+1]
+                above = [v for v in unread_letters(prefix, n) if v > q]
+                where = {}
+                for i, I in enumerate(stack):
+                    for v in I:
+                        where[v] = i
+                cut = []
+                for u, v in zip(above, above[1:]):
+                    witness = any(
+                        u < x < v and any(
+                            prefix[j] < u and is_trig_at[j] for j in range(i))
+                        for i, x in enumerate(prefix))
+                    checks += 1
+                    if bad is None and (where[u] != where[v]) != witness:
+                        bad = "d=%d n=%d sigma=%s stack=%s u=%d v=%d: different " \
+                              "intervals=%s, lemma condition=%s" % (
+                                  d, n, prefix, stack, u, v, where[u] != where[v], witness)
+                    cut.append(witness)
+                rebuilt, cur = [], []
+                for k, v in enumerate(above):
+                    if k and cut[k - 1]:
+                        rebuilt.append(tuple(cur))
+                        cur = []
+                    cur.append(v)
+                if cur:
                     rebuilt.append(tuple(cur))
-                    cur = []
-                cur.append(v)
-            if cur:
-                rebuilt.append(tuple(cur))
-            checks += 1
-            if bad is None and tuple(rebuilt) != stack:
-                bad = "n=%d sigma=%s: stack %s, rebuilt from the lemma %s" % (
-                    n, prefix, stack, tuple(rebuilt))
+                checks += 1
+                if bad is None and tuple(rebuilt) != stack:
+                    bad = "d=%d n=%d sigma=%s: stack %s, rebuilt from the lemma %s" % (
+                        d, n, prefix, stack, tuple(rebuilt))
     return result(
-        "Lemma 2.11 (separations of the one-threshold stack)", "lem:1342-separators",
-        "d = 1; every adjacent pair of unread letters above m, for every legal word of "
-        "[n] with n <= %d, plus the reconstruction of the whole stack from the prefix" % nmax,
+        "Lemma 2.7 (separations of the stack)", "lem:separators",
+        "%s; every adjacent pair of unread letters above the least d-trigger q, for "
+        "every legal word with a d-trigger of [n] with n <= %d, plus the reconstruction "
+        "of the whole stack from the prefix" % (dlist(ds), nmax),
         checks, bad is None,
         bad or "separations of S(sigma) are exactly the adjacent pairs with a witness, "
                "and the stack is recovered from the prefix alone",
         time.time() - t0)
 
 
-# ========================================================= Proposition 2.13
+# ========================================================= Proposition 2.10
 
 def check_scalar_literal(nmax):
-    """Proposition 2.13 (one-threshold recurrence).  W_p((l)L') is given by
-    (eq:W) with the endpoint term (eq:W-endpoint), the boundary
-    W_p(empty) = 1_{p=0} + sum_h W_h(nz(p-1-h)) (eq:W-boundary), and
-    |Av_n(1342)| = W_n(empty) (eq:W-initial); `these equations count every
-    1342-avoiding permutation exactly once'.
+    """Proposition 2.10 (one-threshold recurrence).  For p >= 0 and every list
+    L of positive integers, W_p(L) is *defined* by (eq:W) with the endpoint
+    term the a = 0 and b = 0 terms of (eq:W) and the boundary
+    W_p(empty) = 1_{p=0} + sum_h W_h(nz(p-1-h)) (eq:W-boundary); and
+    |Av_n(1342)| = W_n(empty) (eq:W-initial).  The proposition proves that for
+    a legal prefix with control p and interval sizes L, reading the letters of
+    a completion one at a time is a bijection from the 1342-avoiding
+    completions to the maximal sequences of transitions from (p, L), and that
+    W_p(L) is their number.
 
     Compared: W_p(L) evaluated from the displayed equations, versus the number
     of 1342-avoiding completions of an actual legal prefix with data (p, L) --
@@ -766,7 +608,7 @@ def check_scalar_literal(nmax):
             bad = "n=%d: W_n(empty)=%d, |Av_n(1342)|=%d" % (
                 n, W(n, ()), len(avoiders_cached(n, 1)))
     return result(
-        "Proposition 2.13 (one-threshold recurrence)", "prop:scalar-literal",
+        "Proposition 2.10 (one-threshold recurrence)", "prop:scalar-literal",
         "d = 1; every legal prefix of every 1342-avoider of length n, for n <= %d "
         "(%d distinct states (p, L) occur), plus (eq:W-initial) for each n" % (nmax, len(seen)),
         checks, bad is None,
@@ -776,10 +618,10 @@ def check_scalar_literal(nmax):
         time.time() - t0)
 
 
-# ========================================================= Proposition 2.16
+# ========================================================= Proposition 2.13
 
 def check_scalar_exponential(nmax_fib=12):
-    """Proposition 2.16.  `For n >= 2, the computation of W_n(empty) reaches at
+    """Proposition 2.13.  `For n >= 2, the computation of W_n(empty) reaches at
     least F_{n-1} distinct composition arguments.'
 
     Compared: the number of distinct compositions L occurring among the states
@@ -825,7 +667,7 @@ def check_scalar_exponential(nmax_fib=12):
                 n, len(target), fib)
         detail.append("n=%d: %d reached, F_%d=%d" % (n, len(comps), n - 1, fib))
     return result(
-        "Proposition 2.16 (exponential literal state space)", "prop:scalar-exponential",
+        "Proposition 2.13 (exponential literal state space)", "prop:scalar-exponential",
         "the composition arguments reachable from (n, empty) through (eq:W-boundary) "
         "and (eq:W), for 2 <= n <= %d (the asymptotic consequence itself is not "
         "finitely checkable)" % nmax_fib,
@@ -834,28 +676,29 @@ def check_scalar_exponential(nmax_fib=12):
         time.time() - t0)
 
 
-# ============================================== Theorem 2.17 / Proposition 2.19
+# ============================================== Theorem 2.14 / Proposition 2.16
 
 TAILS = ((), (1,), (2,), (1, 1), (3,), (2, 1), (1, 2), (2, 3, 1))
 
 
 def check_protected_tail(nmax):
-    """Theorem 2.17 (protected-tail factorization), in the instance in which
-    Section 2 applies it: `K_x^L(c,t) is independent of L', and
-    W_p((l)L) = sum_t K_l(p,t) W_t(L) (eq:scalar-factorization).
+    """Theorem 2.14 (protected-tail factorization).  For l >= 1, the number
+    K_l^L(p,t) is independent of L; write K_l(p,t) for it.  Then
+    W_p((l)L) = sum_t K_l(p,t) W_t(L) (eq:scalar-factorization) for every list
+    L, and for L = (l_1,...,l_s), W_p(L) = sum_t (K_{l_1}...K_{l_s})(p,t)
+    W_t(empty) (eq:abstract-factorization).
 
     Compared: K_l(p,.) obtained by brute-force enumeration of the paths of the
     recurrence graph of (eq:W) that start at (p, (l)|L) and are stopped at the
     first exposure of the tail L (each summand of (eq:W) one transition, the
-    endpoint term of (eq:W-endpoint) two transitions), for several tails L --
+    endpoint term of the a = 0 and b = 0 terms of (eq:W) two transitions), for several tails L --
     the counts must agree; and W_p((l)L) evaluated from (eq:W) directly,
     versus sum_t K_l(p,t) W_t(L) with K from the path enumeration and W from
     (eq:W).  Also compared: the iterated form (eq:abstract-factorization),
     W_p(L) = sum_t (K_{l_1} ... K_{l_s})(p,t) G_t, with the kernel product
     assembled one factor at a time from the path-enumerated rows and
-    G_t = W_t(empty).  The general statement of the theorem, for an arbitrary
-    terminating recurrence on a control set and a stack, is not finitely
-    checkable.
+    G_t = W_t(empty).  The theorem quantifies over all p, l, L, so only the
+    finite range tested below is checked here.
     """
     t0 = time.time()
     checks, bad = 0, None
@@ -896,7 +739,7 @@ def check_protected_tail(nmax):
                     bad = "p=%d L=%s: W=%d, kernel product times G gives %d" % (
                         p, full, W(p, full), prod)
     return result(
-        "Theorem 2.17 (protected-tail factorization), applied instance",
+        "Theorem 2.14 (protected-tail factorization)",
         "thm:protected-tail-principle",
         "the scalar recurrence (eq:W): stopped-path kernels K_l(p,.) for all p >= 0, "
         "l >= 1 with p + l <= %d and 8 different tails L; the factorization "
@@ -910,12 +753,12 @@ def check_protected_tail(nmax):
 
 
 def check_kernel_recurrence(nmax):
-    """Proposition 2.19 (scalar kernel recurrences).  K_l(p,t) satisfies
-    (eq:scalar-K) with D_l(p,t) of (eq:scalar-D), and G_p satisfies
+    """Proposition 2.16 (scalar kernel recurrences).  K_l(p,t) satisfies
+    (eq:scalar-K), with K_0 the identity, and G_p satisfies
     (eq:scalar-G).
 
-    Compared: K_l(p,.) computed from the recurrences (eq:scalar-K),
-    (eq:scalar-D) with K_0(p,t) = 1_{p=t}, versus K_l(p,.) obtained by
+    Compared: K_l(p,.) computed from the recurrence (eq:scalar-K) with
+    K_0(p,t) = 1_{p=t}, versus K_l(p,.) obtained by
     brute-force enumeration of stopped paths in the recurrence graph of
     (eq:W); and G_p from (eq:scalar-G) versus W_p(empty) from (eq:W-boundary),
     two different routes to the same quantity.
@@ -936,19 +779,19 @@ def check_kernel_recurrence(nmax):
         if bad is None and G(p) != W(p, ()):
             bad = "G_%d=%d but W_%d(empty)=%d" % (p, G(p), p, W(p, ()))
     return result(
-        "Proposition 2.19 (scalar kernel recurrences)", "prop:scalar-kernel-recurrence",
+        "Proposition 2.16 (scalar kernel recurrences)", "prop:scalar-kernel-recurrence",
         "every kernel row K_l(p,.) with l >= 1 and p + l <= %d against the stopped-path "
         "enumeration, and G_p against W_p(empty) for p <= %d" % (nmax, nmax),
         checks, bad is None,
-        bad or "(eq:scalar-K)/(eq:scalar-D) reproduce the stopped-path kernels, and "
+        bad or "(eq:scalar-K) reproduce the stopped-path kernels, and "
                "(eq:scalar-G) reproduces W_p(empty)",
         time.time() - t0)
 
 
-# ============================================================= Lemma 2.20
+# ============================================================= Lemma 2.17
 
 def check_scalar_support(nmax):
-    """Lemma 2.20 (exact scalar support).  `For every p >= 0 and l >= 1,
+    """Lemma 2.17 (exact scalar support).  `For every p >= 0 and l >= 1,
     supp K_l(p,.) = {0, 1, ..., p}.  Moreover K_l(p,p) = C_l.'
 
     Compared, entry by entry: the support of the row K_l(p,.) obtained by
@@ -978,7 +821,7 @@ def check_scalar_support(nmax):
                 bad = "K_%d(%d,%d)=%d, C_%d=%d" % (
                     ell, p, p, row.get(p, 0), ell, catalan(ell))
     return result(
-        "Lemma 2.20 (exact scalar support)", "lem:scalar-support",
+        "Lemma 2.17 (exact scalar support)", "lem:scalar-support",
         "every row K_l(p,.) with l >= 1, p >= 0 and p + l <= %d, tested entry by entry "
         "for 0 <= t <= p+l+1 and as a whole support set, against the stopped-path "
         "enumeration" % nmax,
@@ -987,16 +830,16 @@ def check_scalar_support(nmax):
         time.time() - t0)
 
 
-# ============================================================= Theorem 2.22
+# ============================================================= Theorem 2.19
 
 def check_scalar_algorithm(nmax_terms=10):
-    """Theorem 2.22 (polynomial enumeration of 1342-avoiders).  The complexity
+    """Theorem 2.19 (polynomial enumeration of 1342-avoiders).  The complexity
     statement (O(N^5) operations, O(N^3) stored integers, O(N log N) bits) is
     asymptotic and not finitely checkable; the finite content tested here is
     that the algorithm computes the right numbers.
 
-    Compared: G_n from (eq:scalar-G), with kernel rows from (eq:scalar-K) and
-    (eq:scalar-D), versus |Av_n(1342)| obtained by listing the class with
+    Compared: G_n from (eq:scalar-G), with kernel rows from (eq:scalar-K),
+    versus |Av_n(1342)| obtained by listing the class with
     permuta.
     """
     t0 = time.time()
@@ -1010,7 +853,7 @@ def check_scalar_algorithm(nmax_terms=10):
         if bad is None and gn != ref:
             bad = "n=%d: G_n=%d, |Av_n(1342)|=%d" % (n, gn, ref)
     return result(
-        "Theorem 2.22 (polynomial enumeration of 1342-avoiders)", "thm:scalar-algorithm",
+        "Theorem 2.19 (polynomial enumeration of 1342-avoiders)", "thm:scalar-algorithm",
         "G_n from (eq:scalar-G) against |Av_n(1342)| from permuta for 0 <= n <= %d; "
         "the O(N^5)/O(N^3)/O(N log N) bounds are asymptotic and not finitely "
         "checkable" % nmax_terms,
@@ -1028,11 +871,10 @@ def run(nmax=8, verbose=False):
         lambda: check_trigger(nmax),
         lambda: check_first_letter(nmax),
         lambda: check_legal_moves(nmax),
+        lambda: check_separators(nmax),
         lambda: check_scan_states_a(nmax),
         lambda: check_scan_states_b(nmax),
         lambda: check_scan_states_c(nmax, rmax=nmax),
-        lambda: check_merger(nmax),
-        lambda: check_separators(nmax),
         lambda: check_scalar_literal(nmax),
         lambda: check_scalar_exponential(14),
         lambda: check_protected_tail(nmax + 2),

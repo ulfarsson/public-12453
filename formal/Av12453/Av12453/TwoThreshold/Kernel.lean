@@ -3,8 +3,14 @@ Copyright (c) 2026 Henning Ulfarsson. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Henning Ulfarsson
 -/
-import Av12453.TwoThreshold.Defs
-import Av12453.OneThreshold.Kernel
+module
+
+public import Av12453.TwoThreshold.Defs
+public import Av12453.OneThreshold.Kernel
+meta import Av12453.TwoThreshold.Defs
+meta import Av12453.OneThreshold.Kernel
+
+@[expose] public section
 
 /-!
 # The transfer kernels for `Av(12453)` (`d = 2`)
@@ -19,13 +25,14 @@ specialized to `d = 2`, where `β₂ = ι₂ ⊕ 231 = 12453` (`0`-based `[0, 1,
 
 ## The kernel
 
-`K ℓ 𝐩 𝐭` is the paper's `K_ℓ(𝐩, 𝐭)`: the total weight of the paths of the recurrence `H`
-that start at `H_𝐩((ℓ) ∣ L)` and are stopped at the first exposure of the protected tail
-`L`, at `H_𝐭(∅ ∣ L)`.  By \cref{cor:protected-tail} the value does not depend on `L`, and
-\eqref{eq:factorization} reads `H_𝐩((ℓ)L) = ∑_𝐭 K_ℓ(𝐩, 𝐭) H_𝐭(L)`; that factorization is
-*not* proved here (see `Av12453/TwoThreshold/KernelFactor.lean`).  What is proved here is
-only that `K`, `D` and `G` satisfy the paper's defining equations \eqref{eq:K},
-\eqref{eq:D} and \eqref{eq:G}, in the form
+`K ℓ 𝐩 𝐭` is the paper's `K_ℓ(𝐩, 𝐭)`, defined here by its recurrence \eqref{eq:K}.  The
+paper defines `K_ℓ(𝐩, 𝐭)` as the number of stopped paths of `H` from `H_𝐩((ℓ) ∣ L)` to
+`H_𝐭(∅ ∣ L)` and proves the recurrence (\cref{prop:kernel-recurrence}); that path reading
+is not formalized.  The factorization \eqref{eq:factorization},
+`H_𝐩((ℓ)L) = ∑_𝐭 K_ℓ(𝐩, 𝐭) H_𝐭(L)`, is proved in
+`Av12453/TwoThreshold/KernelFactor.lean`.  What is proved here is
+only that `K`, `D` and `G` satisfy the paper's defining equations \eqref{eq:K}
+and \eqref{eq:G}, in the form
 
 * `K_zero`  : `K 0 𝐩 𝐭 = 1_{𝐩 = 𝐭}` (the boundary kernel `K_0`);
 * `K_succ_eq` (`1 ≤ ℓ`) : `K ℓ 𝐩 𝐭` is the sum of the early-band terms
@@ -35,12 +42,16 @@ only that `K`, `D` and `G` satisfy the paper's defining equations \eqref{eq:K},
 * `D_one`, `D_succ` : `D 1 𝐩 𝐭 = 1_{𝐩 = 𝐭}` and `D ℓ 𝐩 𝐭 = 2 K_{ℓ-1}(𝐩, 𝐭)` for `ℓ ≥ 2`;
 * `G_eq` : \eqref{eq:G}.
 
+The paper's split sum in \eqref{eq:K} runs over `a, b ≥ 0` with `K_0` the identity; its
+terms `a = 0` and `b = 0` are the endpoint term `D ℓ 𝐩 𝐭` here, so the two forms agree.
+
 Here, by \eqref{eq:T} and \eqref{eq:U} at `d = 2`,
 
     T_{0,h}(p₀, p₁) = (h, p₁ + p₀ - 1 - h),     U_h(p₀, p₁) = (p₀, h),
     δ_h = p₁ - 1 - h,
 
-exactly as in the four lines of \eqref{eq:H} formalized by `TwoThreshold.Defs.H_eq_cons`.
+exactly as in the four groups of \eqref{eq:H} (early band, last band,
+endpoints, interior) formalized by `TwoThreshold.Defs.H_eq_cons`.
 
 Two deviations from the paper's display, both harmless and both recorded here:
 
@@ -75,7 +86,7 @@ mass, including `U_h(𝐩)` when `K_0` occurs".
 
 * `ctrls M` : the finite set of controls of mass at most `M`; `S 𝐩 = ctrls ‖𝐩‖₁`.
 * `K` : the transfer-kernel table `K_ℓ(𝐩, 𝐭)`, \eqref{eq:K}.
-* `D` : the endpoint term `D_ℓ(𝐩, 𝐭)`, \eqref{eq:D}.
+* `D` : the endpoint term `D_ℓ(𝐩, 𝐭)`, the endpoint terms of \eqref{eq:K}.
 * `G` : the empty-stack values `G_𝐩`, \eqref{eq:G}.
 
 ## Main results
@@ -131,13 +142,13 @@ theorem S_subset_ctrls {p : ℕ × ℕ} {M : ℕ} (h : p.1 + p.2 ≤ M) : S p �
 
 /-! ### The kernel table `K` and the endpoint term `D`
 
-`Kaux k ℓ 𝐩 𝐭` is the fuel-driven evaluation of \eqref{eq:K}--\eqref{eq:D}: it returns `0`
+`Kaux k ℓ 𝐩 𝐭` is the fuel-driven evaluation of \eqref{eq:K}: it returns `0`
 once the fuel `k` runs out, and otherwise recurses with one unit less.  The endpoint term
 is inlined here (`if ℓ = 0 then 1_{𝐩=𝐭} else 2 * Kaux k ℓ 𝐩 𝐭` at the head `ℓ + 1`) and is
 named `D` after `K` is available. -/
 
 /-- Fuel-driven evaluation of the two-threshold kernel recurrence \eqref{eq:K}. -/
-private def Kaux : ℕ → ℕ → ℕ × ℕ → ℕ × ℕ → ℕ
+def Kaux : ℕ → ℕ → ℕ × ℕ → ℕ × ℕ → ℕ
   | 0, _, _, _ => 0
   | _ + 1, 0, p, t => if p = t then 1 else 0
   | k + 1, ℓ + 1, p, t =>
@@ -195,9 +206,9 @@ private theorem Kaux_congr : ∀ k k' ℓ (p t : ℕ × ℕ),
       rw [Finset.sum_congr rfl e1, Finset.sum_congr rfl e2, Finset.sum_congr rfl e3, e4]
 
 /--
-`K ℓ 𝐩 𝐭` is the paper's `K_ℓ(𝐩, 𝐭)` of \eqref{eq:K}: the total weight of the paths of `H`
-that leave the state with control `𝐩` and active head of size `ℓ`, stopped at the first
-exposure of the protected tail, at control `𝐭`.  `K 0` is the boundary kernel `K_0`.
+`K ℓ 𝐩 𝐭` is the paper's `K_ℓ(𝐩, 𝐭)`, defined by its recurrence \eqref{eq:K} (the paper's
+path reading, stopped paths of `H` from control `𝐩` and active head of size `ℓ` to control
+`𝐭`, is not formalized).  `K 0` is the boundary kernel `K_0`.
 -/
 def K (ℓ : ℕ) (p t : ℕ × ℕ) : ℕ := Kaux (p.1 + p.2 + ℓ + 1) ℓ p t
 
@@ -208,7 +219,8 @@ private theorem K_eq_Kaux {ℓ : ℕ} {p t : ℕ × ℕ} {k : ℕ} (hk : p.1 + p
 /-- **The boundary kernel**: `K_0(𝐩, 𝐭) = 1_{𝐩 = 𝐭}`. -/
 theorem K_zero (p t : ℕ × ℕ) : K 0 p t = if p = t then 1 else 0 := rfl
 
-/-- The paper's `D_ℓ(𝐩, 𝐭)` of \eqref{eq:D}: the endpoint term of the kernel recurrence.
+/-- The paper's `D_ℓ(𝐩, 𝐭)` of \eqref{eq:K} (its terms `a = 0` and `b = 0`): the endpoint term of
+the kernel recurrence.
 It is only used for `ℓ ≥ 1`. -/
 def D (ℓ : ℕ) (p t : ℕ × ℕ) : ℕ :=
   if ℓ = 1 then (if p = t then 1 else 0) else 2 * K (ℓ - 1) p t
@@ -217,11 +229,11 @@ def D (ℓ : ℕ) (p t : ℕ × ℕ) : ℕ :=
 theorem D_eq (ℓ : ℕ) (p t : ℕ × ℕ) :
     D ℓ p t = if ℓ = 1 then (if p = t then 1 else 0) else 2 * K (ℓ - 1) p t := rfl
 
-/-- **\eqref{eq:D}**, first half: `D_1(𝐩, 𝐭) = 1_{𝐩 = 𝐭}`. -/
+/-- **The endpoint term**, first half: `D_1(𝐩, 𝐭) = 1_{𝐩 = 𝐭}`. -/
 theorem D_one (p t : ℕ × ℕ) : D 1 p t = if p = t then 1 else 0 := by
   rw [D_eq, if_pos rfl]
 
-/-- **\eqref{eq:D}**, second half: `D_ℓ(𝐩, 𝐭) = 2 K_{ℓ-1}(𝐩, 𝐭)` for `ℓ ≥ 2`. -/
+/-- **The endpoint term**, second half: `D_ℓ(𝐩, 𝐭) = 2 K_{ℓ-1}(𝐩, 𝐭)` for `ℓ ≥ 2`. -/
 theorem D_succ {ℓ : ℕ} (hℓ : 2 ≤ ℓ) (p t : ℕ × ℕ) : D ℓ p t = 2 * K (ℓ - 1) p t := by
   rw [D_eq, if_neg (by omega)]
 
@@ -273,7 +285,7 @@ theorem K_succ_eq {ℓ : ℕ} (hℓ : 1 ≤ ℓ) (p t : ℕ × ℕ) :
 /-! ### The empty-stack values `G` -/
 
 /-- Fuel-driven evaluation of \eqref{eq:G} at `d = 2`. -/
-private def Gaux : ℕ → ℕ × ℕ → ℕ
+def Gaux : ℕ → ℕ × ℕ → ℕ
   | 0, _ => 0
   | k + 1, p =>
       (if p = (0, 0) then 1 else 0)
@@ -405,8 +417,8 @@ example : (List.range 7).map (fun n => G (n, 0)) = [1, 1, 2, 6, 24, 119, 694] :=
 
 The controls `(0, q)` carry no early band, so \eqref{eq:K} at such a control is literally the
 `d = 1` recurrence \eqref{eq:scalar-K} in the second coordinate.  This is the notes' layer
-identity `R_{ℓ,0} = K_ℓ`.  A proof is `KernelFactor`'s optional item; the two `decide`s below
-check the statement on small values. -/
+identity `R_{ℓ,0} = K_ℓ`, proved in general as `K_layer_zero` in `KernelFactor.lean`; the two
+`decide`s below check it on small values. -/
 
 set_option maxRecDepth 20000 in
 /-- `K_ℓ((0,q), (0,s))` is the `d = 1` kernel `K_ℓ(q, s)` of `Av12453.OneThreshold`. -/

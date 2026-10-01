@@ -3,8 +3,12 @@ Copyright (c) 2026 Henning Ulfarsson. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Henning Ulfarsson
 -/
-import Mathlib.Tactic.IntervalCases
-import PermPatterns.Containment
+module
+
+public import Mathlib.Tactic.IntervalCases
+public import PermPatterns.Containment
+
+@[expose] public section
 
 /-!
 # The patterns `231` and `ι_d`, and increasing subsequences

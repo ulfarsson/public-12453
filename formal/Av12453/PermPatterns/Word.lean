@@ -3,10 +3,14 @@ Copyright (c) 2026 Henning Ulfarsson. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Henning Ulfarsson
 -/
-import Mathlib.Data.Finset.Dedup
-import Mathlib.Data.List.GetD
-import Mathlib.Data.List.NodupEquivFin
-import Mathlib.Tactic.FinCases
+module
+
+public import Mathlib.Data.Finset.Dedup
+public import Mathlib.Data.List.GetD
+public import Mathlib.Data.List.NodupEquivFin
+public import Mathlib.Tactic.FinCases
+
+@[expose] public section
 
 /-!
 # Words, order isomorphism and subwords

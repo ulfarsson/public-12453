@@ -3,10 +3,14 @@ Copyright (c) 2026 Henning Ulfarsson. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Henning Ulfarsson
 -/
-import Av12453.OneThreshold.Kernel
-import Av12453.OneThreshold.KernelSupport
-import Av12453.OneThreshold.KernelFactor
-import Av12453.OneThreshold.Counting
+module
+
+public import Av12453.OneThreshold.Kernel
+public import Av12453.OneThreshold.KernelSupport
+public import Av12453.OneThreshold.KernelFactor
+public import Av12453.OneThreshold.Counting
+
+@[expose] public section
 
 /-!
 # Component 4a, theorems 5 and 6: the kernel algorithm counts `1342`-avoiders
@@ -70,7 +74,8 @@ interface of the brief is respected and so that the integrator may supply it uni
   `G n = |Av_n(1342)|`, relative to `hF`, from `G_eq_W_of` and
   `Av12453.OneThreshold.av1342_count`.
 * `av1342_count_kernel` : **the goal of component 4a**, unconditionally.
-* `G_four_kernel_rows`, `G_zero`, `G_one`, `G_two`, `G_three`, `G_four` : the arithmetic of
+* `G_five_kernel_rows`, `G_five_grouped`, `G_five`, and the grade-`3` part `G_four_kernel_rows`,
+  `G_four` : the arithmetic of
   \cref{ex:scalar-kernel}, *From kernel rows to `|Av₄(1342)|`*, derived from `G_eq` and the
   three kernel rows.
 
@@ -199,9 +204,11 @@ theorem av1342_count_kernel (n : ℕ) : G n = (avoiders n {beta 1}).card :=
   av1342_count_kernel_of (fun _ℓ p L hℓ => W_factor hℓ p L)
     (fun _ _ _ h => K_eq_zero_of_lt h) n
 
-/-! ### \cref{ex:scalar-kernel}: from kernel rows to `|Av₄(1342)|`
+/-! ### \cref{ex:scalar-kernel}: from kernel rows to `|Av₅(1342)|`
 
-The paper's worked example.  `G_four_kernel_rows` is \eqref{eq:scalar-G} at `p = 4` written
+The paper's worked example, in two steps.  The grade-`3` rows give `G_4 = 23`, which the
+example uses as input, and the grade-`4` rows then give `G_5 = 103`.
+`G_four_kernel_rows` is \eqref{eq:scalar-G} at `p = 4` written
 out, one group per base letter `h = 0, 1, 2, 3`; substituting the three kernel rows
 `K_3(0, ·) = (5)`, `K_2(1, ·) = (4, 2)`, `K_1(2, ·) = (3, 1, 1)` -- the `h = 3` group uses
 the identity kernel `K_0(3, ·) = e_3` and contributes the single term `G_3` -- gives
@@ -247,6 +254,45 @@ theorem G_four : G 4 = 23 := by
   obtain ⟨h0, h1, h2, h3⟩ := h
   simp only at h0 h1 h2 h3
   rw [G_four_grouped, h0, h1, h2, h3]
+
+/-! The second half of \cref{ex:scalar-kernel}: the rows of grade `4` and
+`|Av₅(1342)| = G_5 = 103`, the five groups of \eqref{eq:scalar-G} at `p = 5` being the
+terms `W_0((4)), …, W_4(∅)` of \cref{ex:1342-literal-count}. -/
+
+/-- \eqref{eq:scalar-G} at `p = 5`, expanded into the five groups `h = 0, …, 4`. -/
+theorem G_five_kernel_rows :
+    G 5 = K 4 0 0 * G 0
+        + (K 3 1 0 * G 0 + K 3 1 1 * G 1)
+        + (K 2 2 0 * G 0 + K 2 2 1 * G 1 + K 2 2 2 * G 2)
+        + (K 1 3 0 * G 0 + K 1 3 1 * G 1 + K 1 3 2 * G 2 + K 1 3 3 * G 3)
+        + G 4 := by
+  rw [G_eq 5]
+  norm_num [Finset.sum_range_succ, K_zero]
+
+set_option maxRecDepth 20000 in
+/-- The rows of grade `4` of \cref{ex:scalar-kernel}: `K_4(0, ·) = (14)`,
+`K_3(1, ·) = (15, 5)`, `K_2(2, ·) = (15, 4, 2)`, `K_1(3, ·) = (12, 3, 1, 1)`. -/
+theorem K_rows_grade_four :
+    K 4 0 0 = 14 ∧ (K 3 1 0 = 15 ∧ K 3 1 1 = 5) ∧ (K 2 2 0 = 15 ∧ K 2 2 1 = 4 ∧ K 2 2 2 = 2)
+      ∧ (K 1 3 0 = 12 ∧ K 1 3 1 = 3 ∧ K 1 3 2 = 1 ∧ K 1 3 3 = 1) := by decide
+
+/-- The paper's display
+`G_5 = 14G_0 + (15G_0 + 5G_1) + (15G_0 + 4G_1 + 2G_2) + (12G_0 + 3G_1 + G_2 + G_3) + G_4`
+(\cref{ex:scalar-kernel}). -/
+theorem G_five_grouped :
+    G 5 = 14 * G 0 + (15 * G 0 + 5 * G 1) + (15 * G 0 + 4 * G 1 + 2 * G 2)
+        + (12 * G 0 + 3 * G 1 + G 2 + G 3) + G 4 := by
+  obtain ⟨a, ⟨b1, b2⟩, ⟨c1, c2, c3⟩, ⟨e1, e2, e3, e4⟩⟩ := K_rows_grade_four
+  rw [G_five_kernel_rows, a, b1, b2, c1, c2, c3, e1, e2, e3, e4, one_mul, one_mul]
+
+/-- `|Av₅(1342)| = G_5 = 14 + 20 + 23 + 23 + 23 = 103` (\cref{ex:scalar-kernel}), derived
+from `G_five_grouped`, `G_zero_three` and `G_four` rather than by evaluating `G 5`. -/
+theorem G_five : G 5 = 103 := by
+  have h := G_zero_three
+  rw [Prod.ext_iff, Prod.ext_iff, Prod.ext_iff] at h
+  obtain ⟨h0, h1, h2, h3⟩ := h
+  simp only at h0 h1 h2 h3
+  rw [G_five_grouped, h0, h1, h2, h3, G_four]
 
 end OneThreshold
 end Av12453

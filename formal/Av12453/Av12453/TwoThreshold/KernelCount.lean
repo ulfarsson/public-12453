@@ -3,10 +3,18 @@ Copyright (c) 2026 Henning Ulfarsson. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Henning Ulfarsson
 -/
-import Av12453.TwoThreshold.Kernel
-import Av12453.TwoThreshold.KernelSupport
-import Av12453.TwoThreshold.KernelFactor
-import Av12453.TwoThreshold.Counting
+module
+
+public import Av12453.TwoThreshold.Kernel
+public import Av12453.TwoThreshold.KernelSupport
+public import Av12453.TwoThreshold.KernelFactor
+public import Av12453.TwoThreshold.Counting
+meta import Av12453.TwoThreshold.Kernel
+meta import Av12453.TwoThreshold.KernelSupport
+meta import Av12453.TwoThreshold.KernelFactor
+meta import Av12453.TwoThreshold.Counting
+
+@[expose] public section
 
 /-!
 # Component 4b, theorems 4 and 5: the kernel algorithm counts `12453`-avoiders

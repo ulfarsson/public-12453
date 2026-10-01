@@ -3,19 +3,23 @@ Copyright (c) 2026 Henning Ulfarsson. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Henning Ulfarsson
 -/
-import Av12453.OneThreshold.Defs
+module
+
+public import Av12453.OneThreshold.Defs
+
+@[expose] public section
 
 /-!
 # (A) The separation invariant of the one-threshold scan
 
 This file proves theorem (A) of component 3a: the separation criterion of
-\cref{lem:1342-separators} (the case `d = 1` of \cref{cor:separators} (i) ⟺ (ii)) holds at
+\cref{lem:separators} (at `d = 1`) holds at
 every legal prefix.  For a legal prefix `σ`, adjacent unread values `u < v` above the
 threshold `m` lie in different intervals of the interval stack if and only if some letter
 `z` with `u < z < v` was read after a letter `c < u`.
 
 The proof is the induction of the paper along the scan, in the three cases of
-\cref{lem:1342-separators}:
+\cref{lem:separators}:
 
 * **New minimum** (`x < m`).  A pair that is new above the new threshold has `u` in the
   merged set `E = mergeSet n τ x`, hence `u < m n τ`; then no read letter is below `u` at
@@ -276,7 +280,7 @@ private theorem sep_invariant_aux (n : ℕ) : ∀ (σ : List ℕ), Legal n σ �
           exact hihτ
 
 /--
-**(A) The separation invariant** (\cref{lem:1342-separators}, both directions; the case
+**(A) The separation invariant** (\cref{lem:separators}, both directions; the case
 `d = 1` of \cref{cor:separators} (i) ⟺ (ii)).  For a legal prefix and adjacent unread values
 `u < v` above the threshold, `u` and `v` lie in different intervals of the stack if and only
 if some letter between them was read after a smaller letter.
@@ -326,7 +330,7 @@ example : Adjacent 15 (runningExample.take 5) 12 14 ∧
   decide
 
 set_option maxRecDepth 100000 in
-/-- The example after \cref{lem:1342-separators}: adjacency cannot be dropped.  After the
+/-- The example after \cref{lem:separators}: adjacency cannot be dropped.  After the
 prefix `3,5,1` of a permutation of `[7]` (`0`-based `2,4,0`) the stack is `{2,4} | {6,7}`
 (`0`-based `{1,3} | {5,6}`), so `2` and `6` lie in different intervals although no letter
 between them was read after a letter smaller than `2` -- and they are not adjacent. -/

@@ -3,8 +3,12 @@ Copyright (c) 2026 Henning Ulfarsson. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Henning Ulfarsson
 -/
-import Mathlib.Data.Finset.Insert
-import PermPatterns.Word
+module
+
+public import Mathlib.Data.Finset.Insert
+public import PermPatterns.Word
+
+@[expose] public section
 
 /-!
 # Containment, avoidance and restriction

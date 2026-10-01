@@ -3,8 +3,15 @@ Copyright (c) 2026 Henning Ulfarsson. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Henning Ulfarsson
 -/
-import Av12453.TwoThreshold.Thresholds
-import Av12453.OneThreshold.Semantics
+module
+
+public import Av12453.TwoThreshold.Thresholds
+meta import Av12453.OneThreshold.Defs
+public import Av12453.OneThreshold.Semantics
+meta import Av12453.TwoThreshold.Thresholds
+meta import Av12453.OneThreshold.Semantics
+
+@[expose] public section
 
 /-!
 # The two-threshold scan and the literal recurrence for `Av(12453)`
@@ -30,7 +37,7 @@ interval stack.  With `x` the next letter and the thresholds `b₁ < b₂` of `�
   analogue for `d = 1`.
 * `b₁ < x < b₂` (a **last-band** move, \eqref{eq:U}): `x` is the new least `2`-trigger and
   becomes `b₂`; the unread values strictly between `x` and the old `b₂` -- the paper's `E`,
-  here `mergeSet n σ x` -- join the active head (\cref{lem:merger}), or become the whole
+  here `mergeSet n σ x` -- join the active head (\cref{def:scan-state}(a)), or become the whole
   stack when the stack was empty.
 * `x > b₂` and `x ∈ I₁` (an **active-interval** move): `x` splits the active head into its
   lower and upper parts (\cref{lem:first-letter}), thresholds unchanged.
@@ -112,7 +119,7 @@ theorem nz_eq_self {l : List ℕ} (h : ∀ a ∈ l, a ≠ 0) : nz l = l := by
 /-! ### The interval stack -/
 
 /--
-The values a last-band letter adjoins to the active head: the paper's `E` of
+The values a last-band letter adds to the active head: the paper's `E` of
 \eqref{eq:U}, the unread values strictly between `x` and the old `b₂`.  Its size is the
 paper's `δ_h = p₁ - 1 - h` (`card_mergeSet`).
 -/
@@ -453,7 +460,7 @@ theorem Layout.b2_lt (h : Layout n σ) (hne : stack n σ ≠ []) : b2 n σ < n :
   rw [OneThreshold.mem_unread] at h2
   omega
 
-/-- **\cref{lem:least-trigger-frontier} at a nonempty stack**: `b₂` is then a `2`-trigger of
+/-- **\eqref{eq:bd-q} at a nonempty stack**: `b₂` is then a `2`-trigger of
 the prefix, which is what the active-interval case of \cref{cor:separators} uses. -/
 theorem Layout.isTrigger_b2 (h : Layout n σ) (hne : stack n σ ≠ []) :
     IsTrigger σ 2 (b2 n σ) :=
@@ -725,7 +732,7 @@ theorem rho_eq (hleg : Legal n σ) :
 /-! ### The transition of `(𝐩, L)`
 
 The four groups of \eqref{eq:H}: an early-band move (\eqref{eq:T} at `i = 0`), a last-band
-move (\eqref{eq:U}, with the merger of \cref{lem:merger}), and the two shapes of an
+move (\eqref{eq:U}, with the merger of \cref{def:scan-state}(a)), and the two shapes of an
 active-interval move (\cref{lem:first-letter}), which for the sizes are the endpoint and
 interior terms. -/
 
@@ -900,18 +907,17 @@ The dictionary with \eqref{eq:H}, writing `𝐩 = (p₀, p₁)` and `L = ℓ₁ 
   `U_h(𝐩) = (p₀, h)` and `δ_h = p₁ - 1 - h` by \eqref{eq:U}, and `\nz` is not needed
   because `ℓ₁ ≥ 1` -- and `∑ h ∈ range q.2, H (q.1, h) (nz [q.2 - 1 - h])` at an empty
   stack, where `ℓ₁ = 0` and `\nz` does delete an empty merger set;
-* line 3, the endpoint term `1_{ℓ₁>0} min(2,ℓ₁) H_𝐩(\nz(ℓ₁-1, ℓ₂, …))`, is `Eend ℓ₁ 𝐩 L'`;
-  it is absent at an empty stack;
-* line 4, the interior sum `∑_{j=2}^{ℓ₁-1} H_𝐩((j-1, ℓ₁-j, ℓ₂, …))`, is
-  `∑ a ∈ Finset.Ico 1 (ℓ₁ - 1), H 𝐩 (a :: (ℓ₁ - 1 - a) :: L')` under `a = j - 1`; it is
-  absent at an empty stack.
+* line 3, the sum `∑_{a+b=ℓ₁-1, a,b≥0} H_𝐩(\nz(a, b, ℓ₂, …))` over the letters of the
+  active head, is `Eend ℓ₁ 𝐩 L'` (its terms `a = 0` and `b = 0`, a single term when
+  `ℓ₁ = 1`) plus the interior sum `∑ a ∈ Finset.Ico 1 (ℓ₁ - 1), H 𝐩 (a :: (ℓ₁ - 1 - a) :: L')`;
+  it is absent at an empty stack.
 
 `H_zero` is the terminal condition `H_𝟎(∅) = 1` of \eqref{eq:initial-terminal}, and
 `av12453_count` (component 3b's goal, proved in `Av12453.TwoThreshold.Counting`) is its
 initial condition `a_n^{(2)} = H_{(n,0)}(∅)`. -/
 
 /-- Fuel-driven evaluation of the two-threshold recurrence. -/
-private def Haux : ℕ → ℕ × ℕ → List ℕ → ℕ
+def Haux : ℕ → ℕ × ℕ → List ℕ → ℕ
   | 0, _, _ => 0
   | k + 1, q, [] =>
       (if q = (0, 0) then 1 else 0)

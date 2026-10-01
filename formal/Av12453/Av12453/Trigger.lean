@@ -3,7 +3,11 @@ Copyright (c) 2026 Henning Ulfarsson. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Henning Ulfarsson
 -/
-import Av12453.Basic
+module
+
+public import Av12453.Basic
+
+@[expose] public section
 
 /-!
 # Lemma 2.1 of the paper: the trigger lemma

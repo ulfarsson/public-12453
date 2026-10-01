@@ -3,8 +3,12 @@ Copyright (c) 2026 Henning Ulfarsson. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Henning Ulfarsson
 -/
-import Mathlib
-import PermPatterns
+module
+
+public import Mathlib
+public import PermPatterns
+
+@[expose] public section
 
 /-!
 # The patterns `β_d = ι_d ⊕ 231`

@@ -201,7 +201,7 @@ assert [v for _, v in triggers(example, 2)] == trigger_values("316829574", 2)
 # entries 3, 6 form an increasing 2-subsequence, so 6 is a 2-trigger; 3 and 1
 # are not, since nothing smaller precedes them.  The running example of the
 # paper, display (4), has the triggers below; it is scanned for d = 1 in
-# Example 2.12 and for d = 2 in Example 4.2.
+# Example 2.9 and for d = 2 in Example 4.2.
 
 # %%
 running = P("9 11 10 14 5 12 6 2 3 8 4 7 1 13 15")
@@ -277,16 +277,17 @@ for d in (1, 2, 3):
     assert agree
 
 # %% [markdown]
-# ### Residual obligations of a scanned prefix
+# ### What a scanned prefix still requires of the unread letters
 #
-# While a permutation is read left to right, the obligation of a trigger c
-# already read is only partly decided.  If sigma = sigma_1 ... sigma_k is the
-# read prefix, c = sigma_j, the letters of [n] not in sigma are *unread*, and
-# w is a *completion* of sigma (a word using each unread letter once), then w
-# satisfies the *residual obligation* of c when
-# (sigma_{j+1} ... sigma_k w)|_{x > c} avoids 231 after standardization.
-# `residual` lists the orders of the unread projection letters that satisfy
-# this, by trying them all (fine for a handful of letters).
+# While a permutation is read left to right, the 231-obligation of a trigger c
+# already read (Lemma 2.1) is only partly decided: the projection
+# pi_{j+1} ... pi_n |_{x>c} mixes letters already read, which are fixed, and
+# unread letters, which a completion of sigma (a word using each unread letter
+# once) still has to place.  `residual` lists, for one trigger, the orders of
+# the unread projection letters that keep the whole projection -- fixed part
+# together with unread part -- 231-avoiding, by trying them all (fine for a
+# handful of letters).  This is a computational tool, not a named definition
+# of the paper.
 
 # %%
 def avoids_231(w):
@@ -296,10 +297,10 @@ def avoids_231(w):
 
 
 def residual(prefix, n, position):
-    """The residual obligation of the trigger at `position` (1-based) of the
-    scanned `prefix` of a permutation of [n]: returns (fixed, unread, allowed),
-    the scanned projection letters, the unread projection letters, and the
-    orders of the unread ones that keep the projection 231-avoiding."""
+    """Not a definition of the paper.  For the trigger at `position` (1-based)
+    of the scanned `prefix` of a permutation of [n]: returns (fixed, unread,
+    allowed), the scanned projection letters, the unread projection letters,
+    and the orders of the unread ones that keep the projection 231-avoiding."""
     prefix = word(prefix)
     c = prefix[position - 1]
     fixed = tuple(v for v in prefix[position:] if v > c)
@@ -418,8 +419,9 @@ def show_stack(stack):
 # %% [markdown]
 # **Example 2.3 (reading one projection).**  For the running example and
 # d = 1, the first letter 9 is a trigger whose projection 11 10 14 12 13 15 is
-# read at positions 2, 3, 4, 6, 14, 15.  At every step the brute-force
-# residual obligation of the trigger 9 equals the language of display (3).
+# read at positions 2, 3, 4, 6, 14, 15.  At every step the brute-force set of
+# orders keeping the trigger 9's obligation satisfied (`residual`) equals the
+# language of display (3).
 
 # %%
 proj_positions = [i + 1 for i, v in enumerate(running_list) if i > 0 and v > 9]
@@ -546,29 +548,34 @@ except ValueError as e:
     print("illegal move detected:", e)
 
 # %% [markdown]
-# **Lemma 2.5 (legal moves) and Definition 2.6 (faithful stacks).**  A legal
-# move from a scan state leads to a scan state, and a letter is illegal exactly
-# when it lies in a deferred interval.  The stack S of a scan state (sigma, S)
-# is *faithful to* sigma if a completion of sigma satisfies the residual
-# obligations of all d-triggers of sigma exactly when its restriction to the
-# stack lies in Av(231)(I_1) (+) ... (+) Av(231)(I_s).  `is_faithful` tests
-# this by brute force, comparing the stack's language with the orders of the
-# unread letters above the least trigger that satisfy every residual
-# obligation (`conjunction_allowed`, defined below with Proposition 2.10).
+# **Lemma 2.5 (legal moves).**  A legal move from a scan state leads to a scan
+# state, and a letter is illegal exactly when it lies in a deferred interval.
 #
-# **Example 2.7 (faithful and unfaithful stacks).**  For the prefix
-# 9 11 10 14 of the running example and d = 1, the unread letters above the
-# least trigger 9 are 12, 13, 15, so ({12,13},{15}), ({12,13,15}) and
-# ({12},{13},{15}) all form scan states with the prefix.  Only the first is
-# faithful: the completions satisfying every obligation read 12 and 13 in
-# either order before 15; the stack ({12,13,15}) also allows 15,12,13, which
-# violates the obligation of 9 (14,15,12 is a 231), and ({12},{13},{15})
-# forbids 13,12,15, which satisfies every obligation.
+# ### An optional check: why the stack is exactly right (not a statement of the paper)
+#
+# Definition 2.4 builds the stack move by move; Proposition 2.8 below proves
+# it is the right record directly from the legal moves, without naming the
+# fact that follows.  It is nonetheless worth seeing once, as a brute-force
+# sanity check outside the paper: the stack of a legal prefix sigma is exactly
+# the conjunction of the 231-obligations (Lemma 2.1) of every d-trigger of
+# sigma.  `conjunction_allowed` lists, by trying every order, the permutations
+# of the unread letters above the least d-trigger that keep every one of those
+# obligations satisfied at once; `is_faithful` compares this brute-force set
+# with the stack's language Av(231)(I_1) (+) ... (+) Av(231)(I_s) of display
+# (3).  For the prefix 9 11 10 14 of the running example (d = 1) the unread
+# letters above the least trigger 9 are 12, 13, 15, so ({12,13},{15}),
+# ({12,13,15}) and ({12},{13},{15}) are all conceivable groupings.  Only the
+# actual stack {12,13} | {15} is right: the completions satisfying every
+# obligation read 12 and 13 in either order before 15; the coarser grouping
+# ({12,13,15}) also allows 15,12,13, which violates the obligation of 9
+# (14,15,12 is a 231), and the finer ({12},{13},{15}) forbids 13,12,15, which
+# satisfies every obligation.
 
 # %%
 def conjunction_allowed(prefix, n, d):
-    """Orders of the unread letters above the least d-trigger of `prefix` that
-    satisfy the residual obligations of all d-triggers read (brute force)."""
+    """Not a definition of the paper.  Orders of the unread letters above the
+    least d-trigger of `prefix` that keep the 231-obligation of every
+    d-trigger of `prefix` satisfied at once (brute force)."""
     prefix = word(prefix)
     trig = trigger_values(prefix, d)
     if not trig:
@@ -592,9 +599,8 @@ def conjunction_allowed(prefix, n, d):
 
 
 def is_faithful(prefix, stack, n, d):
-    """Definition 2.6, by brute force: the stack's language equals the set of
-    orders of the unread letters above the least trigger that satisfy the
-    residual obligations of all d-triggers of the prefix."""
+    """Not a definition of the paper.  True if the stack's language, display
+    (3), equals the brute-force set `conjunction_allowed`."""
     assert is_scan_state(prefix, stack, n, d), "not a scan state"
     return sorted(language(stack)) == sorted(conjunction_allowed(prefix, n, d))
 
@@ -605,23 +611,21 @@ for stack in ([(12, 13), (15,)], [(12, 13, 15)], [(12,), (13,), (15,)]):
     print(f"  {show_stack(stack):22s} scan state? {is_scan_state(sigma, stack, 15, 1)}  faithful? {is_faithful(sigma, stack, 15, 1)}")
 assert S(sigma, 15, 1) == [(12, 13), (15,)] and is_faithful(sigma, S(sigma, 15, 1), 15, 1)
 
+# %%
+for d in (1, 2):
+    stacks = scan(running_list, 15, d)
+    for k in range(1, 16):
+        assert is_faithful(running_list[:k], stacks[k], 15, d)
+    print(f"d = {d}: the stack of every prefix of the running example is faithful "
+          f"in this sense (optional check, not a statement of the paper)")
+
 # %% [markdown]
-# **Lemma 2.8 (stack merger).**  Let S be faithful to sigma and let x be a
-# d-trigger of sigma x smaller than every d-trigger of sigma.
-# (a) If sigma has no d-trigger, then S is empty and (E), with E the unread
-#     letters above x, is faithful to sigma x.
-# (b) If sigma has a d-trigger q, let E be the unread letters strictly between
-#     x and q; then E is empty or an interval, E < I_1 and E u I_1 is an
-#     interval when s >= 1, and the merged stack (E u I_1, I_2, ..., I_s) is
-#     faithful to sigma x.  Only the active head changes (Figure 2).
-# Faithfulness is exercised in the Proposition 2.10(a) cell below, where the
-# prefix 9 11 10 14 5 with stack {6,7,8,12,13} | {15} has 42 = C_5 C_1 allowed
-# orders.
-#
-# **Example 2.9 (one merger).**  After 9 11 10 14 the stack is {12,13} | {15};
-# the fifth letter 5 is a trigger smaller than 9, 11, 10, 14, so q = 9 and
-# E = {6,7,8}, and the merged stack is {6,7,8,12,13} | {15}.  The read letters
-# 9, 10, 11 lie between 6, 7, 8 and 12 in value but create no separation.
+# **Example 2.6 (one merger).**  After 9, 11, 10, 14 the stack is {12,13} | {15};
+# the fifth letter 5 is a trigger smaller than 9, 11, 10, 14, so reading it is
+# a merger (Definition 2.4(a)), with q = 9 and E = {6,7,8}, the unread values
+# between 5 and 9 (Figure 2).  The merged stack is {6,7,8,12,13} | {15}.  The
+# read letters 9, 10, 11 lie between 6, 7, 8 and 12 in value but create no
+# separation.
 
 # %%
 kind, merged = legal_move("9 11 10 14", S("9 11 10 14", 15, 1), 5, 15, 1)
@@ -629,31 +633,76 @@ print("reading 5 after 9 11 10 14:", kind, "->", show_stack(merged))
 assert merged == [(6, 7, 8, 12, 13), (15,)]
 
 # %% [markdown]
-# **Proposition 2.10 (scan states of avoiders).**  For a legal prefix sigma with
-# stack S(sigma) = (I_1, ..., I_s):
-# (a) S(sigma) is faithful to sigma: a completion satisfies the residual
-#     obligations of all d-triggers of sigma iff its restriction to the stack
-#     lies in the language of (3);
-# (b) an illegal letter leaves no beta_d-avoiding completion;
-# (c) R(sigma) is the set of beta_d-avoiders with prefix sigma; in particular
-#     R(empty) = Av_n(beta_d), and legal = prefix of an avoider.
-# The next cells check that S(sigma) is a scan state (Lemma 2.5(a)) and
-# faithful (part (a)) along the running example for d = 1 and d = 2 (the
-# d = 2 stacks printed are the interval-stack column of Example 4.2), and (c),
-# with (b) as its consequence, for d = 1, 2, 3 at n <= 7 and for d = 1, 2 at
-# n = 6.
+# Two unread letters are *adjacent* if no unread letter lies strictly between
+# them.
+#
+# **Lemma 2.7 (separations of the stack).**  Let sigma be a legal word with a
+# d-trigger, let q be its least d-trigger, and let u < v be adjacent unread
+# letters above q.  Then u and v lie in different intervals of S(sigma) if
+# and only if some letter x with u < x < v was read after a d-trigger smaller
+# than u.  For d = 1 this is the specialization worked out in Section 2.2
+# below, with q = m, the current minimum.  For d >= 2, "x was read after a
+# d-trigger smaller than u" means: at the position i where x is read, some
+# strictly earlier position j < i holds a d-trigger of the prefix read up to
+# and including j, with value < u.  `separated_by_lemma_d` implements this
+# criterion directly from the prefix, for every d.
+
+# %%
+def separated_by_lemma_d(prefix, u, v, d):
+    """Lemma 2.7's criterion for the pair u < v: some letter x with
+    u < x < v was read (at position i) after an earlier position j < i whose
+    letter is a d-trigger of the prefix read up to and including j, with
+    value < u."""
+    prefix = word(prefix)
+    return any(u < prefix[i] < v
+               and any(prefix[j] < u and lis_ending(prefix[:j + 1])[-1] >= d
+                       for j in range(i))
+               for i in range(len(prefix)))
+
+
+def different_intervals(stack, u, v):
+    return next(I for I in stack if u in I) != next(I for I in stack if v in I)
+
+
+for d in (1, 2):
+    stacks = scan(running_list, 15, d)
+    checked = 0
+    for k in range(1, 16):
+        prefix = running_list[:k]
+        trig = trigger_values(prefix, d)
+        if not trig:
+            continue
+        q = min(trig)
+        above = sorted(v for v in range(1, 16) if v not in prefix and v > q)
+        for u, v in zip(above, above[1:]):
+            assert different_intervals(stacks[k], u, v) == separated_by_lemma_d(prefix, u, v, d)
+            checked += 1
+    print(f"d = {d}: Lemma 2.7 holds at every adjacent pair of unread letters above "
+          f"the least trigger, along every prefix of the running example "
+          f"({checked} pairs checked)")
+
+# %% [markdown]
+# **Proposition 2.8 (scan states of avoiders).**  Let sigma be a legal word
+# with stack S(sigma) = (I_1, ..., I_s).
+# (a) sigma avoids beta_d as a word (this includes incomplete prefixes);
+# (b) if reading the unread letter x from sigma is illegal, then no
+#     beta_d-avoiding permutation has the prefix sigma x;
+# (c) R(sigma) is the set of beta_d-avoiding permutations of [n] with prefix
+#     sigma; in particular R(empty) = Av_n(beta_d), and a word is legal if and
+#     only if it is a prefix of a beta_d-avoiding permutation.
+# The next cell checks (a) along the running example for d = 1 and d = 2: at
+# every prefix, standardizing it and testing avoidance of beta_d directly (the
+# "as a word" avoidance of part (a)) holds throughout, including at every
+# incomplete prefix.  Parts (b) and (c) are checked afterwards, for d = 1, 2, 3
+# at n <= 7 and for d = 1, 2 at n = 6.
 
 # %%
 for d in (1, 2):
-    print(f"--- d = {d}")
-    stacks = scan(running_list, 15, d)
     for k in range(1, 16):
         prefix = running_list[:k]
-        stack = stacks[k]
-        assert is_scan_state(prefix, stack, 15, d), ("Lemma 2.5(a) fails", d, k)
-        assert is_faithful(prefix, stack, 15, d), ("(a) fails", d, k)
-        brute = conjunction_allowed(prefix, 15, d)
-        print(f"prefix {show(prefix):40s} stack {show_stack(stack):30s} {len(brute):4d} allowed orders")
+        assert standardize(prefix).avoids(beta(d)), ("Proposition 2.8(a) fails", d, k)
+    print(f"d = {d}: every prefix of the running example avoids beta_{d} as a word "
+          f"(Proposition 2.8(a))")
 
 # %% [markdown]
 # Parts (b) and (c): for every permutation of length n <= 7 and d = 1, 2, 3,
@@ -686,34 +735,30 @@ for d in (1, 2):
 # For d = 1 the least trigger is the minimum m of the prefix, the stack is the
 # set of unread letters above m (Definition 2.4), and the state is written
 # W_p(L) with p the number of unread letters below m and L the interval sizes.
-# **Lemma 2.11 (separations of the one-threshold stack).**  Call two unread
-# values *adjacent* when no unread value lies strictly between them.  After a
-# legal prefix has been read, adjacent unread letters u < v above m lie in
-# different intervals iff some letter x with u < x < v was read after a letter
-# smaller than u.  Hence the stack can be recovered from the prefix alone: its
-# values are the unread letters above m, cut into blocks at exactly the
-# adjacent pairs of the lemma (`stack_by_lemma`).  The cell checks both at
-# every prefix of the running example and at every prefix of every
-# 1342-avoiding permutation of length 6 (the legal prefixes, by Proposition
-# 2.9(c)), and shows the counterexample to dropping adjacency: after 3 5 1 of
-# [7], the non-adjacent 2 and 6 lie in different intervals although no letter
-# between them was read after a letter below 2.
+# Specializing **Lemma 2.7** to d = 1, so that q = m: adjacent unread letters
+# u < v above m lie in different intervals iff some letter x with u < x < v
+# was read after a letter smaller than u -- every letter is a 1-trigger, so
+# "after a d-trigger smaller than u" is just "after a letter smaller than u".
+# Hence the stack can be recovered from the prefix alone: its values are the
+# unread letters above m, cut into blocks at exactly the adjacent pairs of the
+# lemma (`stack_by_lemma`).  The cell checks both at every prefix of the
+# running example and at every prefix of every 1342-avoiding permutation of
+# length 6 (the legal prefixes, by Proposition 2.8(c)), and shows the
+# counterexample to dropping adjacency: after 3 5 1 of [7], the non-adjacent
+# 2 and 6 lie in different intervals although no letter between them was read
+# after a letter below 2.
 
 # %%
 def separated_by_lemma(prefix, u, v):
-    """Lemma 2.11's criterion: some x with u < x < v was read after a letter
-    smaller than u."""
+    """Lemma 2.7's criterion, specialized to d = 1 (q = m): some x with
+    u < x < v was read after a letter smaller than u."""
     prefix = word(prefix)
     return any(u < prefix[j] < v and any(prefix[i] < u for i in range(j))
                for j in range(len(prefix)))
 
 
-def different_intervals(stack, u, v):
-    return next(I for I in stack if u in I) != next(I for I in stack if v in I)
-
-
 def stack_by_lemma(prefix, n):
-    """The stack rebuilt from the prefix alone, as Lemma 2.11 allows."""
+    """The stack rebuilt from the prefix alone, as Lemma 2.7 allows for d = 1."""
     prefix = word(prefix)
     m = min(prefix)
     above = sorted(v for v in range(m + 1, n + 1) if v not in prefix)
@@ -726,7 +771,7 @@ def stack_by_lemma(prefix, n):
     return blocks
 
 
-def check_lemma_2_8(prefix, n):
+def check_stack_recovery_d1(prefix, n):
     prefix = word(prefix)
     stack = S(prefix, n, 1)
     m = min(prefix)
@@ -737,18 +782,18 @@ def check_lemma_2_8(prefix, n):
     return stack_by_lemma(prefix, n) == stack
 
 
-assert all(check_lemma_2_8(running_list[:k], 15) for k in range(1, 16))
-assert all(check_lemma_2_8(tuple(v + 1 for v in sigma)[:k], 6)
+assert all(check_stack_recovery_d1(running_list[:k], 15) for k in range(1, 16))
+assert all(check_stack_recovery_d1(tuple(v + 1 for v in sigma)[:k], 6)
            for sigma in Av([beta(1)]).of_length(6) for k in range(1, 7))
-print("Lemma 2.11 holds, and rebuilds the stack, at every prefix of the running example"
-      " and of every 1342-avoider of length 6")
+print("Lemma 2.7, specialized to d = 1, holds and rebuilds the stack, at every prefix "
+      "of the running example and of every 1342-avoider of length 6")
 stack_351 = S("351", 7, 1)
 print("after the prefix 3 5 1 of [7] the stack is", show_stack(stack_351),
       f"; for the non-adjacent pair 2, 6: different intervals? {different_intervals(stack_351, 2, 6)};"
       f" separated by the lemma's criterion? {separated_by_lemma('351', 2, 6)}")
 
 # %% [markdown]
-# **Example 2.12 (a one-threshold scan).**  The full d = 1 scan of the running
+# **Example 2.9 (a one-threshold scan).**  The full d = 1 scan of the running
 # example, with the move (in the table's names: every new minimum is a merger,
 # written 'new minimum, merger' when it adjoins values or creates the stack
 # and 'new minimum' when E is empty; an endpoint choice in a head of size one
@@ -765,7 +810,7 @@ def state_d1(prefix, stack):
 
 
 def paper_label(kind, old_stack, new_stack):
-    """The move names used in the paper's table of Example 2.12: every new
+    """The move names used in the paper's table of Example 2.9: every new
     minimum is a merger, written 'new minimum, merger' when it adjoins values
     or creates the stack and 'new minimum' when E is empty; an endpoint choice
     in a head of size one is 'head exhausted'."""
@@ -796,15 +841,18 @@ assert state_d1(running_list[:6], stacks[6]) == (4, (3, 1, 1))
 # %% [markdown]
 # ### 2.3  The one-threshold recurrence
 #
-# **Proposition 2.13 (one-threshold recurrence).**  W_p(L) is the number of
-# 1342-avoiding completions of a legal prefix with data (p, L); by
-# Proposition 2.10 it depends only on (p, L).  For L = (l)L' with l >= 1,
-# display (6): W_p((l)L') = sum_{h<p} W_h((l+p-1-h)L') + E_l(p, L') +
-# sum_{a,b>=1, a+b=l-1} W_p((a,b)L'), with the endpoint term (7)
-# E_1(p, L') = W_p(L') and E_l(p, L') = 2 W_p((l-1)L') for l >= 2; the
-# boundary (8) is W_p(empty) = [p = 0] + sum_{h<p} W_h(nz(p-1-h)), where nz
-# deletes zero entries from a list, so that the term h = p-1 is W_{p-1}(empty)
-# and no zero part enters L; and |Av_n(1342)| = W_n(empty), display (9).  The cell implements the recurrence
+# **Proposition 2.10 (one-threshold recurrence).**  For p >= 0 and every list L
+# of positive integers, W_p(L) is *defined* by the equations below.  For
+# L = (l)L' with l >= 1, display (5): W_p((l)L') = sum_{h<p} W_h((l+p-1-h)L') +
+# sum_{a,b>=0, a+b=l-1} W_p(nz(a,b)L'), where nz deletes zero entries from a
+# list, so that the terms a = 0 and b = 0 are the two endpoints (one term when
+# l = 1); the boundary (6) is W_p(empty) = [p = 0] + sum_{h<p} W_h(nz(p-1-h)),
+# so that the term h = p-1 is W_{p-1}(empty); and |Av_n(1342)| = W_n(empty),
+# display (7).  The
+# proposition proves that for a legal prefix with control p and interval sizes
+# L, reading the letters of a completion one at a time is a bijection from the
+# 1342-avoiding completions to the maximal sequences of transitions from
+# (p, L), and that W_p(L) is their number.  The cell implements the recurrence
 # literally and compares W_n(empty) with permuta's counts.
 
 # %%
@@ -814,14 +862,13 @@ def nz(L):
 
 @lru_cache(maxsize=None)
 def W(p, L):
-    """W_p(L) by displays (6)-(8), literally."""
+    """W_p(L) by displays (5)-(6), literally."""
     L = tuple(L)
-    if not L:                                                           # (8)
+    if not L:                                                           # (6)
         return (1 if p == 0 else 0) + sum(W(h, nz((p - 1 - h,))) for h in range(p))
     l, rest = L[0], L[1:]
     total = sum(W(h, (l + p - 1 - h,) + rest) for h in range(p))       # new minima
-    total += W(p, rest) if l == 1 else 2 * W(p, (l - 1,) + rest)      # (7), endpoints
-    total += sum(W(p, (a, l - 1 - a) + rest) for a in range(1, l - 1)) # interior, a,b >= 1
+    total += sum(W(p, nz((a, l - 1 - a)) + rest) for a in range(l))    # head letters
     return total
 
 
@@ -831,13 +878,13 @@ assert w_counts == Av([beta(1)]).enumeration(8)
 print("agrees with permuta's |Av_n(1342)| for n <= 8")
 
 # %% [markdown]
-# **Example 2.14 (all one-threshold moves).**  After the sixth letter of the
-# running example the state is W_4((3,1,1)), and display (6) expands it as
+# **Example 2.11 (all one-threshold moves).**  After the sixth letter of the
+# running example the state is W_4((3,1,1)), and display (5) expands it as
 # W_0((6,1,1)) + W_1((5,1,1)) + W_2((4,1,1)) + W_3((3,1,1)) + 2 W_4((2,1,1))
 # + W_4((1,1,1,1)): the four new minima 1, 2, 3, 4, the two endpoints 6, 8 of
 # the head, and its interior letter 7.  The cell checks the identity and also
 # counts the 1342-avoiding completions of the prefix directly, by exploring
-# all sequences of legal moves (Proposition 2.10(c) says these are exactly the
+# all sequences of legal moves (Proposition 2.8(c) says these are exactly the
 # avoiding completions), letter by letter.
 
 # %%
@@ -871,24 +918,23 @@ print("legal completions of 9 11 10 14 5 12, by depth-first search:", direct)
 assert direct == W(4, (3, 1, 1))
 
 # %% [markdown]
-# **Example 2.15 (counting Av_5(1342) by the literal recurrence).**  Display
-# (8) splits |Av_5(1342)| = W_5(empty) by the first letter into
+# **Example 2.12 (counting Av_5(1342) by the literal recurrence).**  Display
+# (6) splits |Av_5(1342)| = W_5(empty) by the first letter into
 # W_0((4)) + W_1((3)) + W_2((2)) + W_3((1)) + W_4(empty), and expanding by
-# (6) and (7) reaches twenty distinct states.  The cell collects every state
+# (5) reaches twenty distinct states.  The cell collects every state
 # the recurrence visits from W_5(empty), lists them by rho_1 = p + |L| with
 # their values, as in the paper's table, and checks the expansions of
 # W_0((4)), W_1((3)), W_2((2)) and W_3((1)) displayed there.
 
 # %%
 def recurrence_children(p, L):
-    """The states on the right-hand side of displays (6)-(8) for W_p(L)."""
+    """The states on the right-hand side of displays (5)-(6) for W_p(L)."""
     L = tuple(L)
-    if not L:                                                           # (8)
+    if not L:                                                           # (6)
         return [(h, nz((p - 1 - h,))) for h in range(p)]
     l, rest = L[0], L[1:]
     children = [(h, (l + p - 1 - h,) + rest) for h in range(p)]        # new minima
-    children.append((p, rest) if l == 1 else (p, (l - 1,) + rest))     # (7), endpoints
-    children += [(p, (a, l - 1 - a) + rest) for a in range(1, l - 1)]  # interior
+    children += [(p, nz((a, l - 1 - a)) + rest) for a in range(l)]    # head letters
     return children
 
 
@@ -922,7 +968,7 @@ assert W(5, ()) == Av([beta(1)]).enumeration(5)[5] == 103
 # %% [markdown]
 # Try your own permutation: change the string below and rerun the cell.  For
 # d = 1 the scan prints every move; an illegal move means the prefix is not
-# the prefix of any 1342-avoider (Proposition 2.10(c)).
+# the prefix of any 1342-avoider (Proposition 2.8(c)).
 
 # %%
 my_pi = "9 11 10 14 5 12 6 2 3 8 4 7 1 13 15"  # the paper's running example

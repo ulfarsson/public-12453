@@ -3,7 +3,11 @@ Copyright (c) 2026 Henning Ulfarsson. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Henning Ulfarsson
 -/
-import Av12453.OneThreshold.Defs
+module
+
+public import Av12453.OneThreshold.Defs
+
+@[expose] public section
 
 /-!
 # Patience thresholds and bands for the two-threshold scan
@@ -13,7 +17,7 @@ This file is the *threshold API* of the two-threshold scan (`d = 2`, `β₂ = 12
 *Protected tails and polynomial-time enumeration of permutations avoiding a direct sum of an
 increasing pattern and 231* at `d = 2`: the patience-sorting
 thresholds `b₁ < b₂`, the two bands `B₀`, `B₁`, the control `p = (|B₀|, |B₁|)`,
-\cref{lem:least-trigger-frontier}, and the effect of one letter on all of them.
+\eqref{eq:bd-q}, and the effect of one letter on all of them.
 
 Values and positions are `0`-based, as in `Av12453.Basic`.  The paper's *virtual*
 thresholds `n + 1`, `n + 2` are here `n` and `n + 1`; the brief for component 3b allows any
@@ -53,7 +57,7 @@ For a prefix `σ` of a word on `{0, …, n-1}`:
 * `b1_mem_of_lt`, `b2_mem_of_ne_virtual` : nonvirtual thresholds are read letters;
   `b1_not_unread`, `b2_not_unread`.
 * `b2_le_of_isTrigger`, `isTrigger_b2`, `b2_lt_iff_exists_trigger` :
-  **\cref{lem:least-trigger-frontier}** -- every `2`-trigger value is `≥ b₂`, and a
+  **\eqref{eq:bd-q}** -- every `2`-trigger value is `≥ b₂`, and a
   nonvirtual `b₂` is itself the value of a `2`-trigger.
 * `thresholds_succ_band0`, `thresholds_succ_band1`, `thresholds_succ_above` : the three
   threshold transitions for `σ ++ [x]` with `x` unread.
@@ -308,14 +312,14 @@ theorem le_b2 {t : ℕ} (h1 : t ≤ n + 1) (h2 : ∀ z ∈ trigVals σ, t ≤ z)
   · exact h2 _ h
   · rw [h]; exact h1
 
-/-! ### \cref{lem:least-trigger-frontier} -/
+/-! ### \eqref{eq:bd-q} -/
 
-/-- **\cref{lem:least-trigger-frontier}, lower bound.**  Every `2`-trigger value of the
+/-- **\eqref{eq:bd-q}, lower bound.**  Every `2`-trigger value of the
 prefix is at least `b₂`. -/
 theorem b2_le_of_isTrigger {c : ℕ} (hc : IsTrigger σ 2 c) : b2 n σ ≤ c :=
   b2_le_of_mem_trigVals (mem_trigVals_iff.mpr hc)
 
-/-- **\cref{lem:least-trigger-frontier}, lower bound**, by position. -/
+/-- **\eqref{eq:bd-q}, lower bound**, by position. -/
 theorem b2_le_of_isTriggerAt {j : ℕ} (hj : IsTriggerAt σ 2 j) : b2 n σ ≤ σ.getD j 0 :=
   b2_le_of_isTrigger ⟨j, hj, rfl⟩
 
@@ -323,12 +327,12 @@ theorem b2_le_of_isTriggerAt {j : ℕ} (hj : IsTriggerAt σ 2 j) : b2 n σ ≤ �
 theorem b2_mem_of_ne_virtual (h : b2 n σ ≠ n + 1) : b2 n σ ∈ σ :=
   mem_of_mem_trigVals (b2_mem_or_eq.resolve_right h)
 
-/-- **\cref{lem:least-trigger-frontier}, attainment.**  A nonvirtual `b₂` is itself the value
+/-- **\eqref{eq:bd-q}, attainment.**  A nonvirtual `b₂` is itself the value
 of a `2`-trigger of the prefix. -/
 theorem isTrigger_b2 (h : b2 n σ ≠ n + 1) : IsTrigger σ 2 (b2 n σ) :=
   mem_trigVals_iff.mp (b2_mem_or_eq.resolve_right h)
 
-/-- **\cref{lem:least-trigger-frontier}, attainment**, by position. -/
+/-- **\eqref{eq:bd-q}, attainment**, by position. -/
 theorem exists_isTriggerAt_b2 (h : b2 n σ ≠ n + 1) :
     ∃ j, IsTriggerAt σ 2 j ∧ σ.getD j 0 = b2 n σ := isTrigger_b2 h
 
@@ -374,7 +378,7 @@ theorem b1_succ_le (n : ℕ) (σ : List ℕ) (x : ℕ) : b1 n (σ ++ [x]) ≤ b1
   rw [b1, b1, OneThreshold.m_append_singleton]
   exact min_le_left _ _
 
-/-- **\cref{lem:least-trigger-frontier} in the vocabulary of \cref{cor:separators}(ii)**: a
+/-- **\eqref{eq:bd-q} in the vocabulary of \cref{cor:separators}(ii)**: a
 nonvirtual `b₂` has a smaller letter before it. -/
 theorem exists_lt_before_b2 (hnd : σ.Nodup) (h : b2 n σ ≠ n + 1) :
     ∃ a ∈ σ, σ.idxOf a < σ.idxOf (b2 n σ) ∧ a < b2 n σ :=
@@ -490,7 +494,7 @@ theorem sum_below1_eq {M : Type*} [AddCommMonoid M] (f : ℕ → M) :
 
 /-! ### Two dictionary lemmas for the stack -/
 
-/-- The values a last-band letter adjoins to the active head -- the paper's `E` of
+/-- The values a last-band letter adds to the active head -- the paper's `E` of
 \eqref{eq:U}, the unread values strictly between `x` and the old `b₂` -- are exactly the
 band-`1` values above `x`.  With `card_band1_gt` this gives `|E| = δ_h = p₁ - 1 - h`. -/
 theorem filter_between_eq_band1_gt (hx : x ∈ B1 n σ) :
@@ -735,7 +739,7 @@ example : (List.range 16).map (fun k => p 15 (runningExample.take k)) =
       (1, 0), (1, 0), (1, 0), (0, 0), (0, 0), (0, 0)] := by decide
 
 set_option maxRecDepth 100000 in
-/-- **\cref{lem:least-trigger-frontier} on the running example.**  After six letters the
+/-- **\eqref{eq:bd-q} on the running example.**  After six letters the
 `2`-trigger values are the paper's `10, 11, 12, 14` (`0`-based `9, 10, 11, 13`), and `b₂` is
 the least of them.  This runs the `IsTrigger _ 2 _` decision procedure in the kernel. -/
 example : ((List.range 15).filter (fun c => decide (IsTrigger (runningExample.take 6) 2 c)),

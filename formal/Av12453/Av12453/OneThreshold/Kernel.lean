@@ -3,7 +3,12 @@ Copyright (c) 2026 Henning Ulfarsson. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Henning Ulfarsson
 -/
-import Av12453.OneThreshold.Defs
+module
+
+public import Av12453.OneThreshold.Defs
+meta import Av12453.OneThreshold.Defs
+
+@[expose] public section
 
 /-!
 # The scalar transfer kernels for `Av(1342)`
@@ -22,7 +27,7 @@ that start at `W_p((ℓ) ∣ L)` and are stopped at the first exposure of the pr
 \eqref{eq:scalar-factorization} reads `W_p((ℓ)L) = ∑_{t ≥ 0} K_ℓ(p, t) W_t(L)`; that
 factorization is *not* proved here (see `Av12453/OneThreshold/KernelFactor.lean`).  What is
 proved here is only that `K`, `D` and `G` satisfy the paper's defining equations
-\eqref{eq:scalar-K}, \eqref{eq:scalar-D} and \eqref{eq:scalar-G}, in the form
+\eqref{eq:scalar-K} and \eqref{eq:scalar-G}, in the form
 
 * `K_zero`  : `K 0 p t = 1_{p = t}` (the identity kernel `K_0`);
 * `K_succ_eq` (`1 ≤ ℓ`) : `K ℓ p t` is the sum of the base-move terms
@@ -30,6 +35,9 @@ proved here is only that `K`, `D` and `G` satisfy the paper's defining equations
   `∑_{a+b = ℓ-1, a,b ≥ 1} ∑_{u ≤ p} K_a(p, u) K_b(u, t)`;
 * `D_one`, `D_succ` : `D 1 p t = 1_{p = t}` and `D ℓ p t = 2 K_{ℓ-1}(p, t)` for `ℓ ≥ 2`;
 * `G_eq` : `G p = 1_{p = 0} + ∑_{h < p} ∑_{t ≤ h} K_{p-1-h}(h, t) G_t`.
+
+The paper's split sum in \eqref{eq:scalar-K} runs over `a, b ≥ 0` with `K_0` the identity;
+its terms `a = 0` and `b = 0` are the endpoint term `D ℓ p t` here, so the two forms agree.
 
 Two deviations from the paper's display, both harmless and both recorded here:
 
@@ -53,14 +61,16 @@ and every `G t` it uses has `t ≤ h < p`.
 ## Main definitions
 
 * `K` : the scalar kernel table `K_ℓ(p, t)`, \eqref{eq:scalar-K}.
-* `D` : the endpoint term `D_ℓ(p, t)`, \eqref{eq:scalar-D}.
+* `D` : the endpoint term `D_ℓ(p, t)`, the endpoint terms of \eqref{eq:scalar-K}.
 * `G` : the empty-stack values `G_p`, \eqref{eq:scalar-G}.
 
 ## Main results
 
 * `K_zero`, `K_succ_eq`, `D_eq`, `D_one`, `D_succ`, `G_eq` : the defining equations.
 * The `decide` sanity checks at the end reproduce \cref{ex:scalar-kernel}: the kernel rows
-  `K_3(0, ·) = (5)`, `K_2(1, ·) = (4, 2)`, `K_1(2, ·) = (3, 1, 1)` and `G_4 = 23`.
+  `K_1(1, ·) = (1, 1)`, `K_3(0, ·) = (5)`, `K_2(1, ·) = (4, 2)`, `K_1(2, ·) = (3, 1, 1)`, the
+  rows of grade `4`, `K_4(0, ·) = (14)`, `K_3(1, ·) = (15, 5)`, `K_2(2, ·) = (15, 4, 2)`,
+  `K_1(3, ·) = (12, 3, 1, 1)`, and `G_5 = 103`.
 -/
 
 namespace Av12453
@@ -68,13 +78,13 @@ namespace OneThreshold
 
 /-! ### The kernel table `K` and the endpoint term `D`
 
-`Kaux k ℓ p t` is the fuel-driven evaluation of \eqref{eq:scalar-K}--\eqref{eq:scalar-D}:
+`Kaux k ℓ p t` is the fuel-driven evaluation of \eqref{eq:scalar-K}:
 it returns `0` once the fuel `k` runs out, and otherwise recurses with one unit less.  The
 endpoint term is inlined here (`if ℓ = 0 then 1_{p=t} else 2 * Kaux k ℓ p t` at the head
 `ℓ + 1`) and is named `D` after `K` is available. -/
 
 /-- Fuel-driven evaluation of the scalar kernel recurrence \eqref{eq:scalar-K}. -/
-private def Kaux : ℕ → ℕ → ℕ → ℕ → ℕ
+def Kaux : ℕ → ℕ → ℕ → ℕ → ℕ
   | 0, _, _, _ => 0
   | _ + 1, 0, p, t => if p = t then 1 else 0
   | k + 1, ℓ + 1, p, t =>
@@ -124,9 +134,11 @@ private theorem Kaux_congr : ∀ k k' ℓ p t,
       rw [Finset.sum_congr rfl e1, Finset.sum_congr rfl e2, e3]
 
 /--
-`K ℓ p t` is the paper's `K_ℓ(p, t)` of \eqref{eq:scalar-K}: the total weight of the paths
-of `W` that leave the state with control `p` and active head of size `ℓ`, stopped at the
-first exposure of the protected tail, at control `t`.  `K 0` is the identity kernel `K_0`.
+`K ℓ p t` is the paper's `K_ℓ(p, t)`, defined here by its recurrence \eqref{eq:scalar-K}.
+The paper defines `K_ℓ(p, t)` as the number of stopped paths of `W` from control `p` and
+active head of size `ℓ` to control `t` and proves the recurrence
+(\cref{prop:scalar-kernel-recurrence}); that path reading is not formalized.  `K 0` is the
+identity kernel `K_0`.
 -/
 def K (ℓ p t : ℕ) : ℕ := Kaux (p + ℓ + 1) ℓ p t
 
@@ -136,7 +148,8 @@ private theorem K_eq_Kaux {ℓ p t k : ℕ} (hk : p + ℓ < k) : K ℓ p t = Kau
 /-- **The identity kernel**: `K_0(p, t) = 1_{p = t}`. -/
 theorem K_zero (p t : ℕ) : K 0 p t = if p = t then 1 else 0 := rfl
 
-/-- The paper's `D_ℓ(p, t)` of \eqref{eq:scalar-D}: the endpoint term of the kernel
+/-- The paper's `D_ℓ(p, t)` of \eqref{eq:scalar-K} (its terms `a = 0` and `b = 0`): the endpoint
+term of the kernel
 recurrence.  It is only used for `ℓ ≥ 1`. -/
 def D (ℓ p t : ℕ) : ℕ := if ℓ = 1 then (if p = t then 1 else 0) else 2 * K (ℓ - 1) p t
 
@@ -144,11 +157,11 @@ def D (ℓ p t : ℕ) : ℕ := if ℓ = 1 then (if p = t then 1 else 0) else 2 *
 theorem D_eq (ℓ p t : ℕ) :
     D ℓ p t = if ℓ = 1 then (if p = t then 1 else 0) else 2 * K (ℓ - 1) p t := rfl
 
-/-- **\eqref{eq:scalar-D}**, first half: `D_1(p, t) = 1_{p = t}`. -/
+/-- **The endpoint term**, first half: `D_1(p, t) = 1_{p = t}`. -/
 theorem D_one (p t : ℕ) : D 1 p t = if p = t then 1 else 0 := by
   rw [D_eq, if_pos rfl]
 
-/-- **\eqref{eq:scalar-D}**, second half: `D_ℓ(p, t) = 2 K_{ℓ-1}(p, t)` for `ℓ ≥ 2`. -/
+/-- **The endpoint term**, second half: `D_ℓ(p, t) = 2 K_{ℓ-1}(p, t)` for `ℓ ≥ 2`. -/
 theorem D_succ {ℓ : ℕ} (hℓ : 2 ≤ ℓ) (p t : ℕ) : D ℓ p t = 2 * K (ℓ - 1) p t := by
   rw [D_eq, if_neg (by omega)]
 
@@ -190,7 +203,7 @@ theorem K_succ_eq {ℓ : ℕ} (hℓ : 1 ≤ ℓ) (p t : ℕ) :
 /-! ### The empty-stack values `G` -/
 
 /-- Fuel-driven evaluation of \eqref{eq:scalar-G}. -/
-private def Gaux : ℕ → ℕ → ℕ
+def Gaux : ℕ → ℕ → ℕ
   | 0, _ => 0
   | k + 1, p =>
       (if p = 0 then 1 else 0)
@@ -242,8 +255,12 @@ theorem G_eq (p : ℕ) :
 
 /-! ### Sanity checks
 
-\cref{ex:scalar-kernel} of the paper, *From kernel rows to `|Av₄(1342)|`*.  Every check
+\cref{ex:scalar-kernel} of the paper, *From kernel rows to `|Av₅(1342)|`*.  Every check
 below is a kernel evaluation (`decide`), so it adds no axiom. -/
+
+set_option maxRecDepth 10000 in
+/-- The kernel row `K_1(1, ·) = (1, 1)` of \cref{ex:scalar-kernel}. -/
+example : (K 1 1 0, K 1 1 1) = (1, 1) := by decide
 
 set_option maxRecDepth 10000 in
 /-- The kernel row `K_3(0, ·) = (5)` of \cref{ex:scalar-kernel}. -/
@@ -274,10 +291,30 @@ set_option maxRecDepth 10000 in
 `KernelSupport.K_eq_zero_of_lt`). -/
 example : (K 3 0 1, K 2 1 2, K 1 2 3) = (0, 0, 0) := by decide
 
+set_option maxRecDepth 20000 in
+/-- The row `K_4(0, ·) = (14)` of grade `4` of \cref{ex:scalar-kernel}. -/
+example : K 4 0 0 = 14 := by decide
+
+set_option maxRecDepth 20000 in
+/-- The row `K_3(1, ·) = (15, 5)` of grade `4` of \cref{ex:scalar-kernel}. -/
+example : (K 3 1 0, K 3 1 1) = (15, 5) := by decide
+
+set_option maxRecDepth 20000 in
+/-- The row `K_2(2, ·) = (15, 4, 2)` of grade `4` of \cref{ex:scalar-kernel}. -/
+example : (K 2 2 0, K 2 2 1, K 2 2 2) = (15, 4, 2) := by decide
+
+set_option maxRecDepth 20000 in
+/-- The row `K_1(3, ·) = (12, 3, 1, 1)` of grade `4` of \cref{ex:scalar-kernel}. -/
+example : (K 1 3 0, K 1 3 1, K 1 3 2, K 1 3 3) = (12, 3, 1, 1) := by decide
+
 set_option maxRecDepth 10000 in
-/-- `G_4 = 5G_0 + (4G_0 + 2G_1) + (3G_0 + G_1 + G_2) + G_3 = 23`
-(\cref{ex:scalar-kernel}), i.e. `|Av₄(1342)| = 23`. -/
-example : G 4 = 23 := by decide
+/-- `(G_0, …, G_4) = (1, 1, 2, 6, 23)`, the values used in \cref{ex:scalar-kernel}. -/
+example : (G 0, G 1, G 2, G 3, G 4) = (1, 1, 2, 6, 23) := by decide
+
+set_option maxRecDepth 20000 in
+/-- `G_5 = 14G_0 + (15G_0 + 5G_1) + (15G_0 + 4G_1 + 2G_2) + (12G_0 + 3G_1 + G_2 + G_3) + G_4
+= 103` (\cref{ex:scalar-kernel}), i.e. `|Av₅(1342)| = 103`. -/
+example : G 5 = 103 := by decide
 
 set_option maxRecDepth 100000 in
 /-- The first nine terms of `G` (Bona's sequence `|Av_n(1342)|`; the paper's

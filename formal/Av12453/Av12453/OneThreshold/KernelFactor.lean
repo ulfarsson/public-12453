@@ -3,9 +3,13 @@ Copyright (c) 2026 Henning Ulfarsson. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Henning Ulfarsson
 -/
-import Av12453.OneThreshold.Kernel
-import Av12453.OneThreshold.KernelSupport
-import Av12453.OneThreshold.Counting
+module
+
+public import Av12453.OneThreshold.Kernel
+public import Av12453.OneThreshold.KernelSupport
+public import Av12453.OneThreshold.Counting
+
+@[expose] public section
 
 /-!
 # The protected-tail factorization of the literal recurrence for `Av(1342)`
@@ -21,10 +25,10 @@ through the scalar transfer kernel `K` of `Av12453.OneThreshold.Kernel`,
 with `t` running over the support `{0, …, p}` of the kernel row `K_ℓ(p, ·)`
 (\cref{lem:scalar-support}).
 
-The abstract protected-tail principle (`thm:protected-tail-principle`) is *not* formalized:
-as the report for component 3a recommends, the factorization is proved directly from the
-defining equations of `W` and `K`, by the first-move partition that proves
-\cref{prop:scalar-kernel-recurrence}.
+The path-cutting proof of \cref{thm:protected-tail-principle} is *not* formalized: here
+`K` is defined by its recurrence, and the factorization is proved directly from the
+defining equations of `W` and `K`, by induction on the grade along the first-move
+partition that proves \cref{prop:scalar-kernel-recurrence}.
 
 ## The proof
 

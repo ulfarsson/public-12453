@@ -25,7 +25,7 @@ basis `{τ}`, as in the statements above.  `Av12453.beta d = ι_d ⊕ 231`
 `Av12453.beta_eq_directSum` proves the direct-sum form).
 
 The `d = 2` kernel theorem certifies the *values* of the paper's unreduced `d = 2`
-kernel recurrence (eq:K, eq:D, eq:G, eq:answer-G), i.e. the mathematical content of the
+kernel recurrence (eq:K, eq:G, eq:answer-G), i.e. the mathematical content of the
 polynomial-time algorithm.  Not formalized: any complexity bound (the Lean `K` and `G`
 are fuel-driven recursions, not the memoized sparse-row program), the two translation
 quotients of the paper's Section 7 that give `O(N^7)`/`O(N^4)` for `12453`, and the
@@ -34,6 +34,29 @@ data.  See `AUDIT_2026-09-05.md` for the trusted base a referee must check by ey
 
 Everything is `sorry`-free and uses only Lean's three standard axioms
 (`propext`, `Classical.choice`, `Quot.sound`).
+
+## The statement file (Palomar format)
+
+`Challenge.lean` is the whole statement surface: about 180 lines that import only Mathlib
+and contain pattern containment for permutations of `Fin n` (`PermPatterns.PermContains`),
+the patterns `1342` and `12453` as products of transpositions, and the definitions of `W`,
+`H`, `K` and `G` for `d = 1, 2`, followed by the four headline theorems
+
+| theorem | statement |
+|---|---|
+| `Av12453.count_1342_literal` | `OneThreshold.W n [] = Nat.card {σ : Equiv.Perm (Fin n) // ¬ PermContains σ pattern1342}` |
+| `Av12453.count_1342_kernel` | `OneThreshold.G n = Nat.card {σ … // ¬ PermContains σ pattern1342}` |
+| `Av12453.count_12453_literal` | `TwoThreshold.H (n, 0) [] = Nat.card {σ … // ¬ PermContains σ pattern12453}` |
+| `Av12453.count_12453_kernel` | `TwoThreshold.G (n, 0) = Nat.card {σ … // ¬ PermContains σ pattern12453}` |
+
+stated with `sorry`.  `Solution.lean` proves them from the development (without importing
+`Challenge.lean`), `comparator.json` names them and the permitted axioms, and
+`formalization.yaml` is the registry metadata.  `sh ../comparator.sh` runs `lake
+comparator`, which checks that each theorem of `Solution.lean` proves exactly the statement
+of `Challenge.lean` (with every definition it uses identical), uses only the permitted
+axioms, and is accepted by Lean's kernel and by the independent kernels nanoda and con-ron;
+it ends with `Your solution is okay!`.  A reader who wants to know what is proved needs to
+read `Challenge.lean` only.
 
 ## Modules
 
@@ -65,19 +88,19 @@ imports `PermPatterns` and the twenty below.  The tables list them in dependency
 | 1–2 | `Av12453/Basic.lean` | 215 | `beta`, `beta_eq_directSum`, `contains_beta_iff`, `contains_12453_iff` |
 | 1–2 | `Av12453/Trigger.lean` | 282 | `avoids_beta_iff_forall_trigger` — the trigger lemma (`lem:trigger`) |
 | 3a | `Av12453/OneThreshold/Defs.lean` | 1249 | the `d = 1` scan, the state `(p, L)`, the literal recurrence `W` (`eq:W`) |
-| 3a | `…/OneThreshold/Invariant.lean` | 358 | (A) the separation invariant (`lem:1342-separators`) |
+| 3a | `…/OneThreshold/Invariant.lean` | 358 | (A) the separation invariant (`lem:separators`) |
 | 3a | `…/OneThreshold/Semantics.lean` | 405 | (B) deferred letters have no completion; (C) legal complete words avoid `1342` |
 | 3a | `…/OneThreshold/Counting.lean` | 455 | (D) `A_eq_W`, and **`av1342_count`** (`thm:literal` at `d = 1`) |
 | 4a | `…/OneThreshold/Kernel.lean` | 299 | `K`, `D`, `G` and `K_zero`/`K_succ_eq`/`D_one`/`D_succ`/`G_eq` (`eq:scalar-K`–`eq:scalar-G`) |
 | 4a | `…/OneThreshold/KernelSupport.lean` | 297 | `K_support_eq` (`eq:scalar-support`), `K_diag_eq_catalan`, range extension |
 | 4a | `…/OneThreshold/KernelFactor.lean` | 232 | `W_factor` (`eq:scalar-factorization`) |
 | 4a | `…/OneThreshold/KernelCount.lean` | 252 | `G_eq_W`, **`av1342_count_kernel`** (`thm:scalar-algorithm`, correctness half) |
-| 3b | `…/TwoThreshold/Thresholds.lean` | 751 | the threshold API `b₁ < b₂`, bands, control, `lem:least-trigger-frontier` |
+| 3b | `…/TwoThreshold/Thresholds.lean` | 751 | the threshold API `b₁ < b₂`, bands, control, `eq:bd-q` |
 | 3b | `…/TwoThreshold/Defs.lean` | 1254 | the `d = 2` scan and the literal recurrence `H` (`eq:H`, `eq:initial-terminal`) |
 | 3b | `…/TwoThreshold/Invariant.lean` | 457 | (A) the separation invariant at `d = 2` (`cor:separators`) |
 | 3b | `…/TwoThreshold/Semantics.lean` | 402 | (B) and (C) at `d = 2` |
 | 3b | `…/TwoThreshold/Counting.lean` | 591 | (D) `A_eq_H`, and **`av12453_count`** (`thm:literal` at `d = 2`) |
-| 4b | `…/TwoThreshold/Kernel.lean` | 455 | `ctrls`/`S`, `K`, `D`, `G` and their equations (`eq:K`, `eq:D`, `eq:G`) |
+| 4b | `…/TwoThreshold/Kernel.lean` | 455 | `ctrls`/`S`, `K`, `D`, `G` and their equations (`eq:K`, `eq:G`) |
 | 4b | `…/TwoThreshold/KernelSupport.lean` | 366 | `K_eq_zero_of_mass_lt`, `K_support` (`lem:support`, `eq:support`), range extension |
 | 4b | `…/TwoThreshold/KernelFactor.lean` | 436 | `H_factor` (`eq:factorization`), the layer identity `K_ℓ((0,q),(0,s)) = K^{(1)}_ℓ(q,s)` |
 | 4b | `…/TwoThreshold/KernelCount.lean` | 312 | `G_eq_H`, **`av12453_count_kernel`** (`eq:answer-G` at `d = 2`) |
@@ -113,11 +136,18 @@ certificate, the trusted base a referee must check by eye, and the audit finding
 ```sh
 export PATH="$HOME/.elan/bin:$PATH"
 cd formal/Av12453
-lake build                              # both libraries; ~9 min cold, seconds warm
+lake exe cache get                      # once: Mathlib's prebuilt files
+lake build                              # both libraries and Challenge/Solution; seconds warm
 lake build PermPatterns                 # the generic core alone
 lake env lean Av12453/Axioms.lean       # axiom sweep over both libraries
 sh ../check.sh                          # build, sweep, sweep coverage and a token scan
+sh ../comparator.sh                     # Palomar's check of Solution against Challenge
 ```
+
+Every file uses Lean's module system (`module`, `public import`, an exposed public
+section), as Palomar requires.  The toolchain is pinned to Lean and Mathlib `v4.35.0-rc2`;
+the same sources also build unchanged on Lean `v4.33.1` with Mathlib `0df444a3`, the
+default environment of Prove2Me.
 
 `lake build` must finish with no errors and no warnings.  `Axioms.lean` is **self-checking**:
 instead of reading a hand-maintained list of modules it discovers, from the environment,
@@ -129,7 +159,7 @@ declare no constant and are outside the sweep, but no theorem can depend on them
 the axioms each depends on, and **throws an error** if any depends on `sorryAx` or on an
 axiom outside `{propext, Classical.choice, Quot.sound}`.  It ends with a
 `checked N declarations in […]` line; exit code `0` is the audit passing.  On the current
-tree it reports **`checked 1594 declarations`** over **32** modules — the thirty library
+tree it reports **`checked 1599 declarations`** over **32** modules — the thirty library
 modules and the two roots.
 
 `check.sh` runs the build and the sweep together, and adds the one check the sweep cannot
@@ -140,8 +170,9 @@ agree.  It also greps the sources for `sorry`,
 `native_decide` and `admit`.  The same sweep runs in CI as the named step *Axiom and sorry
 sweep* in `.github/workflows/lean_action_ci.yml`.
 
-Never run `lake update` or `lake exe cache get`, and do not touch `.lake/packages`: the
-toolchain (`lean-toolchain`) and the Mathlib revision (`lake-manifest.json`) are pinned.
+Never run `lake update`, and do not touch `.lake/packages`: the toolchain
+(`lean-toolchain`) and the Mathlib revision (`lake-manifest.json`) are pinned.
+`lake exe cache get` only downloads Mathlib's build for the pinned revision.
 
 To re-derive the numbers rather than trust them, the `#eval`/`decide` blocks at the end of
 each `Kernel*.lean` print the first terms of `|Av_n(1342)|` and `|Av_n(12453)|` from the

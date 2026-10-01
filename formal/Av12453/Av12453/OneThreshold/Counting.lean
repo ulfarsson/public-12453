@@ -3,7 +3,11 @@ Copyright (c) 2026 Henning Ulfarsson. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Henning Ulfarsson
 -/
-import Av12453.OneThreshold.Semantics
+module
+
+public import Av12453.OneThreshold.Semantics
+
+@[expose] public section
 
 /-!
 # Component 3a, theorem (D): the recurrence counts the completions
@@ -24,7 +28,8 @@ regrouped exactly as the paper's proof regroups it:
   `W h ((ℓ₁ + p - 1 - h) :: L')`, or `W h (nz (p-1-h))` when the stack is empty;
 * the **active-head letters**, indexed by their local rank `r = 0, …, ℓ₁-1`
   (`sum_rank_eq`); the two endpoints `r = 0` and `r = ℓ₁-1` give the endpoint term
-  `E_{ℓ₁}(p, L')` of \eqref{eq:W-endpoint} (two letters when `ℓ₁ ≥ 2`, one when `ℓ₁ = 1`),
+  `E_{ℓ₁}(p, L')` of \eqref{eq:W} (its terms `a = 0` and `b = 0`) (two letters when `ℓ₁ ≥ 2`, one
+  when `ℓ₁ = 1`),
   and each interior rank gives one term of the last line of \eqref{eq:W};
 * the **deferred letters**, which contribute `0` by theorem (B).
 
@@ -317,8 +322,8 @@ theorem av1342_count (n : ℕ) : W n [] = (avoiders n {beta 1}).card := by
 
 /-! ### Legality is exactly "prefix of a `1342`-avoiding permutation"
 
-Theorems (A)--(D) are stated for a *legal* prefix, as \cref{lem:1342-separators} and
-\cref{cor:separators} now are; the paper identifies the legal prefixes with the prefixes of
+Theorems (A)--(D) are stated for a *legal* prefix, as \cref{lem:separators} and
+\cref{cor:separators} are; the paper identifies the legal prefixes with the prefixes of
 `1342`-avoiding permutations in \cref{prop:scan-states}(c).  This section reproves that
 identification (`legal_iff_prefix_avoider`): one direction is theorem (B), the other follows
 from (D-iii) once `W` is known to be positive at every composition with positive parts. -/
@@ -445,7 +450,7 @@ theorem legal_of_prefix_avoider {w : List ℕ} (hw : IsPermOf n w) (hav : Avoids
   rwa [← List.prefix_iff_eq_take.mp hpre] at this
 
 /-- **\cref{prop:scan-states}(c) at `d = 1`**, which is also the hypothesis of
-\cref{lem:1342-separators}: `σ` is a legal prefix of the scan if and only if it is an
+\cref{lem:separators}: `σ` is a legal prefix of the scan if and only if it is an
 initial segment of some `1342`-avoiding permutation of `{0, …, n-1}`. -/
 theorem legal_iff_prefix_avoider :
     Legal n σ ↔ ∃ w, IsPermOf n w ∧ Avoids w (beta 1) ∧ σ <+: w :=

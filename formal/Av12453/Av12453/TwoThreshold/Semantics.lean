@@ -3,7 +3,12 @@ Copyright (c) 2026 Henning Ulfarsson. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Henning Ulfarsson
 -/
-import Av12453.TwoThreshold.Invariant
+module
+
+public import Av12453.TwoThreshold.Invariant
+meta import Av12453.TwoThreshold.Invariant
+
+@[expose] public section
 
 /-!
 # Semantics of the two-threshold scan: deferred letters and legal complete words
@@ -54,7 +59,7 @@ occurrence of `β₂ = 12453` (the increasing pair `a, c` is the paper's increas
 `σ[i₁] < σ[i₂] < σ[l] < σ[j] < σ[k]`.  Look at the prefix `τ = σ.take k`, just before
 `σ[k]` is read.  Then `σ[i₁]`, `σ[i₂]`, `σ[j]` are read and `σ[k]`, `σ[l]` are unread;
 `σ[i₂]` is a `2`-trigger of `τ` (witness `σ[i₁]` before it and below it), so
-`b₂ τ ≤ σ[i₂] < σ[l]` by \cref{lem:least-trigger-frontier}, and `σ[l]`, `σ[k]` are unread
+`b₂ τ ≤ σ[i₂] < σ[l]` by \eqref{eq:bd-q}, and `σ[l]`, `σ[k]` are unread
 values above `b₂ τ`.  Legality of the move reading `σ[k]` therefore puts `σ[k]` in the
 active head `I₁`.  Let `u < v` be the adjacent unread pair straddling `σ[j]`; then
 `σ[l] ≤ u < σ[j] < v ≤ σ[k]`, and since `I₁` is an initial segment of the unread values
@@ -253,7 +258,7 @@ theorem legal_avoids_of_sep (hA : SepInvariant n) (hleg : Legal n σ) :
   have htrig : IsTrigger (σ.take k) 2 (σ[i₂]'h₂) :=
     (isTrigger_two_iff hndτ).mpr ⟨hBτ, σ[i₁]'h₁, hAτ, by
       rw [hidxτ i₁ h₁ (by omega), hidxτ i₂ h₂ (by omega)]; omega, val₁⟩
-  -- \cref{lem:least-trigger-frontier}: `b₂` is at most every trigger value
+  -- \eqref{eq:bd-q}: `b₂` is at most every trigger value
   have hb2 : b2 n (σ.take k) ≤ σ[i₂]'h₂ := b2_le_of_isTrigger htrig
   -- the move reading `σ[k]` is legal, and `σ[k]` lies above `b₂`, hence in the active head
   have hsucc : Legal n (σ.take k ++ [σ[k]'hk]) := by

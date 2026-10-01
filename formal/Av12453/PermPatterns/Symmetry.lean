@@ -3,8 +3,12 @@ Copyright (c) 2026 Henning Ulfarsson. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Henning Ulfarsson
 -/
-import PermPatterns.Perm
-import PermPatterns.Sums
+module
+
+public import PermPatterns.Perm
+public import PermPatterns.Sums
+
+@[expose] public section
 
 /-!
 # The three symmetries of a permutation class

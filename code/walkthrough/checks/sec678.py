@@ -107,9 +107,8 @@ def H(d, p, L):
         tot += H(d, U(h, p), newL)
     if L:
         l1 = L[0]
-        tot += min(2, l1) * H(d, p, nz((l1 - 1,) + L[1:]))
-        for j in range(2, l1):
-            tot += H(d, p, (j - 1, l1 - j) + L[1:])
+        for a in range(l1):                  # head letter of local rank a + 1
+            tot += H(d, p, nz((a, l1 - 1 - a) + L[1:]))
     _H_MEMO[key] = tot
     return tot
 
@@ -1158,7 +1157,7 @@ def check_main_theorem(nmax, verbose=False):
     algorithm of Section 6 (the kernel phase eq:K and the empty-stack phase
     eq:G, with eq:answer-G) is run for d = 1, 2, 3, 4 and its output compared
     with |Av_n(beta_d)| computed by permuta for every n <= 8; and the source
-    region eq:source-region is enumerated for d <= 4, N <= 12 and its size
+    padded region of Section 6 is enumerated for d <= 4, N <= 12 and its size
     compared with the count binom(N+d,d+1) of eq:row-count.
     """
     t0 = time.time()
@@ -1179,7 +1178,7 @@ def check_main_theorem(nmax, verbose=False):
             checks += 1
             if rows != _binom(N + d, d + 1):
                 return dict(ok=False, checks=checks, seconds=time.time() - t0,
-                            detail="d=%d, N=%d: eq:source-region has %d rows, "
+                            detail="d=%d, N=%d: the padded region has %d rows, "
                                    "eq:row-count says %d"
                                    % (d, N, rows, _binom(N + d, d + 1)))
     return dict(ok=True, checks=checks, seconds=time.time() - t0,

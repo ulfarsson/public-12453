@@ -18,8 +18,41 @@ theorem can depend on them) (structure projections, equation lemmas, compiler st
 reports the axioms the constant depends on, and it throws an error if any of them depends on
 `sorryAx` or on any axiom outside `{propext, Classical.choice, Quot.sound}`.
 -/
-import PermPatterns
-import Av12453
+module
+
+public import PermPatterns
+public import Av12453
+import all PermPatterns.Word
+import all PermPatterns.Containment
+import all PermPatterns.Standardize
+import all PermPatterns.Patterns
+import all PermPatterns.Sums
+import all PermPatterns.Decidable
+import all PermPatterns.Avoiders
+import all PermPatterns.Perm
+import all PermPatterns.Symmetry
+import all PermPatterns.FirstLetter
+import all Av12453.Basic
+import all Av12453.Trigger
+import all Av12453.OneThreshold.Defs
+import all Av12453.OneThreshold.Invariant
+import all Av12453.OneThreshold.Semantics
+import all Av12453.OneThreshold.Counting
+import all Av12453.OneThreshold.Kernel
+import all Av12453.OneThreshold.KernelSupport
+import all Av12453.OneThreshold.KernelFactor
+import all Av12453.OneThreshold.KernelCount
+import all Av12453.TwoThreshold.Thresholds
+import all Av12453.TwoThreshold.Defs
+import all Av12453.TwoThreshold.Invariant
+import all Av12453.TwoThreshold.Semantics
+import all Av12453.TwoThreshold.Counting
+import all Av12453.TwoThreshold.Kernel
+import all Av12453.TwoThreshold.KernelSupport
+import all Av12453.TwoThreshold.KernelFactor
+import all Av12453.TwoThreshold.KernelCount
+import all Av12453.Perm
+public meta import Lean.Elab.Command
 
 open Lean Elab Command
 
@@ -28,7 +61,7 @@ constant declared in them, the axioms it uses. -/
 syntax (name := axiomsSweep) "#axioms_sweep" : command
 
 @[command_elab axiomsSweep]
-def elabAxiomsSweep : CommandElab := fun _ => do
+public meta def elabAxiomsSweep : CommandElab := fun _ => do
   let env ← getEnv
   let prefixes : Array Name := #[`PermPatterns, `Av12453]
   let self : Name := `Av12453.Axioms

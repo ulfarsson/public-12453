@@ -12,8 +12,8 @@ and all brute-force routines are elementary.
 
 Statements checked (paper numbering):
 
-    Lemma 3.1      lem:least-trigger-frontier
-    Prop. 4.1      prop:state-invariant (a), (b), (c)
+    eq. b_d = q    eq:bd-q
+    Prop. 4.1      prop:state-invariant (a), (b)
     Theorem 4.3    thm:literal                    (eq:H, eq:initial-terminal)
     Cor. 4.4       cor:separators
     Prop. 4.5      prop:exponential
@@ -239,9 +239,8 @@ def H(p, L):
         total += H(U(h, p), nz((head,) + L[1:]))
     if L:
         l1 = L[0]
-        total += min(2, l1) * H(p, nz((l1 - 1,) + L[1:]))     # endpoint choice
-        for j in range(2, l1):                                # interior choice
-            total += H(p, (j - 1, l1 - j) + L[1:])
+        for a in range(l1):                                   # head letter, rank a+1
+            total += H(p, nz((a, l1 - 1 - a) + L[1:]))
     return total
 
 
@@ -296,8 +295,11 @@ def kernel_bruteforce(l, p, tail):
 
 @lru_cache(maxsize=None)
 def K(l, p):
-    """eq:K and eq:D, transcribed literally; returns a dict t -> K_l(p, t).
+    """eq:K with K_0 the identity, transcribed literally; returns a dict
+    t -> K_l(p, t).
     Recursion is on the grade w = ||p||_1 + l, which every term lowers."""
+    if l == 0:
+        return {p: 1}
     d = len(p)
     acc = {}
 
@@ -311,11 +313,7 @@ def K(l, p):
     for h in range(p[d - 1]):
         delta = p[d - 1] - 1 - h
         add(K(l + delta, U(h, p)))
-    if l == 1:                                        # eq:D
-        add({p: 1})
-    else:
-        add(K(l - 1, p), 2)
-    for a in range(1, l - 1):                         # a, b >= 1, a + b = l - 1
+    for a in range(l):                                # a, b >= 0, a + b = l - 1
         b = l - 1 - a
         for u, c1 in K(a, p).items():
             for t, c2 in K(b, u).items():
@@ -358,19 +356,19 @@ def enumeration(d, n):
 # =====================================================================
 
 def check_lemma_31(nmax, dims, verbose=False):
-    """Lemma 3.1 (least-trigger threshold).  'After a prefix has been read,
-    either b_d is virtual and no d-trigger has been read, or b_d is the
-    smallest value of a d-trigger in the prefix.  In particular, no unread
-    value below b_d belongs to the projection of any earlier trigger, so none is
-    constrained by an obligation created so far.  When b_d is nonvirtual, every
-    unread value above b_d belongs to the projection created by the trigger
-    b_d.'  Here, as defined before the lemma, b_j is the smallest final entry
-    of an increasing subsequence of length j contained in the prefix, for
-    1 <= j <= d, and b_j = n + j (virtual) when there is none; then
-    b_1 < b_2 < ... < b_d.
+    """Display eq:bd-q (Section 3).  'Since a d-trigger is the last entry of
+    an increasing d-subsequence, b_d is the least d-trigger of the prefix when
+    it is nonvirtual, and a virtual b_d = n + d means that the prefix has no
+    d-trigger', so b_d = q.  The sentence after the display adds: the unread
+    values below b_d belong to the projection of no trigger read so far, while
+    every unread value above a nonvirtual b_d belongs to the projection created
+    by the trigger b_d; this is checked too.  Here, as defined in Section 3, b_j
+    is the smallest final entry of an increasing subsequence of length j
+    contained in the prefix, for 1 <= j <= d, and b_j = n + j (virtual) when
+    there is none; then b_1 < b_2 < ... < b_d.
 
     Also tested: the criterion used throughout Sections 3 and 4 (paragraph
-    before the lemma, and after Definition 2.4) that an unread x is a
+    before the display, and after Definition 2.4) that an unread x is a
     d-trigger of (sigma x) exactly when x > b_{d-1}, with b_0 = 0.
 
     Compared: the thresholds computed from their definition by enumerating all
@@ -436,9 +434,11 @@ def check_lemma_31(nmax, dims, verbose=False):
 def check_prop41a(nmax, d, verbose=False):
     """Proposition 4.1(a) (state invariant).  'The stack consists of the
     unread values above b_d, so the ordered layout
-    B_0 < b_1 < B_1 < ... < b_d < I_1 < ... < I_s holds, and a completion w of
-    sigma satisfies the residual obligations of all d-triggers of sigma exactly
-    when w|_{I_1 u ... u I_s} lies in Av(231)(I_1) (+) ... (+) Av(231)(I_s).'
+    B_0 < b_1 < B_1 < ... < b_d < I_1 < ... < I_s holds.'  Also checked, as a
+    sanity check beyond the paper's statement (the paper no longer states it):
+    a completion w of sigma satisfies the obligations of all d-triggers of
+    sigma, with the read letters fixed, exactly when w|_{I_1 u ... u I_s} lies
+    in Av(231)(I_1) (+) ... (+) Av(231)(I_s).
 
     Compared: the stack of a legal prefix, computed from Definition 2.4, against
     the thresholds and bands computed from their definition (layout), and, for
@@ -479,8 +479,9 @@ def check_prop41a(nmax, d, verbose=False):
                 if satisfies_residual_obligations(sigma, w, d) != in_stack_language(w, stack):
                     return False, ("obligation language fails: sigma=%s w=%s stack=%s"
                                    % (sigma, w, stack)), checks, time.time() - t0
-    return True, ("layout and eq:obligation-language vs. the residual obligations "
-                  "of every d-trigger, over every completion of every legal prefix"), checks, time.time() - t0
+    return True, ("layout, and (beyond the statement) the stack language vs. the "
+                  "obligations of every d-trigger, over every completion of every legal "
+                  "prefix"), checks, time.time() - t0
 
 
 def check_prop41b(nmax, d, verbose=False):
@@ -492,7 +493,7 @@ def check_prop41b(nmax, d, verbose=False):
     local rank r is a split to (p, nz(r-1, l_1-r, l_2, ...)).  No other letter is
     legal.'
 
-    Also checked: the classification stated before Lemma 3.1, that in the terms
+    Also checked: the classification stated before display eq:bd-q, that in the terms
     of Definition 2.4 a value of B_i with i < d-1 is a non-trigger move, a value
     of B_{d-1} is a merger, and a value of I_1 is a split.
 
@@ -529,7 +530,7 @@ def check_prop41b(nmax, d, verbose=False):
                     if not any(x in I for I in stack[1:]):
                         return False, "illegal letter %d not in a deferred interval, sigma=%s" % (x, sigma), checks, time.time() - t0
                     continue
-                # the classification stated before Lemma 3.1: a value of B_i with
+                # the classification stated before display eq:bd-q: a value of B_i with
                 # i < d-1 is a non-trigger move, a value of B_{d-1} is a merger,
                 # and a value of I_1 is a split
                 where0 = [i for i in range(d) if x in B[i]]
@@ -564,42 +565,12 @@ def check_prop41b(nmax, d, verbose=False):
                   "definitions; legality vs. 'sigma.x extends to an avoider'"), checks, time.time() - t0
 
 
-def check_prop41c(nmax, d, verbose=False):
-    """Proposition 4.1(c) (state invariant).  'The set of beta_d-avoiding
-    completions of sigma is determined, up to standardization, by (p, L).'
-
-    Compared: for every legal prefix of every avoider of length <= nmax, the SET
-    of standardizations of its beta_d-avoiding completions (taken from permuta's
-    avoiders) is grouped by the state (p, L) computed from the definitions; the
-    check is that each group is a single set.
-    """
-    t0 = time.time()
-    checks = 0
-    for n in range(1, nmax + 1):
-        seen = {}
-        for sigma, comps in corpus(n, d).items():
-            stack = scan_stack(sigma, n, d)
-            B, b = bands(sigma, n, d)
-            p = tuple(len(Bi) for Bi in B)
-            L = tuple(len(I) for I in stack)
-            key = (n - len(sigma), p, L)
-            std = frozenset(C.std(w) for w in comps)
-            checks += 1
-            if key in seen:
-                if seen[key][1] != std:
-                    return False, ("two prefixes with state %s have different completion sets: "
-                                   "%s and %s" % (key, seen[key][0], sigma)), checks, time.time() - t0
-            else:
-                seen[key] = (sigma, std)
-    return True, "standardized sets of avoiding completions agree within every state (p, L)", checks, time.time() - t0
-
-
 def check_thm43_states(nmax, d, verbose=False):
-    """Theorem 4.3 (literal recurrence), state form.  'For every d >= 1,
-    equations eq:H and eq:initial-terminal count every beta_d-avoiding
-    permutation exactly once', where H_p(L) is defined (Section 4) as the number
-    of completions of a legal prefix with state (p, L) that produce a
-    beta_d-avoiding permutation.
+    """Theorem 4.3 (literal recurrence), state form.  'For every legal prefix with
+    state (p, L), reading the letters of a completion one at a time is a
+    bijection from the completions that produce a beta_d-avoiding permutation to
+    the maximal sequences of transitions from (p, L), and H_p(L) is their
+    number', where H_p(L) is defined by the recurrence eq:H.
 
     Compared: H_p(L) evaluated by the literal recurrence eq:H against the number
     of beta_d-avoiding completions of every legal prefix of every avoider of
@@ -1155,13 +1126,13 @@ def run(nmax=8, verbose=False):
     # lengths for the permuta enumerations of the initial condition
     n_enum = {2: min(10, n + 2), 3: min(9, n + 1)}
 
-    record("Lemma 3.1 (least-trigger threshold)", "lem:least-trigger-frontier",
+    record("Display b_d = q (least-trigger threshold, Section 3)", "eq:bd-q",
            "all %d prefixes of all permutations of length <= %d, every unread letter, d = 1, 2, 3"
            % (sum(_nprefixes(m) for m in range(1, n + 1)), n),
            check_lemma_31(n, (1, 2, 3), verbose))
 
     for d, pat in ((2, "12453"), (3, "123564")):
-        record("Proposition 4.1(a) (state invariant: layout, language), d = %d" % d,
+        record("Proposition 4.1(a) (state invariant: layout), d = %d" % d,
                "prop:state-invariant",
                "every legal prefix of every %s-avoider of length <= %d, and every one of its "
                "completions (all orderings of the unread letters, not only avoiding ones)"
@@ -1172,11 +1143,6 @@ def run(nmax=8, verbose=False):
                "every legal prefix of every %s-avoider of length <= %d and every unread letter"
                % (pat, n),
                check_prop41b(n, d, verbose))
-        record("Proposition 4.1(c) (state invariant: (p,L) determines the completions), d = %d" % d,
-               "prop:state-invariant",
-               "every legal prefix of every %s-avoider of length <= %d, grouped by (p, L)"
-               % (pat, n),
-               check_prop41c(n, d, verbose))
         record("Theorem 4.3 (literal recurrence eq:H at every state), d = %d" % d, "thm:literal",
                "every legal prefix of every %s-avoider of length <= %d" % (pat, n),
                check_thm43_states(n, d, verbose))

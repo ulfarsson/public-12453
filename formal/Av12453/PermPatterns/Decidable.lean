@@ -3,8 +3,12 @@ Copyright (c) 2026 Henning Ulfarsson. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Henning Ulfarsson
 -/
-import Mathlib.Data.List.Sublists
-import PermPatterns.Containment
+module
+
+public import Mathlib.Data.List.Sublists
+public import PermPatterns.Containment
+
+@[expose] public section
 
 /-!
 # Decidability of `IsPermOf`, order isomorphism, containment and avoidance

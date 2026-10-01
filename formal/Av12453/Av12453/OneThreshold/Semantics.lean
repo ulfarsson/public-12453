@@ -3,7 +3,11 @@ Copyright (c) 2026 Henning Ulfarsson. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Henning Ulfarsson
 -/
-import Av12453.OneThreshold.Invariant
+module
+
+public import Av12453.OneThreshold.Invariant
+
+@[expose] public section
 
 /-!
 # Semantics of the one-threshold scan: deferred letters and legal complete words
@@ -19,8 +23,8 @@ scan's soundness for `d = 1` (`β₁ = 1342`, `0`-based `[0, 2, 3, 1]`):
   word of full length is a `1342`-avoiding permutation.  So the scan admits no
   non-avoider.
 
-Both proofs run on the separation invariant of \cref{lem:1342-separators} /
-\cref{cor:separators}, which is theorem **(A)** (`Av12453.OneThreshold.sep_invariant`,
+Both proofs run on the separation invariant of \cref{lem:separators}, which is
+theorem **(A)** (`Av12453.OneThreshold.sep_invariant`,
 proved in `Av12453.OneThreshold.Invariant`).  To keep the dependence explicit, the two
 arguments are first carried out from `SepInvariant n`, an abbreviation for the statement of
 (A), and only then specialised; the `_of_sep` versions therefore use no unproved result.
@@ -181,7 +185,7 @@ theorem exists_adjacent_around {n : ℕ} {τ : List ℕ} {lo hi b : ℕ} (hlo : 
 
 /--
 The statement of theorem **(A)**, `Av12453.OneThreshold.sep_invariant`
-(\cref{lem:1342-separators}), packaged so that the arguments of this file can be run from
+(\cref{lem:separators}), packaged so that the arguments of this file can be run from
 it as an explicit hypothesis.  (Keeping (B) and (C) parametric in the invariant is what made
 them provable in parallel with (A); it also isolates them from any later change to the proof
 of (A).)
