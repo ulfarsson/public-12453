@@ -13,9 +13,8 @@ meta import Av12453.TwoThreshold.Invariant
 /-!
 # Semantics of the two-threshold scan: deferred letters and legal complete words
 
-This file proves theorems **(B)** and **(C)** of component 3b, the two directions of the
-scan's soundness for `d = 2` (`β₂ = 12453`, `0`-based `[0, 1, 3, 4, 2]`,
-`Av12453.beta_two`):
+This file proves the two directions of the scan's soundness for `d = 2` (`β₂ = 12453`,
+`0`-based `[0, 1, 3, 4, 2]`, `Av12453.beta_two`):
 
 * **(B)** `deferred_no_completion` : if the next letter `x` lies in a *deferred* interval
   `I_j`, `j ≥ 2`, of the stack of a legal prefix `σ`, then **every** permutation of
@@ -26,12 +25,10 @@ scan's soundness for `d = 2` (`β₂ = 12453`, `0`-based `[0, 1, 3, 4, 2]`,
   non-avoider.
 
 Both proofs run on the separation criterion \cref{cor:separators} (i) ⟺ (ii) at `d = 2`,
-which is theorem **(A)** (`Av12453.TwoThreshold.sep_invariant`, proved in
-`Av12453.TwoThreshold.Invariant`).  To keep the dependence explicit — and to let this file
-be compiled in parallel with, and independently of, the proof of (A) — the two arguments are
+which is the invariant **(A)** (`Av12453.TwoThreshold.sep_invariant`, proved in
+`Av12453.TwoThreshold.Invariant`).  To keep the dependence explicit, the two arguments are
 carried out from `SepInvariant n` (`Av12453.TwoThreshold.Defs`), an abbreviation for the
-statement of (A); the `_of_sep` versions therefore use no unproved result and are
-axiom-clean.  The frozen names `deferred_no_completion` and `legal_complete_avoids` are
+statement of (A).  The theorems `deferred_no_completion` and `legal_complete_avoids` are
 obtained from them at the end of this file by discharging that hypothesis with
 `sepInvariant` of `Av12453.TwoThreshold.Invariant`.  See "Discharging the hypothesis"
 below.
@@ -69,14 +66,13 @@ separates `u` from `v` — a contradiction.
 
 ## Discharging the hypothesis
 
-The body of this module was written in phase 2 of component 3b, in parallel with the proof
-of (A), and so delivers the hypothesis-parametric forms
+The body of this module proves the hypothesis-parametric forms
 
 * `deferred_no_completion_of_sep`, `legal_avoids_of_sep`, and the packaged
   `deferredHyp_of_sep`, `completeHyp_of_sep`,
 
 all of which are proved outright from `SepInvariant n` alone.  Since
-`Av12453.TwoThreshold.Invariant` now supplies
+`Av12453.TwoThreshold.Invariant` supplies
 
 ```lean
 theorem sepInvariant (n : ℕ) : SepInvariant n
@@ -84,18 +80,15 @@ theorem sepInvariant (n : ℕ) : SepInvariant n
 
 the section "Discharging the invariant" at the end of this file specialises them to the two
 unconditional theorems `deferred_no_completion` and `legal_complete_avoids`, which are the
-statements the counting argument and the frozen interface of component 3b use.  No
-statement in the body was weakened, and none of them was changed when the hypothesis was
-discharged.
+statements the counting argument uses.
 
 ## Main results
 
 * `contains_beta_two_iff` : the index form of `12453`-containment, for `beta 2`.
 * `deferred_no_completion_of_sep`, `legal_avoids_of_sep` : (B) and (C) from the invariant.
 * `deferredHyp_of_sep`, `completeHyp_of_sep` : the same, packaged as `DeferredHyp` and
-  `CompleteHyp` for the counting argument (D).
-* **`deferred_no_completion`**, **`legal_complete_avoids`** : (B) and (C) unconditionally,
-  the frozen statements of component 3b.
+  `CompleteHyp` for the counting argument of `Av12453.TwoThreshold.Counting`.
+* **`deferred_no_completion`**, **`legal_complete_avoids`** : (B) and (C) unconditionally.
 -/
 
 namespace Av12453
@@ -112,7 +105,8 @@ variable {n : ℕ} {σ w : List ℕ} {x : ℕ}
 /-! ### The index form of `12453`-containment
 
 `Av12453.contains_12453_iff` is stated for the literal word `[0, 1, 3, 4, 2]`; this is the
-same statement for `beta 2` (`Av12453.beta_two`), which is the form the interface uses. -/
+same statement for `beta 2` (`Av12453.beta_two`), which is the form used by `DeferredHyp`
+and `CompleteHyp`. -/
 
 /--
 **Index form of `β₂`-containment.**  A word contains the paper's `12453` — `0`-based
@@ -218,8 +212,8 @@ theorem deferred_no_completion_of_sep (hA : SepInvariant n) (hleg : Legal n σ)
 
 /--
 **(C), from the invariant.**  Every legal prefix avoids `12453`.  (The completeness
-hypothesis `σ.length = n` of the interface statement is not needed: legality alone forbids
-an occurrence.)
+hypothesis `σ.length = n` of `legal_complete_avoids` below is not needed: legality alone
+forbids an occurrence.)
 -/
 theorem legal_avoids_of_sep (hA : SepInvariant n) (hleg : Legal n σ) :
     Avoids σ (beta 2) := by
@@ -291,7 +285,7 @@ theorem legal_avoids_of_sep (hA : SepInvariant n) (hleg : Legal n σ) :
 /-! ### The packaged hypothesis forms
 
 `DeferredHyp` and `CompleteHyp` (`Av12453.TwoThreshold.Defs`) are the forms in which the
-counting argument (D) consumes (B) and (C). -/
+counting argument of `Av12453.TwoThreshold.Counting` consumes (B) and (C). -/
 
 /-- **(B) as `DeferredHyp`**, from the invariant at every `n`. -/
 theorem deferredHyp_of_sep (hA : ∀ n, SepInvariant n) : DeferredHyp :=
@@ -371,8 +365,8 @@ set_option linter.hashCommand false in
 
 -- Consequently the legal words of length `k` are counted by `|Av_k(12453)|`: the first
 -- nine terms `1, 1, 2, 6, 24, 119, 694, 4581, 33286` of \eqref{eq:first-terms}.  This is
--- the semantic half of the goal `av12453_count` of component 3b, checked numerically; the
--- other half, that `H` counts the legal words, is component 3b's theorem (D).
+-- the semantic half of `av12453_count`, checked numerically; the other half, that `H`
+-- counts the legal words, is `A_eq_H` in `Av12453.TwoThreshold.Counting`.
 set_option linter.hashCommand false in
 /-- info: [1, 1, 2, 6, 24, 119, 694, 4581, 33286] -/
 #guard_msgs in
@@ -381,10 +375,9 @@ set_option linter.hashCommand false in
 
 /-! ### Discharging the invariant
 
-`Av12453.TwoThreshold.Invariant` proves theorem (A) and packages it as
+`Av12453.TwoThreshold.Invariant` proves the invariant (A) and packages it as
 `sepInvariant (n : ℕ) : SepInvariant n`.  Feeding that to the two `_of_sep` theorems above
-gives (B) and (C) unconditionally, under the names and with the statements frozen for
-component 3b. -/
+gives (B) and (C) unconditionally. -/
 
 /-- **(B) Deferred letters have no completion.**  If `x` lies in a deferred interval of the
 stack of the legal prefix `σ`, then every permutation of `{0, …, n-1}` extending `σ ++ [x]`
@@ -396,9 +389,9 @@ theorem deferred_no_completion (hleg : Legal n σ) {I : Finset ℕ} (hI : I ∈ 
   deferred_no_completion_of_sep (sepInvariant n) hleg hI hx hw hpre
 
 set_option linter.unusedVariables false in
-/-- **(C) Legal complete words avoid `12453`.**  The hypothesis `σ.length = n` is part of
-the frozen statement but is not used: `legal_avoids_of_sep` proves that *every* legal
-prefix avoids `12453`. -/
+/-- **(C) Legal complete words avoid `12453`.**  The hypothesis `σ.length = n` is not used in
+the proof, since `legal_avoids_of_sep` proves that *every* legal prefix avoids `12453`.  It
+is kept so that the statement matches `CompleteHyp`. -/
 theorem legal_complete_avoids (hleg : Legal n σ) (hlen : σ.length = n) :
     Avoids σ (beta 2) :=
   legal_avoids_of_sep (sepInvariant n) hleg

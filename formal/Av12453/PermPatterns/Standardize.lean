@@ -150,8 +150,8 @@ theorem getElem_standardize {i : ℕ} (hi : i < (standardize w).length) :
   simp only [standardize, List.getElem_map]
 
 /-- **Standardization preserves the order type**: a word with distinct entries is
-order-isomorphic to its standardization.  This is the precise form of the paper's `st(w)`
-and the reason "avoids `231` after standardization" may be read without `st`. -/
+order-isomorphic to its standardization.  This is the precise form of the paper's
+standardization, and the reason why containment can be tested on a word directly. -/
 theorem orderIsomorphic_standardize (hnd : w.Nodup) : OrderIsomorphic w (standardize w) := by
   refine ⟨by simp, fun i j hiu hju hiv hjv => ?_⟩
   rw [getElem_standardize hiv, getElem_standardize hjv]
@@ -173,8 +173,9 @@ theorem standardize_isPermOf (hnd : w.Nodup) : IsPermOf w.length (standardize w)
       List.toFinset_card_of_nodup List.nodup_range]
     simp
 
-/-- **Containment is unaffected by standardization.**  This is the bridge from the paper's
-"after standardization" to the `OrderIsomorphic`-based definition used here. -/
+/-- **Containment is unaffected by standardization.**  This is the bridge between the
+paper's containment for words with distinct entries, defined by relative order, and the
+`OrderIsomorphic`-based definition used here. -/
 theorem contains_standardize_iff (hnd : w.Nodup) : Contains (standardize w) τ ↔ Contains w τ :=
   (contains_congr_word (orderIsomorphic_standardize hnd)).symm
 

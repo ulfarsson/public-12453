@@ -222,6 +222,6 @@ fi
 
 # one smoke test: the first prime must pass its own checks at a tiny N
 SMOKE="$OUTDIR/av12453_gemm_${PLIST[0]}"
-echo "# smoke test: $SMOKE --n 30 --threads 1"
-"$SMOKE" --n 30 --threads 1 | tail -3
+echo "# smoke test: $SMOKE --n 30 --threads 1 --truth ../../data/av12453_terms_0_150.txt"
+"$SMOKE" --n 30 --threads 1 --truth ../../data/av12453_terms_0_150.txt | tail -3
 echo "# OK"

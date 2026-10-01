@@ -1,5 +1,5 @@
 #!/bin/sh
-# validate_scaling.sh -- the six mandatory checks of SCALING_BRIEF.md.
+# validate_scaling.sh -- the checks of the scaled (AVR2) tables (README.md, "Validation").
 #
 #   sh validate_scaling.sh [WORKDIR]
 #

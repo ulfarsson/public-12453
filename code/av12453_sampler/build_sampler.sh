@@ -1,6 +1,6 @@
 #!/bin/sh
-# build.sh -- build sampler, avoid_check, unif_test, brute_avoiders.
-#   sh build.sh                 # -O3 -march=native -fopenmp
+# build_sampler.sh -- build sampler, avoid_check and unif_test.
+#   sh build_sampler.sh                 # -O3 -march=native -fopenmp
 set -e
 DIR=$(cd "$(dirname "$0")" && pwd)
 TBL=$DIR

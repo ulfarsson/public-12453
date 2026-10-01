@@ -11,7 +11,7 @@ meta import Av12453.TwoThreshold.Semantics
 @[expose] public section
 
 /-!
-# Component 3b, theorem (D): the two-threshold recurrence counts the completions
+# The two-threshold recurrence counts the completions
 
 This module proves the counting half of the two-threshold construction: for every legal
 prefix `σ`, the number `A n σ` of `12453`-avoiding permutations of `{0, …, n-1}` beginning
@@ -19,16 +19,17 @@ with `σ` equals `H (p n σ) (L n σ)`, the paper's `H_{\mathbf p}(L)` at `d = 2
 the abstract state of `σ`.  Specializing to `σ = []`, where the state is the initial state
 `(𝐩, L) = ((n, 0), ∅)` of \eqref{eq:initial-terminal}, gives
 
-    H (n, 0) [] = |Av_n(12453)|,
-
-the goal of component 3b.
+    H (n, 0) [] = |Av_n(12453)|.
 
 The proof is the induction of \cref{thm:literal} at `d = 2`, run on the measure
 `ρ(𝐩, L) = p₀ + p₁ + |L|` of \eqref{eq:rho}, which by `rho_eq` is the number of unread
 values and by `card_unread_succ` drops by one at every move.  The prefix partition `A_succ`
 writes `A n σ` as a sum over the unread values, and `sum_unread_split` together with the
-layout invariant regroups that sum exactly as the four groups (early band, last band, endpoints,
-interior) of \eqref{eq:H}:
+layout invariant regroups that sum along the three groups of \eqref{eq:H} (early band, last
+band, active head).  The Lean development splits the active-head group, a split sum over
+`a, b ≥ 0`, into its endpoint terms (`a = 0` or `b = 0`) and its interior terms, which gives
+four groups (early band, last band, endpoints, interior).  By the class of the next letter,
+the sum splits as follows:
 
 * the **early-band letters** `x ∈ B₀`, reindexed by the number `h = below0 n σ x` of
   band-`0` values below them, `h = 0, …, p₀-1` (`sum_below0_eq`); each contributes
@@ -44,35 +45,34 @@ interior) of \eqref{eq:H}:
   one when `ℓ₁ = 1`),
   and each interior rank gives one interior term of line 3 (`sum_rank_split`);
 * the **deferred letters**, in an interval `I_j` with `j ≥ 2`, which contribute `0` by
-  theorem (B).
+  `deferred_no_completion` (B).
 
-Theorems (B) and (C) of the component enter only through the hypotheses
+The statements (B) `deferred_no_completion` and (C) `legal_complete_avoids` of
+`Av12453.TwoThreshold.Semantics` enter only through the hypotheses
 `Av12453.TwoThreshold.DeferredHyp` and `Av12453.TwoThreshold.CompleteHyp` of `Defs.lean`;
-`A_eq_H_of` and `av12453_count_of` are stated relative to them, so that they are
-axiom-clean and independent of how (B) and (C) are proved.  The unconditional `A_eq_H` and
-`av12453_count` discharge the two hypotheses with the theorems of the same name proved in
+`A_eq_H_of` and `av12453_count_of` are stated relative to them, so that they do not depend
+on how (B) and (C) are proved.  The unconditional `A_eq_H` and `av12453_count` discharge the
+two hypotheses with the theorems of the same name proved in
 `Av12453.TwoThreshold.Semantics`.
 
 ## Main results
 
 * `sum_rank_split` : the local-rank sum over the active head is the endpoint term plus the
-  interior terms, i.e. the last two lines of \eqref{eq:H}.
-* `A_eq_H_of` : **(D)**, relative to (B) and (C).
-* `av12453_count_of` : **the goal of component 3b**, relative to (B) and (C).
+  interior terms, which together are line 3 of \eqref{eq:H}.
+* `A_eq_H_of` : `A n σ = H (p n σ) (L n σ)` for every legal prefix, relative to (B) and (C).
+* `av12453_count_of` : `H (n, 0) [] = |Av_n(12453)|`, relative to (B) and (C).
 * `H_pos` : `H` is positive at every composition with positive parts -- the maximal
   recurrence path of \cref{prop:scan-states}(c)'s proof.
 * `exists_completion_of_legal_of`, `legal_of_prefix_avoider_of`,
   `legal_iff_prefix_avoider_of` : legality is exactly "initial segment of a `12453`-avoiding
-  permutation", the `d = 2` analogue of the phase-3 addition of component 3a.
+  permutation", the `d = 2` analogue of `Av12453.OneThreshold.legal_iff_prefix_avoider`.
 * **`A_eq_H`**, **`av12453_count`** : the same two theorems unconditionally, with (B) and
-  (C) discharged from `Av12453.TwoThreshold.Semantics`.  `av12453_count` is the goal of
-  component 3b.
+  (C) discharged from `Av12453.TwoThreshold.Semantics`.
 * **`legal_iff_prefix_avoider`** (with `exists_completion_of_legal` and
   `legal_of_prefix_avoider`) : the same, unconditionally.
 
-The two unconditional forms `A_eq_H` and `av12453_count` of the frozen interface are the
-`_of` forms with (B) and (C) discharged; they are proved in the "Discharging (B) and (C)"
-section at the end of this file.
+The two unconditional forms `A_eq_H` and `av12453_count` are the `_of` forms with (B) and (C)
+discharged; they are proved in the "Discharging (B) and (C)" section at the end of this file.
 
 ## Numerical check
 
@@ -153,10 +153,10 @@ theorem sum_rank_split (q : ℕ × ℕ) (T : List ℕ) :
 
 /-! ### The two inputs from the other modules
 
-Theorems (B) and (C) of component 3b are `deferred_no_completion` and
-`legal_complete_avoids` in `Av12453.TwoThreshold.Semantics`; the counting argument uses
-nothing else about them, so it is stated relative to the hypotheses `DeferredHyp` and
-`CompleteHyp` recorded in `Av12453.TwoThreshold.Defs`. -/
+Statements (B) and (C) are `deferred_no_completion` and `legal_complete_avoids` in
+`Av12453.TwoThreshold.Semantics`; the counting argument uses nothing else about them, so it
+is stated relative to the hypotheses `DeferredHyp` and `CompleteHyp` recorded in
+`Av12453.TwoThreshold.Defs`. -/
 
 /-- A letter of a deferred interval contributes nothing to the prefix partition: by (B) it
 has no `12453`-avoiding completion at all. -/
@@ -192,11 +192,12 @@ theorem A_eq_H_base (hCplt : CompleteHyp) (hleg : Legal n σ)
       omega
   rw [A_complete n σ hw hlen, if_pos (hCplt n σ hleg hlen), hp, hLnil, H_zero]
 
-/-! ### (D): the recurrence counts the completions -/
+/-! ### The recurrence counts the completions -/
 
 /--
-**(D)** relative to theorems (B) and (C).  For every legal prefix `σ` the number of
-`12453`-avoiding permutations of `{0, …, n-1}` extending `σ` is `H (p n σ) (L n σ)`.
+**The recurrence counts the completions**, relative to (B) and (C).  For every legal prefix
+`σ` the number of `12453`-avoiding permutations of `{0, …, n-1}` extending `σ` is
+`H (p n σ) (L n σ)`.
 
 The induction runs on `(unread n σ).card = p₀ + p₁ + |L n σ|`, the paper's `ρ` of
 \eqref{eq:rho} (`rho_eq`), which drops by one at every move (`card_unread_succ`).  In the
@@ -205,8 +206,9 @@ inductive step the prefix partition `A_succ` splits the unread values into the t
 invariant, the union of the intervals of the stack.  The band letters reindex to
 `h = 0, …, p_i - 1` by `sum_below0_eq`/`sum_below1_eq` and give lines 1 and 2 of
 \eqref{eq:H} through the transitions \eqref{eq:T} and \eqref{eq:U}; among the letters above
-`b₂`, those of the active head reindex to their local ranks by `sum_rank_eq` and give lines
-3 and 4 by `sum_rank_split`, while those of the deferred intervals contribute `0` by (B).
+`b₂`, those of the active head reindex to their local ranks by `sum_rank_eq` and give line
+3, its endpoint and interior terms, by `sum_rank_split`, while those of the deferred
+intervals contribute `0` by (B).
 -/
 theorem A_eq_H_of (hDef : DeferredHyp) (hCplt : CompleteHyp) {n : ℕ} :
     ∀ σ : List ℕ, Legal n σ → A n σ = H (p n σ) (L n σ) := by
@@ -274,7 +276,8 @@ theorem A_eq_H_of (hDef : DeferredHyp) (hCplt : CompleteHyp) {n : ℕ} :
         H_eq_nil (p n σ), if_neg hpne]
       omega
     | cons I₁ tail =>
-      -- A nonempty stack: all four groups of \eqref{eq:H}, plus the deferred letters.
+      -- A nonempty stack: the early-band, last-band, endpoint and interior groups of
+      -- \eqref{eq:H} (the last two split line 3), plus the deferred letters.
       have hI₁mem : I₁ ∈ stack n σ := by rw [hst]; exact List.mem_cons_self
       have hLcons : L n σ = I₁.card :: tail.map Finset.card := by
         rw [L, hst, List.map_cons]
@@ -313,7 +316,7 @@ theorem A_eq_H_of (hDef : DeferredHyp) (hCplt : CompleteHyp) {n : ℕ} :
           · exact A_eq_zero_of_deferred hDef hleg (I := J)
               (by rw [hst, List.tail_cons]; exact hJ) hyJ
         rw [hzero, Nat.zero_add]
-      -- lines 3 and 4: the active head, reindexed by local rank
+      -- line 3: the active head, reindexed by local rank
       have hhead : ∑ y ∈ I₁, A n (σ ++ [y])
           = ∑ r ∈ Finset.range I₁.card,
               H (p n σ) (nz [r, I₁.card - 1 - r] ++ tail.map Finset.card) := by
@@ -346,8 +349,8 @@ theorem A_eq_H_of (hDef : DeferredHyp) (hCplt : CompleteHyp) {n : ℕ} :
         sum_rank_split (p n σ) (tail.map Finset.card) I₁.card hℓpos, hRHS]
       omega
 
-/-- **The goal of component 3b**, relative to theorems (B) and (C): the recurrence `H` at
-the initial state `((n, 0), ∅)` of \eqref{eq:initial-terminal} counts the `12453`-avoiding
+/-- **The recurrence `H` counts the avoiders**, relative to (B) and (C): at the initial state
+`((n, 0), ∅)` of \eqref{eq:initial-terminal} it equals the number of `12453`-avoiding
 permutations of `{0, …, n-1}`. -/
 theorem av12453_count_of (hDef : DeferredHyp) (hCplt : CompleteHyp) (n : ℕ) :
     H (n, 0) [] = (avoiders n {beta 2}).card := by
@@ -357,17 +360,14 @@ theorem av12453_count_of (hDef : DeferredHyp) (hCplt : CompleteHyp) (n : ℕ) :
 
 /-! ### Positivity of `H`, and legality as "prefix of a `12453`-avoider"
 
-Theorems (A)--(D) are stated for a *legal* prefix, as \cref{cor:separators} and
-\cref{prop:state-invariant} now are; the paper identifies the legal prefixes with the
+Like \cref{cor:separators} and \cref{prop:state-invariant}, the statements of this
+development concern a *legal* prefix; the paper identifies the legal prefixes with the
 prefixes of `12453`-avoiding permutations in \cref{prop:scan-states}(c).  This section
-proves the half that (D) supplies: every legal prefix has an avoiding completion, so the
-paper's remark before \cref{cor:separators} -- "every legal prefix has an avoiding
-completion, so condition (iii) below is not vacuous" -- holds at `d = 2`.
-(The converse, "every prefix of an avoider is legal", is theorem (B) applied along the scan;
-it is stated here relative to `DeferredHyp` as `legal_of_prefix_avoider_of`, following the
-recommendation of the component-3a report (development notes, in git history) §11, where the `d
-= 1` versions were added
-in phase 3.)
+proves the half that the counting argument supplies: every legal prefix has an avoiding
+completion, so the paper's remark before \cref{cor:separators} -- "every legal prefix has an
+avoiding completion, so condition (iii) below is not vacuous" -- holds at `d = 2`.
+(The converse, "every prefix of an avoider is legal", is (B) applied along the scan; it is
+stated here relative to `DeferredHyp` as `legal_of_prefix_avoider_of`.)
 
 The engine is `H_pos`, which formalizes the maximal recurrence path exhibited in the proof of
 \cref{prop:scan-states}(c) (and reused by \cref{cor:separators}, (iii) implies (i)): read the
@@ -454,7 +454,7 @@ theorem H_pos (q : ℕ × ℕ) (l : List ℕ) (hl : ∀ a ∈ l, 0 < a) : 0 < H 
   H_pos_aux _ q l le_rfl hl
 
 /-- **Every legal prefix has a `12453`-avoiding completion**, so \cref{cor:separators}(iii)
-is not vacuous at `d = 2`.  Relative to (B) and (C), through (D). -/
+is not vacuous at `d = 2`.  Relative to (B) and (C), through `A_eq_H_of`. -/
 theorem exists_completion_of_legal_of (hDef : DeferredHyp) (hCplt : CompleteHyp)
     (hleg : Legal n σ) : ∃ w, IsPermOf n w ∧ Avoids w (beta 2) ∧ σ <+: w := by
   have h : 0 < A n σ := by
@@ -532,23 +532,23 @@ theorem legal_iff_prefix_avoider_of (hDef : DeferredHyp) (hCplt : CompleteHyp) :
 
 /-! ### Discharging (B) and (C)
 
-`Av12453.TwoThreshold.Semantics` proves the two hypotheses, under the frozen names
-`deferred_no_completion` and `legal_complete_avoids`; the two theorems below are the `_of`
-forms above with those supplied.  Both bodies are exactly the ones that discharged
-`DeferredHyp`/`CompleteHyp` in `Av12453.OneThreshold.Counting`, with `beta 1` replaced by
-`beta 2`; the `_of` forms are what makes them one-liners. -/
+`Av12453.TwoThreshold.Semantics` proves the two hypotheses as `deferred_no_completion` and
+`legal_complete_avoids`; the two theorems below are the `_of` forms above with those
+supplied.  Both bodies are the ones that discharge `DeferredHyp`/`CompleteHyp` in
+`Av12453.OneThreshold.Counting`, with `beta 1` replaced by `beta 2`; the `_of` forms are what
+makes them one-liners. -/
 
-/-- **(D)**, with theorems (B) and (C) supplied by `Av12453.TwoThreshold.Semantics`: the
-number of `12453`-avoiding completions of a legal prefix `σ` is the value of the literal
-recurrence \eqref{eq:H} at the state `(𝐩, L)` the two-threshold scan has reached.  This is
-\cref{thm:literal} at `d = 2`. -/
+/-- **The recurrence counts the completions**, with (B) and (C) supplied by
+`Av12453.TwoThreshold.Semantics`: the number of `12453`-avoiding completions of a legal
+prefix `σ` is the value of the literal recurrence \eqref{eq:H} at the state `(𝐩, L)` the
+two-threshold scan has reached.  This is \cref{thm:literal} at `d = 2`. -/
 theorem A_eq_H (hleg : Legal n σ) : A n σ = H (p n σ) (L n σ) :=
   A_eq_H_of (fun _ _ _ h _ hI hx _ hw hpre => deferred_no_completion h hI hx hw hpre)
     (fun _ _ h hl => legal_complete_avoids h hl) σ hleg
 
-/-- **The goal of component 3b**: the literal recurrence \eqref{eq:H} at `d = 2`, started
-from the initial state `𝐩 = (n, 0)` with the empty stack (\eqref{eq:initial-terminal}),
-counts the `12453`-avoiding permutations of `{0, …, n-1}`. -/
+/-- **The literal recurrence counts the `12453`-avoiders**: the recurrence \eqref{eq:H} at
+`d = 2`, started from the initial state `𝐩 = (n, 0)` with the empty stack
+(\eqref{eq:initial-terminal}), counts the `12453`-avoiding permutations of `{0, …, n-1}`. -/
 theorem av12453_count (n : ℕ) : H (n, 0) [] = (avoiders n {beta 2}).card :=
   av12453_count_of (fun _ _ _ h _ hI hx _ hw hpre => deferred_no_completion h hI hx hw hpre)
     (fun _ _ h hl => legal_complete_avoids h hl) n

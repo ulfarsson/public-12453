@@ -67,13 +67,18 @@ the measure `ρ(𝐩, L) = p₀ + p₁ + L.sum` of \eqref{eq:rho} (`rho_eq`) and
 * `H_eq_nil`, `H_eq_cons`, `H_endpoint`, `H_zero` : the defining equations of `H`.
 * `A_succ`, `A_complete` : the prefix partition of the avoiders.
 * `pL_succ_band0`, `pL_succ_band1_cons`, `pL_succ_band1_nil`, `pL_succ_active` : the effect
-  of one move on `(𝐩, L)`, i.e. the four groups of \eqref{eq:H}.
+  of one move on `(𝐩, L)`, for the three groups of \eqref{eq:H} (early band, last band at a
+  nonempty or an empty stack, active head).  The Lean development splits the active-head
+  group into its endpoint terms (`a = 0` or `b = 0`) and its interior terms, so that
+  `H_eq_cons` has four groups.
 * `legal_succ_iff_cons`, `legal_succ_iff_nil` : which letters are legal.
 * `card_unread_succ`, `rho_eq` : the measure \eqref{eq:rho}.
 * `sum_unread_split`, `below0_lt`, `below1_lt` : regrouping the next letter into the three
   groups of \eqref{eq:H}.
-* `SepInvariant`, `DeferredHyp`, `CompleteHyp` : theorems (A), (B) and (C) of component 3b
-  as hypotheses, so that (B), (C) and (D) can be proved independently of each other.
+* `SepInvariant`, `DeferredHyp`, `CompleteHyp` : the statements (A) (the separation
+  criterion), (B) (a deferred letter has no completion) and (C) (a legal complete word
+  avoids `12453`) as `Prop`-valued definitions, so that later results can be stated relative
+  to them.
 -/
 
 namespace Av12453
@@ -119,8 +124,8 @@ theorem nz_eq_self {l : List ℕ} (h : ∀ a ∈ l, a ≠ 0) : nz l = l := by
 /-! ### The interval stack -/
 
 /--
-The values a last-band letter adds to the active head: the paper's `E` of
-\eqref{eq:U}, the unread values strictly between `x` and the old `b₂`.  Its size is the
+The values a last-band letter adds to the active head: the set `E` of
+\cref{def:scan-state}(a), the unread values strictly between `x` and the old `b₂`.  Its size is the
 paper's `δ_h = p₁ - 1 - h` (`card_mergeSet`).
 -/
 def mergeSet (n : ℕ) (σ : List ℕ) (x : ℕ) : Finset ℕ :=
@@ -461,7 +466,8 @@ theorem Layout.b2_lt (h : Layout n σ) (hne : stack n σ ≠ []) : b2 n σ < n :
   omega
 
 /-- **\eqref{eq:bd-q} at a nonempty stack**: `b₂` is then a `2`-trigger of
-the prefix, which is what the active-interval case of \cref{cor:separators} uses. -/
+the prefix, which is what the active-interval case of the proof of \cref{lem:separators}
+uses. -/
 theorem Layout.isTrigger_b2 (h : Layout n σ) (hne : stack n σ ≠ []) :
     IsTrigger σ 2 (b2 n σ) :=
   _root_.Av12453.TwoThreshold.isTrigger_b2 (by have := h.b2_lt hne; omega)
@@ -731,10 +737,11 @@ theorem rho_eq (hleg : Legal n σ) :
 
 /-! ### The transition of `(𝐩, L)`
 
-The four groups of \eqref{eq:H}: an early-band move (\eqref{eq:T} at `i = 0`), a last-band
-move (\eqref{eq:U}, with the merger of \cref{def:scan-state}(a)), and the two shapes of an
-active-interval move (\cref{lem:first-letter}), which for the sizes are the endpoint and
-interior terms. -/
+The three groups of \eqref{eq:H}: an early-band move (\eqref{eq:T} at `i = 0`), a last-band
+move (\eqref{eq:U}, with the merger of \cref{def:scan-state}(a)), and a letter of the active
+head (\cref{lem:first-letter}).  The Lean development splits the third group, a split sum
+over `a, b ≥ 0`, into the endpoint terms (`a = 0` or `b = 0`) and the interior terms, which
+gives four groups. -/
 
 /-- The paper's `δ_h`: `x ∈ B₁` splits the last band into the `h = below1` values below it
 and the `δ_h = p₁ - 1 - h` values of `E = mergeSet n σ x` above it. -/
@@ -913,8 +920,8 @@ The dictionary with \eqref{eq:H}, writing `𝐩 = (p₀, p₁)` and `L = ℓ₁ 
   it is absent at an empty stack.
 
 `H_zero` is the terminal condition `H_𝟎(∅) = 1` of \eqref{eq:initial-terminal}, and
-`av12453_count` (component 3b's goal, proved in `Av12453.TwoThreshold.Counting`) is its
-initial condition `a_n^{(2)} = H_{(n,0)}(∅)`. -/
+`av12453_count` (proved in `Av12453.TwoThreshold.Counting`) is its initial condition
+`a_n^{(2)} = H_{(n,0)}(∅)`. -/
 
 /-- Fuel-driven evaluation of the two-threshold recurrence. -/
 def Haux : ℕ → ℕ × ℕ → List ℕ → ℕ
@@ -1044,7 +1051,7 @@ theorem H_eq_nil (q : ℕ × ℕ) :
 
 /-- **\eqref{eq:H} at a nonempty stack** with active head of size `ℓ ≥ 1`: the four groups
 are, in order, the early-band sum, the last-band sum, the endpoint term and the interior
-sum. -/
+sum.  The last two together are the third line of \eqref{eq:H}. -/
 theorem H_eq_cons {ℓ : ℕ} (hℓ : 1 ≤ ℓ) (q : ℕ × ℕ) (L' : List ℕ) :
     H q (ℓ :: L') =
       (∑ h ∈ Finset.range q.1, H (h, q.2 + q.1 - 1 - h) (ℓ :: L'))
@@ -1151,15 +1158,14 @@ theorem A_complete (n : ℕ) (σ : List ℕ) (hw : IsWord n σ) (hlen : σ.lengt
   rw [A, hset]
   by_cases hav : Avoids σ (beta 2) <;> simp [hav]
 
-/-! ### The four main theorems as hypotheses
+/-! ### The main statements as hypotheses
 
-The four theorems (A)--(D) of component 3b are proved in the sibling modules
-`Av12453.TwoThreshold.{Invariant, Semantics, Counting}`.  Following the recommendation of
-the component-3a report (development notes, in git history) §11, the statements of (A), (B) and
-(C) are recorded here as
-`Prop`-valued definitions, so that the modules proving (B), (C) and (D) can be stated
-*relative* to them (`_of` variants) and compiled in parallel with, and independently of, the
-proof of (A). -/
+The main statements are (A) the separation criterion, (B) a letter of a deferred interval
+has no completion, (C) a legal word of full length avoids `12453`, and (D) the recurrence `H`
+counts the completions of a legal prefix.  They are proved in
+`Av12453.TwoThreshold.{Invariant, Semantics, Counting}`.  The statements of (A), (B) and (C)
+are recorded here as `Prop`-valued definitions, so that the results that use them can be
+stated *relative* to them (`_of` variants). -/
 
 /-- **Statement (A)**, the separation criterion \cref{cor:separators} (i) ⟺ (ii) at
 `d = 2`: for a legal prefix and an adjacent unread pair above `b₂`, lying in different

@@ -1,8 +1,31 @@
 # Av12453 — Lean 4 formalization
 
 This Lake package holds the machine-checked part of *Protected tails and polynomial-time
-enumeration of permutations avoiding a direct sum of an increasing pattern and 231*.  It
-builds two libraries from one source tree.
+enumeration of permutations avoiding a direct sum of an increasing pattern and 231*.  It is in
+the format of the Palomar registry of formalizations and has four Lean libraries: the
+statement file `Challenge.lean`, its proof `Solution.lean`, and the two libraries of the
+development, `PermPatterns` and `Av12453`.
+
+## The statement and its proof
+
+`Challenge.lean` imports only Mathlib.  It defines pattern containment for permutations of
+`Fin n`, the patterns `1342` and `12453`, and the recurrences `W`, `H`, `K` and `G` of the
+paper for `d = 1, 2`, and states, with `sorry` in place of the proofs, the four theorems
+
+* `Av12453.count_1342_literal` : `OneThreshold.W n [] = |Av_n(1342)|`,
+* `Av12453.count_1342_kernel` : `OneThreshold.G n = |Av_n(1342)|`,
+* `Av12453.count_12453_literal` : `TwoThreshold.H (n, 0) [] = |Av_n(12453)|`,
+* `Av12453.count_12453_kernel` : `TwoThreshold.G (n, 0) = |Av_n(12453)|`,
+
+with `|Av_n(τ)|` written as `Nat.card {σ : Equiv.Perm (Fin n) // ¬ PermContains σ τ}`.  It is
+the only file a reader needs to read to know what is proved.  `Solution.lean` proves the four
+theorems from the development, without importing `Challenge.lean`; `comparator.json` names
+them and the permitted axioms (`propext`, `Quot.sound`, `Classical.choice`), and
+`formalization.yaml` is the registry metadata.  `bash ../comparator.sh` runs
+`lake comparator`, which checks that each theorem of `Solution.lean` proves exactly the
+statement of `Challenge.lean`, with every definition it uses identical, uses only the
+permitted axioms, and is accepted by Lean's kernel and by the independent kernels nanoda and
+con-ron.
 
 ## The two libraries
 
@@ -39,11 +62,12 @@ Everything about `β_d = ι_d ⊕ 231`, built on top of `PermPatterns`:
 | `Av12453.OneThreshold.*` | the one-threshold scan and kernel for `Av(1342)` (`d = 1`) |
 | `Av12453.TwoThreshold.*` | the two-threshold scan and kernel for `Av(12453)` (`d = 2`) |
 
-The four headline theorems are `Av12453.OneThreshold.av1342_count`,
+The development's four counting theorems are `Av12453.OneThreshold.av1342_count`,
 `Av12453.OneThreshold.av1342_count_kernel`, `Av12453.TwoThreshold.av12453_count` and
-`Av12453.TwoThreshold.av12453_count_kernel`.  `Av12453.Perm` restates the two kernel
-theorems on `Equiv.Perm (Fin n)` as `Av12453.OneThreshold.av1342_count_perm` and
-`Av12453.TwoThreshold.av12453_count_perm`.
+`Av12453.TwoThreshold.av12453_count_kernel`, stated for the finite sets `avoiders n {beta d}`
+of words.  `Av12453.Perm` restates the two kernel theorems on `Equiv.Perm (Fin n)` as
+`Av12453.OneThreshold.av1342_count_perm` and `Av12453.TwoThreshold.av12453_count_perm`, and
+`Solution.lean` derives the four theorems of `Challenge.lean` from these.
 
 `Av12453.Axioms` is not part of either library: no root module imports it and no
 `lean_lib` target globs it.
@@ -65,9 +89,14 @@ development sees all of Mathlib.
 Mathlib is pinned in `lake-manifest.json`; the toolchain is in `lean-toolchain`.
 
 ```sh
-lake build                 # both libraries
-lake build PermPatterns    # the reusable core alone
+lake exe cache get                         # once: Mathlib's prebuilt files
+lake build PermPatterns Av12453 Solution   # no warnings
+lake build                                 # all four libraries
+lake build PermPatterns                    # the reusable core alone
 ```
+
+A plain `lake build` also builds `Challenge.lean` and so prints exactly four warnings,
+`declaration uses 'sorry'`, one for each statement of `Challenge.lean`.
 
 ## The axiom sweep
 
@@ -82,11 +111,15 @@ module cannot silently drop out of it; it fails if either prefix matches no modu
 fails if any constant depends on `sorryAx` or on anything outside
 `{propext, Classical.choice, Quot.sound}`.
 
-`../check.sh` runs the whole certificate check: a warning-free `lake build`, the axiom sweep,
-and a scan for `sorry`, `native_decide` and `admit` in both libraries.  It ends with
-`CERTIFICATE CHECK PASSED`.
+`bash ../check.sh` runs the whole certificate check: a warning-free build of the two libraries and
+`Solution.lean`, a build of `Challenge.lean` whose only warnings are the four
+`declaration uses 'sorry'` of its placeholders (the statements the comparator checks
+`Solution.lean` against), the axiom sweep, and a scan for `sorry`, `native_decide` and `admit`
+in both libraries.  It ends with `CERTIFICATE CHECK PASSED`.
 
 ## See also
 
-* `../README.md` — how the formalization relates to the paper, component by component.
-* `../AUDIT_2026-09-05.md` — the audit of the formalization against the manuscript.
+* `../README.md` — how the formalization relates to the paper, module by module, and what a
+  reader must trust.
+* Appendix B of the paper — the conventions of the development and how its definitions
+  correspond to the paper's displays.

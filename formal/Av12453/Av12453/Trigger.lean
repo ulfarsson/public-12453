@@ -16,8 +16,7 @@ This file proves Lemma 2.1 of *Protected tails and polynomial-time enumeration o
 avoiding a direct sum of an increasing pattern and 231*:
 
 > A permutation `π = π₁ ⋯ π_n` avoids `β_d` if and only if, for every increasing
-> `d`-subsequence ending at `c = π_j`, the word `π_{j+1} ⋯ π_n |_{x : x > π_j}` avoids `231`
-> after standardization.
+> `d`-subsequence ending at `c = π_j`, the word `π_{j+1} ⋯ π_n |_{x : x > π_j}` avoids `231`.
 
 ## Rendering of the statement
 
@@ -34,10 +33,10 @@ paper's `1342`), `β_2` is `[0, 1, 3, 4, 2]` (the paper's `12453`) and `231` is
   Lean quantifies over the 0-based index directly, so the trigger letter is `w[j]`).
 * `w|_{x : x > π_j}` is `PermPatterns.restrict _ (fun x => w.getD j 0 < x)`, and `w.getD j 0 = w[j]`
   because `j < w.length` (`IsTriggerAt.lt_length`, `List.getD_eq_getElem`).
-* "avoids `231` after standardization" is `Avoids _ pat231`: containment is invariant under
-  order isomorphism (`PermPatterns.contains_congr_word`), so standardizing changes nothing.  The
-  paper's phrase is also available literally, with `PermPatterns.standardize` applied to the
-  projected tail, in `Av12453.trigger_lemma_standardized`.
+* "the word avoids `231`" is `Avoids _ pat231` applied to the projected tail.  Containment is
+  invariant under order isomorphism (`PermPatterns.contains_congr_word`), so standardizing the
+  tail first changes nothing.  The form that standardizes the projected tail first, with
+  `PermPatterns.standardize`, is `Av12453.trigger_lemma_standardized`.
 
 ## Generality
 
@@ -53,8 +52,8 @@ to a permutation of `[n]`, which is the paper's sentence verbatim.
 * `Av12453.exists_trigger_of_contains_beta` : a `β_d` produces a `d`-trigger followed by a
   `231` above it (the paper's first half).
 * `Av12453.avoids_beta_iff_forall_trigger`, `Av12453.trigger_lemma` : Lemma 2.1.
-* `Av12453.trigger_lemma_standardized` : Lemma 2.1 with "avoids `231` after standardization"
-  read literally.
+* `Av12453.trigger_lemma_standardized` : Lemma 2.1 with the restricted word standardized
+  before `231`-avoidance is asserted, which does not change containment of `231`.
 -/
 
 namespace Av12453
@@ -195,7 +194,7 @@ set_option linter.unusedVariables false in
 /--
 **Lemma 2.1 (trigger lemma).**  A permutation `π = π₁ ⋯ π_n` of `[n]` avoids `β_d` if and only
 if, for every increasing `d`-subsequence ending at `c = π_j`, the word
-`π_{j+1} ⋯ π_n |_{x : x > π_j}` avoids `231` after standardization.
+`π_{j+1} ⋯ π_n |_{x : x > π_j}` avoids `231`.
 
 The permutation hypothesis `hπ` is the paper's setting; the proof does not use it (see
 `Av12453.avoids_beta_iff_forall_trigger`), and it is kept only so that the statement matches
@@ -208,10 +207,10 @@ theorem trigger_lemma {n d : ℕ} {π : List ℕ} (hπ : IsPermOf n π) (hd : 1 
   avoids_beta_iff_forall_trigger π hd
 
 /--
-**Lemma 2.1 (trigger lemma), the paper's literal form.**  The same statement as
-`Av12453.trigger_lemma`, with "avoids `231` *after standardization*" taken literally: the
-projected tail `π_{j+1} ⋯ π_n |_{x : x > π_j}` is standardized (`PermPatterns.standardize`) before
-`231`-avoidance is asserted.
+**Lemma 2.1 (trigger lemma), with the projected tail standardized.**  The same statement as
+`Av12453.trigger_lemma`, except that the projected tail `π_{j+1} ⋯ π_n |_{x : x > π_j}` is
+standardized (`PermPatterns.standardize`) before `231`-avoidance is asserted.  This does not
+change containment of `231`.
 
 This is a corollary of `Av12453.trigger_lemma`.  The projected tail is a subword of the
 permutation `π`, so it has distinct entries — dropping a prefix preserves `Nodup`, and so

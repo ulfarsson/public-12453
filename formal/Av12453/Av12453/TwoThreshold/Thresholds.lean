@@ -20,9 +20,9 @@ thresholds `b₁ < b₂`, the two bands `B₀`, `B₁`, the control `p = (|B₀|
 \eqref{eq:bd-q}, and the effect of one letter on all of them.
 
 Values and positions are `0`-based, as in `Av12453.Basic`.  The paper's *virtual*
-thresholds `n + 1`, `n + 2` are here `n` and `n + 1`; the brief for component 3b allows any
-values `≥ n` with `b₁ < b₂`, and these two are the ones that make `b₁` literally the `m` of
-the one-threshold development (`Av12453.OneThreshold.m`).
+thresholds `n + 1`, `n + 2` are here `n` and `n + 1`, since values are `0`-based, and these
+two are the ones that make `b₁` literally the `m` of the one-threshold development
+(`Av12453.OneThreshold.m`).
 
 ## The objects
 
@@ -494,8 +494,8 @@ theorem sum_below1_eq {M : Type*} [AddCommMonoid M] (f : ℕ → M) :
 
 /-! ### Two dictionary lemmas for the stack -/
 
-/-- The values a last-band letter adds to the active head -- the paper's `E` of
-\eqref{eq:U}, the unread values strictly between `x` and the old `b₂` -- are exactly the
+/-- The values a last-band letter adds to the active head -- the set `E` of
+\cref{def:scan-state}(a), the unread values strictly between `x` and the old `b₂` -- are exactly the
 band-`1` values above `x`.  With `card_band1_gt` this gives `|E| = δ_h = p₁ - 1 - h`. -/
 theorem filter_between_eq_band1_gt (hx : x ∈ B1 n σ) :
     (unread n σ).filter (fun y => x < y ∧ y < b2 n σ) = (B1 n σ).filter (fun y => x < y) := by

@@ -80,13 +80,13 @@ remains `data/av12453_terms_0_150.txt`; the two files agree on `n <= 150`.
 - `av12453_asymptotic_holdout.py`: dependency-free reproduction of the frozen
   fit on `n=70,...,100` and its `n=101,...,150` holdout diagnostics.
 - `av12453_n300/`: the faster GEMM-structured engine, harness and independent
-  reference for the `n <= 300` computation, plus the cluster package.
+  reference for the `n <= 300` computation.
 - `walkthrough/`: a permuta-based walkthrough of the paper's definitions and
   examples, section by section, for reading and experimenting (not part of
   the verification chain).
 - `av12453_sampler/`: uniform random sampling from `Av_n(12453)` by the
-  recursive method on the paper's reduced kernel tables, with validation and
-  the PermPAL-style heatmaps shown in the paper (`examples/ex_n300_1M`).
+  recursive method on the paper's reduced kernel tables, with its validation
+  and the data behind the heatmap of Figure 4 (`examples/`).
 - `data/`: exact coefficient and profile data.
 - `certificates/`: packed residues, independent residues, and recorded run
   logs used by the deterministic `N=150` certificate.

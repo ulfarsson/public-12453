@@ -15,9 +15,9 @@ public import Av12453.Basic
 This file sets up the objects of Sections 2.1--2.3 of the paper
 *Protected tails and polynomial-time enumeration of permutations avoiding a direct sum of an
 increasing pattern and 231* for `d = 1`, where
-`β₁ = ι₁ ⊕ 231 = 1342` (`0`-based `[0, 2, 3, 1]`, `Av12453.beta_one`), and states the four
-main theorems of component 3a.  Values and positions are `0`-based throughout, as in
-`Av12453.Basic`; the paper's values `1, …, n` are this file's `0, …, n-1`.
+`β₁ = ι₁ ⊕ 231 = 1342` (`0`-based `[0, 2, 3, 1]`, `Av12453.beta_one`).  Values and positions
+are `0`-based throughout, as in `Av12453.Basic`; the paper's values `1, …, n` are this file's
+`0, …, n-1`.
 
 ## The scan
 
@@ -60,8 +60,11 @@ equations `W_eq_nil`, `W_eq_cons` and `W_endpoint`.
 * `W_eq_nil`, `W_eq_cons`, `W_endpoint` : the defining equations of `W`.
 * `L_succ_newMin_cons`, `L_succ_newMin_nil`, `L_succ_active` : the effect of one move on
   `(p, L)`.
-* `sep_invariant`, `deferred_no_completion`, `legal_complete_avoids`, `A_eq_W` : the four
-  theorems (A)--(D) of component 3a, proved in the sibling modules.
+* `sep_invariant`, `deferred_no_completion`, `legal_complete_avoids`, `A_eq_W` : the
+  separation criterion at every legal prefix, the two directions of the scan's soundness (a
+  deferred letter has no avoiding completion, a legal complete word avoids `1342`) and the
+  identity `A n σ = W (p n σ) (L n σ)`.  They are proved in the modules `Invariant`,
+  `Semantics` and `Counting`, as listed under "The main statements" below.
 * `av1342_count` : `W n ∅` is the number of `1342`-avoiding permutations of `{0, …, n-1}`.
 -/
 
@@ -203,8 +206,8 @@ def step (n : ℕ) (σ : List ℕ) (st : List (Finset ℕ)) (x : ℕ) : Option (
       | [] => none
   else none
 
-/-- The values added to the active head by the new minimum `x` (the `E` of the merger
-lemma). -/
+/-- The values added to the active head by the new minimum `x`: the set `E` of
+\cref{def:scan-state}(a). -/
 def mergeSet (n : ℕ) (σ : List ℕ) (x : ℕ) : Finset ℕ :=
   (unread n σ).filter (fun y => x < y ∧ y < m n σ)
 
@@ -957,13 +960,12 @@ theorem card_unread_succ (hleg : Legal n (σ ++ [x])) :
   have := Finset.card_pos.mpr ⟨x, hleg.mem_unread⟩
   omega
 
-/-! ### The main theorems
+/-! ### The layout invariant
 
-The four statements below are the content of component 3a; they are proved in
-`Av12453.OneThreshold.Invariant` (A), `Av12453.OneThreshold.Semantics` (B and C) and
-`Av12453.OneThreshold.Counting` (D). -/
+The layout invariant is the one main statement proved in this file.  The others are listed
+under "The main statements" below, with the modules that prove them. -/
 
-/-- **(A) The layout invariant.**  Every legal prefix has the ordered layout
+/-- **The layout invariant.**  Every legal prefix has the ordered layout
 \eqref{eq:ordered-layout}. -/
 theorem layout_of_legal (hleg : Legal n σ) : Layout n σ := by
   induction σ using List.reverseRecOn with
@@ -1184,16 +1186,17 @@ theorem rho_eq (hleg : Legal n σ) : p n σ + (L n σ).sum = (unread n σ).card 
   simp only [Finset.mem_filter] at ha hb
   omega
 
-/-! ### The four main theorems
+/-! ### The main statements
 
-They are stated and proved in the three downstream modules, in this same namespace, with
-exactly the statements that were frozen here as `sorry`-ed placeholders during Phase 2:
+The remaining main statements are proved in the three downstream modules, in this same
+namespace:
 
-* **(A)** `sep_invariant`, in `Av12453/OneThreshold/Invariant.lean`;
-* **(B)** `deferred_no_completion` and **(C)** `legal_complete_avoids`, in
-  `Av12453/OneThreshold/Semantics.lean`;
-* **(D-iii)** `A_eq_W` and the goal of component 3a, `av1342_count`, in
-  `Av12453/OneThreshold/Counting.lean`.
+* **(A)** `sep_invariant`, the separation criterion of \cref{lem:separators}, in
+  `Av12453/OneThreshold/Invariant.lean`;
+* **(B)** `deferred_no_completion` and **(C)** `legal_complete_avoids`, the two directions of
+  the scan's soundness, in `Av12453/OneThreshold/Semantics.lean`;
+* **(D)** `A_eq_W`, the count of the completions of a legal prefix, and `av1342_count`, the
+  count of the `1342`-avoiders, in `Av12453/OneThreshold/Counting.lean`.
 -/
 
 /-! ### Sanity checks

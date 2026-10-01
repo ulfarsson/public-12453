@@ -55,7 +55,7 @@ recurrence `W`.
 * `K_sum_extend`, `K_sum_extend_left` : consequences used downstream -- a sum of
   `K ℓ p t` over `t` may be taken over any range containing `{0, …, p}`.
 * `K_succ_eq_range`, `G_eq_range` : \eqref{eq:scalar-K} and \eqref{eq:scalar-G} with the
-  paper's own (unrestricted) summation ranges, added at integration.
+  paper's own (unrestricted) summation ranges.
 -/
 
 namespace Av12453
@@ -96,7 +96,7 @@ private theorem catalan_pos (m : ℕ) : 0 < catalan m := by
       Nat.centralBinom m = 0) (Nat.centralBinom_pos m).ne'
   · exact h
 
-/-! ### Theorem 1: the rows vanish above the source control -/
+/-! ### The rows vanish above the source control -/
 
 /-- The induction behind `K_eq_zero_of_lt`, on the grade `p + ℓ`. -/
 private theorem K_eq_zero_of_lt_aux : ∀ N ℓ p t, p + ℓ ≤ N → p < t → K ℓ p t = 0 := by
@@ -135,7 +135,7 @@ unrestricted sums. -/
 theorem K_eq_zero_of_lt {ℓ p t : ℕ} (h : p < t) : K ℓ p t = 0 :=
   K_eq_zero_of_lt_aux (p + ℓ) ℓ p t le_rfl h
 
-/-! ### Theorem 3: the diagonal is a Catalan number -/
+/-! ### The diagonal is a Catalan number -/
 
 /-- **\cref{lem:scalar-support}, the diagonal**: `K_ℓ(p, p) = C_ℓ`.  A stopped path ending
 at control `p` uses no base move, so it is one of the `C_ℓ` orders in which the active
@@ -176,7 +176,7 @@ theorem K_diag_eq_catalan (ℓ p : ℕ) : K ℓ p p = catalan ℓ := by
         show j + 2 - 1 = j + 1 from rfl, ih (j + 1) (by omega),
         catalan_split hjp]
 
-/-! ### Theorem 2: every terminal control at most the source control occurs -/
+/-! ### Every terminal control at most the source control occurs -/
 
 /-- **\cref{lem:scalar-support}, lower half**: for `ℓ ≥ 1` every terminal control
 `t ∈ {0, …, p}` is actually attained, so together with `K_eq_zero_of_lt` the support of
@@ -201,7 +201,7 @@ theorem K_pos {ℓ p t : ℕ} (hℓ : 1 ≤ ℓ) (ht : t ≤ p) : 0 < K ℓ p t 
 /-! ### The support statement, and range extension
 
 `K_support_eq` is \eqref{eq:scalar-support} itself.  `K_sum_extend` records the consequence
-advertised in the brief: because the rows vanish above `p`, a sum of `K ℓ p t` over `t` may
+that, because the rows vanish above `p`, a sum of `K ℓ p t` over `t` may
 be taken over `Finset.range (p + 1)` or over any larger range, so the restricted ranges used
 in `Kernel.K_succ_eq` and `Kernel.G_eq` really do reproduce the paper's `∑_{t ≥ 0}`. -/
 
@@ -230,7 +230,7 @@ theorem K_sum_extend_left {p N : ℕ} (hN : p + 1 ≤ N) (ℓ : ℕ) (f : ℕ �
   simp only [Finset.mem_range, not_lt] at ht
   rw [K_eq_zero_of_lt (show p < t by omega), Nat.mul_zero]
 
-/-! ### The paper's unrestricted sums  (added at integration, phase 3)
+/-! ### The paper's unrestricted sums
 
 \eqref{eq:scalar-K} sums the split term over *all* `u ≥ 0` and \eqref{eq:scalar-G} sums `t`
 over *all* `t ≥ 0`, whereas `Kernel.K_succ_eq` and `Kernel.G_eq` use the truncated ranges

@@ -1,5 +1,6 @@
-// sampler_core.hpp -- exactly-uniform (up to double-precision table error)
-// random sampling from Av_n(12453) by the recursive method of SAMPLER_BRIEF.md.
+// sampler_core.hpp -- uniform random sampling from Av_n(12453), up to the
+// floating-point error bounded in Appendix A of the paper, by the recursive
+// method (paper Section 8.1, Proposition 8.1).
 //
 // State (paper Section 4, eq:H).  Scanning left to right, the unread values
 // sorted increasingly are
@@ -15,9 +16,11 @@
 // Weights.  Top level (empty stack) uses G; inside a block the weights are the
 // protected-tail kernel R.  Both come from an AVR1 or AVR2 table in double
 // precision.  Along a complete path the product of the conditional
-// probabilities is 1/G(n,0) exactly in real arithmetic, hence the sampler is
-// uniform up to the relative error of the tables (~3e-13 at N=150) per
-// decision.
+// probabilities is 1/G(n,0) exactly in real arithmetic.  In floating point the
+// table errors, the rounding of the candidate scan and of the draw, and the
+// rescan below all perturb each decision; Proposition A.2 of the paper bounds
+// the resulting total-variation distance from uniform (below 3.5e-5 for
+// n <= 300, assuming ideal random bits).
 //
 // Scaled (AVR2) tables.  The stored entries are R' = 2^{-2w} R (w = l+a+q)
 // and G' = 2^{-2m} G (m = p+q), so the candidates of one decision, which come
@@ -386,8 +389,12 @@ struct Sampler {
             // floating point the scanned candidate weights sum to `total` only
             // up to ~1e-13 relative; if the walk runs out of mass (which needs
             // u in that last ~1e-13 sliver) we rescale u by the mass actually
-            // scanned and walk again.  The result is *exactly* proportional to
-            // the evaluated double weights, with no guard band and no bias.
+            // scanned and walk again, so the choice is always a legal move.
+            // The result is NOT exactly proportional to the evaluated double
+            // weights: the second walk redistributes the sliver, so e.g. two
+            // weights 1 and 1 with stored total 2.1 give the first candidate
+            // probability 1/2.1.  Proposition A.2 of the paper bounds this
+            // deviation, together with the rounding of the scan and the draw.
             const double u = rng.u01() * total;
             Choice ch{}; bool found = false;
             double acc = top ? scan_top<SCALED, true>(u, ch, found)

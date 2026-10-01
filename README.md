@@ -1,5 +1,7 @@
 # Protected tails and polynomial-time enumeration of Av(12453)
 
+[![Lean certificate](https://github.com/ulfarsson/public-12453/actions/workflows/lean.yml/badge.svg)](https://github.com/ulfarsson/public-12453/actions/workflows/lean.yml)
+
 Companion repository for the paper
 
 > Henning Arnór Skeggi Úlfarsson, *Protected tails and polynomial-time enumeration of
@@ -35,9 +37,10 @@ development that machine-checks the counting recurrences for `d <= 2`.
 | `code/data/` | the exact terms `a_0, ..., a_150` (certified) and `a_0, ..., a_300` |
 | `code/certificates/` | residue files of the certificate runs |
 | `code/av12453_n300/` | the faster engine, harness and pure-Python reference that produced the terms to `n = 300` |
-| `code/av12453_sampler/` | uniform random sampler for `Av_n(12453)`, heatmap tools, the examples shown in the paper |
+| `code/av12453_sampler/` | uniform random sampler for `Av_n(12453)`, heatmap tools, and the data behind the heatmap of Figure 4 |
 | `code/walkthrough/` | a permuta-based walkthrough of the paper and the exhaustive checks of its statements for `n <= 8` |
-| `formal/` | the Lean 4 development, its build and audit script `check.sh`, `README.md` and an audit report |
+| `formal/` | the Lean 4 development, its check scripts `check.sh` and `comparator.sh`, and `README.md` |
+| `.github/workflows/lean.yml` | the GitHub Actions workflow that runs both Lean check scripts on every push |
 | `MANIFEST.sha256` | SHA-256 digests of every file in this repository |
 
 ## Requirements
@@ -129,21 +132,22 @@ cd code/av12453_sampler
 sh build_tables.sh && sh build_sampler.sh
 ./tables --N 100 --threads 4 --out N100.avr
 ./sampler --table N100.avr --n 100 --count 20000 --seed 1 --threads 4 --out s100.txt
-python3 heatmap.py s100.txt -o examples/ex_n100
+python3 heatmap.py s100.txt -o heat_n100
 ./avoid_check s100.txt
 ```
 
-`README.md` in that directory documents the table format, the scaled tables
-needed for `n > 276`, the validation performed, and the one-million-sample
-heatmap of length 300 shown in the paper (`examples/ex_n300_1M*`).
+`README.md` in that directory documents the method, the table formats (with the
+scaled tables needed for `n > 276`) and the validation performed, and
+`examples/README.md` describes the one-million-sample run of length 300 behind
+Figure 4.
 
 ### The Lean development
 
 ```sh
 export PATH="$HOME/.elan/bin:$PATH"
 (cd formal/Av12453 && lake exe cache get)
-sh formal/check.sh
-sh formal/comparator.sh
+bash formal/check.sh
+bash formal/comparator.sh
 ```
 
 The statement surface is `formal/Av12453/Challenge.lean`: about 180 lines that import
@@ -158,14 +162,18 @@ Palomar registry (`comparator.json`, `formalization.yaml`, Lean's module system)
 
 `check.sh` builds the two libraries, `PermPatterns` (the reusable pattern core,
 ten modules) and `Av12453` (the paper-specific development, twenty
-modules), runs the axiom sweep over every
-declared constant of both, checks that the sweep covered every module, and
-rejects any `sorry`, `native_decide` or non-standard axiom; it ends with
-`CERTIFICATE CHECK PASSED`.  The four
-main theorems, the definitions a reader should check by eye against the
-paper, and the trusted base are listed in `formal/README.md` and
-`formal/AUDIT_2026-09-05.md`.  The toolchain and the Mathlib revision are
-pinned; do not run `lake update`.
+modules), and `Solution.lean` without warnings, and `Challenge.lean`, whose
+only warnings are the four for its `sorry` placeholders (the statements the
+comparator checks `Solution.lean` against).  It runs the axiom sweep over
+every declared constant of both libraries, checks that the sweep covered
+every module, and rejects any `sorry`, `native_decide` or `admit` in the
+libraries and any non-standard axiom; it ends with
+`CERTIFICATE CHECK PASSED`.  GitHub runs both scripts on every push
+(`.github/workflows/lean.yml`); the badge at the top shows the result for the
+latest commit.  The four main theorems, the definitions a reader should check
+by eye against the paper, and the trusted base are described in
+`formal/README.md`.  The toolchain and the Mathlib revision are pinned; do not
+run `lake update`.
 
 ## Verifying the files
 
@@ -176,8 +184,9 @@ sha256sum -c MANIFEST.sha256
 ## Data and licensing
 
 The code, data and Lean development are released under the Apache License
-2.0 (see `LICENSE`).  The text and figures of the paper in `paper/` are
-copyright the author.
+2.0 (see `LICENSE`).  The paper in `paper/`, text and figures, is released
+under the Creative Commons Attribution 4.0 International license (CC BY 4.0),
+as on arXiv.
 
 ## Citing
 

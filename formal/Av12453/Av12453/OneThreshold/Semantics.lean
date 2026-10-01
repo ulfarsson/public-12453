@@ -12,8 +12,8 @@ public import Av12453.OneThreshold.Invariant
 /-!
 # Semantics of the one-threshold scan: deferred letters and legal complete words
 
-This file proves theorems **(B)** and **(C)** of component 3a, the two directions of the
-scan's soundness for `d = 1` (`β₁ = 1342`, `0`-based `[0, 2, 3, 1]`):
+This file proves the two directions of the scan's soundness for `d = 1` (`β₁ = 1342`,
+`0`-based `[0, 2, 3, 1]`):
 
 * **(B)** `deferred_no_completion` : if the next letter `x` lies in a *deferred* interval
   `I_j`, `j ≥ 2`, of the stack of a legal prefix `σ`, then **every** permutation of
@@ -23,11 +23,11 @@ scan's soundness for `d = 1` (`β₁ = 1342`, `0`-based `[0, 2, 3, 1]`):
   word of full length is a `1342`-avoiding permutation.  So the scan admits no
   non-avoider.
 
-Both proofs run on the separation invariant of \cref{lem:separators}, which is
-theorem **(A)** (`Av12453.OneThreshold.sep_invariant`,
-proved in `Av12453.OneThreshold.Invariant`).  To keep the dependence explicit, the two
-arguments are first carried out from `SepInvariant n`, an abbreviation for the statement of
-(A), and only then specialised; the `_of_sep` versions therefore use no unproved result.
+Both proofs run on the separation invariant **(A)** of \cref{lem:separators}
+(`Av12453.OneThreshold.sep_invariant`, proved in `Av12453.OneThreshold.Invariant`).  To keep
+the dependence explicit, the two arguments are first carried out from `SepInvariant n`, an
+abbreviation for the statement of (A), and only then specialised; the `_of_sep` versions
+therefore take the invariant as a hypothesis.
 
 ## The two arguments
 
@@ -54,8 +54,7 @@ from `v` -- a contradiction.
 * `contains_beta_one_iff` : the index form of `1342`-containment.
 * `deferred_no_completion_of_sep`, `legal_avoids_of_sep` : (B) and (C) from the invariant.
 * `deferred_no_completion`, `legal_complete_avoids` : (B) and (C) with the invariant
-  discharged by `Av12453.OneThreshold.sep_invariant`; these are the statements frozen in
-  `Av12453.OneThreshold.Defs` during Phase 2.
+  discharged by `Av12453.OneThreshold.sep_invariant`.
 -/
 
 namespace Av12453
@@ -184,17 +183,16 @@ theorem exists_adjacent_around {n : ℕ} {τ : List ℕ} {lo hi b : ℕ} (hlo : 
 /-! ### The separation invariant as a hypothesis -/
 
 /--
-The statement of theorem **(A)**, `Av12453.OneThreshold.sep_invariant`
+The statement of the separation invariant **(A)**, `Av12453.OneThreshold.sep_invariant`
 (\cref{lem:separators}), packaged so that the arguments of this file can be run from
-it as an explicit hypothesis.  (Keeping (B) and (C) parametric in the invariant is what made
-them provable in parallel with (A); it also isolates them from any later change to the proof
-of (A).)
+it as an explicit hypothesis.  (Keeping (B) and (C) parametric in the invariant also
+isolates them from any change to the proof of (A).)
 -/
 def SepInvariant (n : ℕ) : Prop :=
   ∀ {σ : List ℕ} {u v : ℕ}, Legal n σ → Adjacent n σ u v → m n σ < u →
     (DiffIntervals n σ u v ↔ Sep n σ u v)
 
-/-- Theorem (A) as proved in `Av12453.OneThreshold.Invariant`. -/
+/-- The invariant (A) as proved in `Av12453.OneThreshold.Invariant`. -/
 theorem sepInvariant (n : ℕ) : SepInvariant n := fun hleg hadj hu => sep_invariant hleg hadj hu
 
 /-! ### (B) Deferred letters have no completion -/
@@ -276,8 +274,8 @@ theorem deferred_no_completion_of_sep (hA : SepInvariant n) (hleg : Legal n σ)
 
 /--
 **(C), from the invariant.**  Every legal prefix avoids `1342`.  (The completeness
-hypothesis `σ.length = n` of the interface statement is not needed: legality alone forbids
-an occurrence.)
+hypothesis `σ.length = n` of `legal_complete_avoids` below is not needed: legality alone
+forbids an occurrence.)
 -/
 theorem legal_avoids_of_sep (hA : SepInvariant n) (hleg : Legal n σ) : Avoids σ (beta 1) := by
   intro hcon

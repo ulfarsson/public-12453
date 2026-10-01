@@ -1,7 +1,7 @@
 """Shared residue-file I/O and validation for the Av(12453) n=300 harness.
 
-File format written/read by every tool in this directory ("the engine's own
-format" per the task brief):
+File format written/read by every tool in this directory (the format of the
+engine's --out file):
 
     # prime <P> <N>
     0 <residue_0>
@@ -9,8 +9,9 @@ format" per the task brief):
     ...
     N <residue_N>
 
-Exactly one header line, then exactly N+1 data lines for n = 0..N in order
-(blank lines are tolerated and skipped), each residue an integer in
+The header line comes first; further lines starting with '#' are skipped (the
+engine writes a second one, '# engine ...').  Then exactly N+1 data lines for
+n = 0..N (blank lines are tolerated and skipped), each residue an integer in
 [0, P).  This module is used by run_all.sh (as a CLI: `python3 residue_io.py
 check FILE [PRIME] [N]`), reconstruct.py, and compare_residues.py, so the
 format is defined and validated in exactly one place.

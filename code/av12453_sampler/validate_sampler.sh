@@ -1,6 +1,7 @@
 #!/bin/sh
-# validate.sh -- the full validation suite of SAMPLER_BRIEF.md, section
-# "Validation of the sampler".  Usage:  sh validate.sh [WORKDIR]
+# validate_sampler.sh -- the validation suite of the sampler (README.md, "Validation").
+# Needs the unscaled tables N40.avr, N60.avr, N100.avr, N150.avr that validate_tables.sh
+# builds.  Usage:  sh validate_sampler.sh [WORKDIR]
 # Writes its sample files into WORKDIR (default: ./_val), which may be large.
 set -e
 DIR=$(cd "$(dirname "$0")" && pwd)

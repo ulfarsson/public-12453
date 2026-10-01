@@ -42,7 +42,7 @@ def avoids_231(w):
 
 def triggers(w, d):
     """The values of the d-triggers of w: entries ending an increasing
-    d-subsequence (Section 2, first paragraph)."""
+    d-subsequence (Section 2, second paragraph)."""
     lis = C.lis_ending(w)
     return frozenset(v for v, l in zip(w, lis) if l >= d)
 
@@ -249,7 +249,7 @@ def result(statement, label, scope, checks, ok, detail, seconds):
 def check_trigger(nmax):
     """Lemma 2.1 (trigger lemma).  `A permutation pi avoids beta_d if and only
     if, for every increasing d-subsequence ending at c = pi_j, the word
-    pi_{j+1}...pi_n|_{x > pi_j} avoids 231 after standardization.'
+    pi_{j+1}...pi_n|_{x > pi_j} avoids 231.'
 
     Compared: membership of pi in Av_n(beta_d) as computed by permuta, versus
     the right-hand side evaluated directly -- for every d-trigger position j
@@ -447,10 +447,9 @@ def reachable_permutations(prefix, stack, n, d):
 
 
 def check_scan_states_c(nmax, ds=(1, 2, 3), rmax=6):
-    """Proposition 2.8(c).  `R(sigma) is the set of beta_d-avoiding
-    permutations of [n] with prefix sigma; in particular R(empty) = Av_n(beta_d),
-    and a word is legal if and only if it is a prefix of a beta_d-avoiding
-    permutation.'
+    """Proposition 2.8(c).  `A word is legal if and only if it is a prefix of a
+    beta_d-avoiding permutation.  In particular Av_n(beta_d) is the set of legal
+    permutations of [n].'
 
     Compared: (i) the set of words reachable from the initial state by legal
     moves, versus the set of all prefixes of the members of Av_n(beta_d) listed
@@ -486,15 +485,15 @@ def check_scan_states_c(nmax, ds=(1, 2, 3), rmax=6):
                           "have that prefix" % (d, n, prefix, len(got),
                                                 len(byprefix[prefix]))
     return result(
-        "Proposition 2.8(c) (R(sigma) is the set of avoiders with prefix sigma)",
+        "Proposition 2.8(c) (legal words are the prefixes of avoiders)",
         "prop:scan-states",
         "%s; the set of legal words compared with the set of prefixes of "
-        "Av_n(beta_d) for every n <= %d; and R(sigma) compared with the avoiders having "
-        "prefix sigma for every legal sigma when n <= %d, and for sigma empty at every "
-        "n <= %d" % (dlist(ds), nmax, rmax, nmax),
+        "Av_n(beta_d) for every n <= %d; and the legal permutations with prefix sigma "
+        "compared with the avoiders having prefix sigma for every legal sigma when "
+        "n <= %d, and for sigma empty at every n <= %d" % (dlist(ds), nmax, rmax, nmax),
         checks, bad is None,
-        bad or "legal words are exactly the prefixes of avoiders, and R(sigma) is "
-               "exactly the set of avoiders with prefix sigma",
+        bad or "legal words are exactly the prefixes of avoiders, and the legal "
+               "permutations with prefix sigma are exactly the avoiders with prefix sigma",
         time.time() - t0)
 
 

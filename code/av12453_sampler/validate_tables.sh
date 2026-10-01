@@ -1,6 +1,7 @@
 #!/bin/sh
-# validate.sh -- build the tables and run every check reported in REPORT.md.
-#   sh validate.sh [N ...]        (default: 60 100 150)
+# validate_tables.sh -- build the unscaled tables and run the table checks of README.md
+# ("Validation").
+#   sh validate_tables.sh [N ...]   (default: 60 100 150; N = 40 is always built)
 set -e
 DIR=$(cd "$(dirname "$0")" && pwd)
 cd "$DIR"

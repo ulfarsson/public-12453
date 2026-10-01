@@ -13,7 +13,7 @@ public import Av12453.OneThreshold.Counting
 @[expose] public section
 
 /-!
-# Component 4a, theorems 5 and 6: the kernel algorithm counts `1342`-avoiders
+# The kernel algorithm counts `1342`-avoiders
 
 This module closes the `d = 1` kernel algorithm of the subsection *The scalar kernel
 algorithm* of Section 2 of the paper *Protected tails and polynomial-time enumeration of
@@ -27,11 +27,9 @@ The single input from outside is the protected-tail factorization
 
     W p (ℓ :: L) = ∑ t ≤ p, K ℓ p t * W t L        (ℓ ≥ 1),
 
-which is theorem 4 of the component-4a brief (development notes, in git history) (`W_factor`,
-phase 2b,
-`KernelFactor.lean`).  It enters here only as the explicit hypothesis `hF` of
-`G_eq_W_of`/`av1342_count_kernel_of`, so that both theorems are axiom-clean; the
-integrator discharges it with `W_factor` (see the note at the end of this docstring).
+which is `W_factor` of `KernelFactor.lean`.  It enters the proofs of `G_eq_W_of` and
+`av1342_count_kernel_of` as the explicit hypothesis `hF`; the unconditional forms `G_eq_W`
+and `av1342_count_kernel` discharge it with `W_factor`.
 
 ## The proof
 
@@ -58,35 +56,25 @@ with `h` unread letters below it (`W_eq_nil` is \eqref{eq:W-boundary}).
 
 The paper's `∑_{t ≥ 0}` in \eqref{eq:scalar-G} and \eqref{eq:scalar-factorization} is the
 finite `∑_{t ≤ p}` of `G_eq` and of `hF` here; the two ranges agree by the upper half of
-\cref{lem:scalar-support} (`K_eq_zero_of_lt`, theorem 1), which is carried along as the
-hypothesis `hK0` for interface compatibility.  Because `G_eq` and `hF` are *already* stated
-on the truncated range `{0, …, p}`, and because those two ranges coincide (both are
-`Finset.range (h + 1)` at the base move to `h`), the argument below never has to extend a
-range: `hK0` is not used in the proof.  It is kept in the signature so that the frozen
-interface of the brief is respected and so that the integrator may supply it uniformly.
+\cref{lem:scalar-support} (`KernelSupport.K_eq_zero_of_lt`), which the `_of` forms carry as
+the hypothesis `hK0`.  Because `G_eq` and `hF` are *already* stated on the truncated range
+`{0, …, p}`, and because those two ranges coincide (both are `Finset.range (h + 1)` at the
+base move to `h`), the argument below never has to extend a range: `hK0` is not used in the
+proof.  The unconditional forms discharge it with `K_eq_zero_of_lt`.
 
 ## Main results
 
-* `G_eq_W_of` : **theorem 5**, `G p = W p ∅`, relative to the factorization `hF`.
-* `G_eq_W` : **theorem 5** with `hF` and `hK0` discharged by `KernelFactor.W_factor` and
+* `G_eq_W_of` : `G p = W p ∅`, relative to the factorization `hF`.
+* `G_eq_W` : the same, with `hF` and `hK0` discharged by `KernelFactor.W_factor` and
   `KernelSupport.K_eq_zero_of_lt`.
-* `av1342_count_kernel_of` : **theorem 6 and the goal of component 4a**,
-  `G n = |Av_n(1342)|`, relative to `hF`, from `G_eq_W_of` and
+* `av1342_count_kernel_of` : `G n = |Av_n(1342)|`, relative to `hF`, from `G_eq_W_of` and
   `Av12453.OneThreshold.av1342_count`.
-* `av1342_count_kernel` : **the goal of component 4a**, unconditionally.
-* `G_five_kernel_rows`, `G_five_grouped`, `G_five`, and the grade-`3` part `G_four_kernel_rows`,
-  `G_four` : the arithmetic of
-  \cref{ex:scalar-kernel}, *From kernel rows to `|Av₄(1342)|`*, derived from `G_eq` and the
-  three kernel rows.
-
-## Integration (phase 3)
-
-`W_factor` (theorem 4, `KernelFactor.lean`) and `K_eq_zero_of_lt` (theorem 1,
-`KernelSupport.lean`) are now imported, so the two hypotheses are discharged here and the
-unconditional `G_eq_W` and `av1342_count_kernel` are stated below, immediately after the
-`_of` forms whose proofs they reuse verbatim.  The scaffolding module
-`KernelInterface.lean`, which held the six frozen placeholder statements of phase 1, has been
-deleted.
+* `av1342_count_kernel` : `G n = |Av_n(1342)|`, unconditionally.
+* `G_five_kernel_rows`, `G_five_grouped`, `G_five` : the expansion of `G_5` from the kernel
+  rows of grade `4`, and the value `G_5 = 103`, as in \cref{ex:scalar-kernel}, *From kernel
+  rows to `|Av₅(1342)|`*.
+* `G_four_kernel_rows`, `G_four_grouped`, `G_four` : the check of the value `G_4 = 23`, which
+  the example takes as known, from `G_eq` and the three kernel rows of grade `3`.
 -/
 
 namespace Av12453
@@ -97,9 +85,9 @@ open PermPatterns
 /-! ### The hypotheses
 
 `ScalarFactorization` is \eqref{eq:scalar-factorization} and `KernelSupportUpper` is the
-upper half of \cref{lem:scalar-support}; they are theorems 4 and 1 of the brief, proved in
-the sibling modules `KernelFactor.lean` and `KernelSupport.lean`.  Stating them as
-hypotheses keeps this module independent of those proofs. -/
+upper half of \cref{lem:scalar-support}.  They are proved in `KernelFactor.lean`
+(`W_factor`) and `KernelSupport.lean` (`K_eq_zero_of_lt`).  Stating them as hypotheses keeps
+the `_of` forms below independent of those proofs. -/
 
 /-- **\eqref{eq:scalar-factorization}** as a hypothesis: the protected-tail factorization of
 the literal recurrence `W` through the scalar kernel `K`.  Discharged by `W_factor`. -/
@@ -111,18 +99,17 @@ def ScalarFactorization : Prop :=
 vanishes above its source control.  Discharged by `K_eq_zero_of_lt`. -/
 def KernelSupportUpper : Prop := ∀ ℓ p t : ℕ, p < t → K ℓ p t = 0
 
-/-! ### Theorem 5: the kernel values are the empty-stack values -/
+/-! ### The kernel values are the empty-stack values -/
 
 set_option linter.unusedVariables false in
 /--
-**Theorem 5** (\eqref{eq:scalar-G}, first half): the empty-stack values `G_p` computed from
-the kernel table alone agree with the literal one-threshold recurrence at the empty stack,
-`G_p = W_p(∅)`.
+**The kernel values are the empty-stack values** (\eqref{eq:scalar-G}, first half): the
+empty-stack values `G_p` computed from the kernel table alone agree with the literal
+one-threshold recurrence at the empty stack, `G_p = W_p(∅)`.
 
-Relative to the factorization `hF` (\eqref{eq:scalar-factorization}, theorem 4) and, for
-interface compatibility only, the support bound `hK0` (\cref{lem:scalar-support}, theorem
-1); `hK0` is not needed, because `G_eq` and `hF` are both already stated on the truncated
-range `Finset.range (p + 1)`.
+Relative to the factorization `hF` (\eqref{eq:scalar-factorization}) and the support bound
+`hK0` (\cref{lem:scalar-support}).  The hypothesis `hK0` is not used, because `G_eq` and `hF`
+are both already stated on the truncated range `Finset.range (p + 1)`.
 -/
 theorem G_eq_W_of (hF : ScalarFactorization) (hK0 : KernelSupportUpper) :
     ∀ p : ℕ, G p = W p [] := by
@@ -155,9 +142,8 @@ theorem G_eq_W_of (hF : ScalarFactorization) (hK0 : KernelSupportUpper) :
       rw [nz_singleton, if_neg (by omega)]
       exact (hF (p - 1 - h) h [] hpos).symm
 
-/-- The frozen signature of the component-4a brief (development notes, in git history) is met
-verbatim: `G_eq_W_of`
-applies to the two hypotheses written out, without the abbreviations above. -/
+/-- Statement check: the abbreviations `ScalarFactorization` and `KernelSupportUpper` unfold
+to the two hypotheses written out here, so `G_eq_W_of` applies to them. -/
 example
     (hF : ∀ (ℓ p : ℕ) (L : List ℕ), 1 ≤ ℓ →
       W p (ℓ :: L) = ∑ t ∈ Finset.range (p + 1), K ℓ p t * W t L)
@@ -165,40 +151,40 @@ example
     G p = W p [] :=
   G_eq_W_of hF hK0 p
 
-/-- **Theorem 5** (\eqref{eq:scalar-G}, first half), unconditionally: the empty-stack values
-computed from the kernel table alone agree with the literal one-threshold recurrence at the
-empty stack.  The two hypotheses of `G_eq_W_of` are `KernelFactor.W_factor`
-(\eqref{eq:scalar-factorization}) and `KernelSupport.K_eq_zero_of_lt` (the upper half of
-\cref{lem:scalar-support}). -/
+/-- **The kernel values are the empty-stack values** (\eqref{eq:scalar-G}, first half),
+unconditionally: the empty-stack values computed from the kernel table alone agree with the
+literal one-threshold recurrence at the empty stack.  The two hypotheses of `G_eq_W_of` are
+`KernelFactor.W_factor` (\eqref{eq:scalar-factorization}) and `KernelSupport.K_eq_zero_of_lt`
+(the upper half of \cref{lem:scalar-support}). -/
 theorem G_eq_W (p : ℕ) : G p = W p [] :=
   G_eq_W_of (fun _ℓ p L hℓ => W_factor hℓ p L) (fun _ _ _ h => K_eq_zero_of_lt h) p
 
-/-! ### Theorem 6: the goal of component 4a -/
+/-! ### The kernel algorithm counts the avoiders -/
 
 set_option linter.unusedVariables false in
 /--
-**Theorem 6, the goal of component 4a** (\eqref{eq:scalar-G}, `|Av_n(1342)| = G_n`, and the
-correctness half of \cref{thm:scalar-algorithm}): the number computed by the scalar kernel
-algorithm is the number of `1342`-avoiding permutations of `{0, …, n-1}`.
+**The kernel algorithm counts the `1342`-avoiders** (\eqref{eq:scalar-G},
+`|Av_n(1342)| = G_n`, and the correctness half of \cref{thm:scalar-algorithm}): the number
+computed by the scalar kernel algorithm is the number of `1342`-avoiding permutations of
+`{0, …, n-1}`.
 
-Relative to the factorization `hF` (theorem 4) and, unused, the support bound `hK0`
-(theorem 1); everything else -- that `W` counts the avoiders -- is `av1342_count`, the goal
-of component 3a.
+Relative to the factorization `hF` and, unused, the support bound `hK0`.  Everything else,
+that `W` counts the avoiders, is `av1342_count`.
 -/
 theorem av1342_count_kernel_of (hF : ScalarFactorization) (hK0 : KernelSupportUpper)
     (n : ℕ) : G n = (avoiders n {beta 1}).card :=
   (G_eq_W_of hF hK0 n).trans (av1342_count n)
 
 /--
-**The goal of component 4a**, unconditionally (\eqref{eq:scalar-G}, `|Av_n(1342)| = G_n`,
-and the correctness half of \cref{thm:scalar-algorithm}): the number `G n` computed from the
-scalar kernel table `K` by \eqref{eq:scalar-G} is the number of `1342`-avoiding permutations
-of `{0, …, n-1}`.
+**The kernel algorithm counts the `1342`-avoiders**, unconditionally (\eqref{eq:scalar-G},
+`|Av_n(1342)| = G_n`, and the correctness half of \cref{thm:scalar-algorithm}): the number
+`G n` computed from the scalar kernel table `K` by \eqref{eq:scalar-G} is the number of
+`1342`-avoiding permutations of `{0, …, n-1}`.
 
 The kernel table is the only input: `G n` is evaluated from `K` alone (`Kernel.G_eq`), the
 rows `K_ℓ(p, ·)` are supported in `{0, …, p}` (`KernelSupport.K_eq_zero_of_lt`), the literal
 recurrence factors through them (`KernelFactor.W_factor`), and `W` counts the avoiders
-(`Counting.av1342_count`, component 3a).
+(`Counting.av1342_count`).
 -/
 theorem av1342_count_kernel (n : ℕ) : G n = (avoiders n {beta 1}).card :=
   av1342_count_kernel_of (fun _ℓ p L hℓ => W_factor hℓ p L)
@@ -206,8 +192,10 @@ theorem av1342_count_kernel (n : ℕ) : G n = (avoiders n {beta 1}).card :=
 
 /-! ### \cref{ex:scalar-kernel}: from kernel rows to `|Av₅(1342)|`
 
-The paper's worked example, in two steps.  The grade-`3` rows give `G_4 = 23`, which the
-example uses as input, and the grade-`4` rows then give `G_5 = 103`.
+The paper's example lists the kernel rows of grade at most `4`, takes
+`(G_0, …, G_4) = (1, 1, 2, 6, 23)` as known, and expands `G_5` by \eqref{eq:scalar-G}.  The
+checks below proceed in two steps: the grade-`3` rows give the value `G_4 = 23` that the
+example takes as known, and the grade-`4` rows then give `G_5 = 103`.
 `G_four_kernel_rows` is \eqref{eq:scalar-G} at `p = 4` written
 out, one group per base letter `h = 0, 1, 2, 3`; substituting the three kernel rows
 `K_3(0, ·) = (5)`, `K_2(1, ·) = (4, 2)`, `K_1(2, ·) = (3, 1, 1)` -- the `h = 3` group uses
@@ -235,8 +223,9 @@ set_option maxRecDepth 10000 in
 /-- The kernel row `K_1(2, ·) = (3, 1, 1)` of \cref{ex:scalar-kernel}. -/
 theorem K_row_one_two : K 1 2 0 = 3 ∧ K 1 2 1 = 1 ∧ K 1 2 2 = 1 := by decide
 
-/-- The paper's display
-`G_4 = 5G_0 + (4G_0 + 2G_1) + (3G_0 + G_1 + G_2) + G_3` (\cref{ex:scalar-kernel}). -/
+/-- The expansion of `G_4` by \eqref{eq:scalar-G} with the kernel rows of grade `3`
+substituted: `G_4 = 5G_0 + (4G_0 + 2G_1) + (3G_0 + G_1 + G_2) + G_3`.  It is used to check
+the value `G_4 = 23` that \cref{ex:scalar-kernel} takes as known. -/
 theorem G_four_grouped :
     G 4 = 5 * G 0 + (4 * G 0 + 2 * G 1) + (3 * G 0 + G 1 + G 2) + G 3 := by
   rw [G_four_kernel_rows, K_row_three_zero, K_row_two_one.1, K_row_two_one.2,
@@ -246,8 +235,8 @@ set_option maxRecDepth 10000 in
 /-- `(G_0, G_1, G_2, G_3) = (1, 1, 2, 6)` (\cref{ex:scalar-kernel}). -/
 theorem G_zero_three : (G 0, G 1, G 2, G 3) = (1, 1, 2, 6) := by decide
 
-/-- `|Av₄(1342)| = G_4 = 5 + 6 + 6 + 6 = 23` (\cref{ex:scalar-kernel}), derived from
-`G_four_grouped` and `G_zero_three` rather than by evaluating `G 4`. -/
+/-- `|Av₄(1342)| = G_4 = 5 + 6 + 6 + 6 = 23`, the value that \cref{ex:scalar-kernel} takes as
+known, derived from `G_four_grouped` and `G_zero_three` rather than by evaluating `G 4`. -/
 theorem G_four : G 4 = 23 := by
   have h := G_zero_three
   rw [Prod.ext_iff, Prod.ext_iff, Prod.ext_iff] at h

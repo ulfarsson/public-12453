@@ -10,13 +10,13 @@ file of samples (one permutation per line, values 1..n) and compares the
 empirical distribution with those exact probabilities, merging neighbouring
 bins so that every expected count is >= 5.  It also prints a few summary
 statistics of the samples.  No numpy/scipy: the regularized incomplete gamma
-is implemented here.
+is implemented here.  Works with AVR1 and AVR2 tables (the probabilities are
+formed with AvrTable.g_ratio, which applies the scale factor of an AVR2 table).
 
-    pypy3 firstletter_test.py --table ../tables/N150.avr --n 150 --in samples.txt
+    pypy3 firstletter_test.py --table N150.avr --n 150 --in samples.txt
 """
-import sys, os, math, argparse
+import sys, math, argparse
 
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "tables"))
 from avr_table import AvrTable
 
 
@@ -107,10 +107,11 @@ def main():
     if m == 0:
         sys.exit("no samples")
 
-    tot = T.G(n, 0)
+    # G_{(k-1,n-k)} has mass n-1 and G_{(n,0)} mass n, so on an AVR2 table the
+    # ratio of the stored values needs the factor 2^{-scale}; g_ratio applies it.
     prob = [0.0] * (n + 1)
     for k in range(1, n + 1):
-        prob[k] = T.G(k - 1, n - k) / tot
+        prob[k] = T.g_ratio(k - 1, n - k, n, 0)
     s = sum(prob[1:])
     print("samples: %d   sum of exact probabilities = %.15f (should be 1)" % (m, s))
 

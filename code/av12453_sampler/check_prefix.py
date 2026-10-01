@@ -1,12 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""check_prefix.py -- consistency of two AVR1 tables of different N.
+"""check_prefix.py -- consistency of two tables of different N and the same format.
 
 R_{l,a}(q,s) and G_{(p,q)} do not depend on N: the recurrence for a row uses
 only rows of strictly smaller reduced grade, in a fixed summation order.  So a
 table built at N1 must be *bit-identical* to the table built at N2 >= N1 on
 every entry both of them store.  This is an end-to-end check of the layout
 arithmetic as well as of the arithmetic itself.
+
+The stored doubles are compared directly, so both tables must have the same
+format: two AVR1 tables, or two AVR2 tables with the same scale.  The script
+refuses a mixed pair; avr_cmp compares tables of any mix of formats.
 
     pypy3 check_prefix.py SMALL.avr BIG.avr
 """
@@ -17,6 +21,9 @@ from avr_table import AvrTable, slen
 def main(argv):
     A = AvrTable(argv[0])
     B = AvrTable(argv[1])
+    if A.scale != B.scale:
+        sys.exit("check_prefix.py: the tables have scales %d and %d; compare tables "
+                 "of different formats with avr_cmp" % (A.scale, B.scale))
     if A.N > B.N:
         A, B = B, A
     nR = nG = 0

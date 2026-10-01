@@ -7,7 +7,7 @@ Modes (auto-detected from each file's first non-blank line):
     must match (comparing residues mod different primes is not meaningful);
     N may differ, comparison runs over n = 0..min(N_a, N_b).
   * one file is a residue file, the other is a plain "n value" file with
-    exact (unreduced) integer values, e.g. repo/code/data/av12453_terms_*
+    exact (unreduced) integer values, e.g. code/data/av12453_terms_*
     -- the plain file's values are reduced mod the residue file's prime
     before comparing, over n = 0..min(N, max plain n).
 
@@ -17,7 +17,7 @@ one only when --all is given, in which case every disagreement is listed).
 
 Usage:
   python3 compare_residues.py residues/123457.txt residues_old/123457.txt
-  python3 compare_residues.py residues/123457.txt repo/code/data/av12453_terms_0_150.txt
+  python3 compare_residues.py residues/123457.txt code/data/av12453_terms_0_150.txt
 """
 
 from __future__ import annotations

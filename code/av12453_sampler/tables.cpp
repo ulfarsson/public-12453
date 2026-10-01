@@ -2,10 +2,11 @@
 // for Av(12453), written in the "AVR1" (unscaled) or "AVR2" (power-of-two
 // scaled) binary format.
 //
-// Mathematics: paper/av12453_polytime.tex, Sections 5 and 7, as restated in
-// SAMPLER_BRIEF.md.  Everything is evaluated by the *direct* reduced
-// recurrence in increasing reduced grade w = l+a+q; no evaluation/
-// interpolation scheme is used (that is unstable in floating point).
+// Mathematics: paper/av12453_polytime.tex, Sections 5 and 7 (eq:R-recurrence)
+// and the empty-stack recurrence eq:G-reduced of Appendix A.  Everything is
+// evaluated by the *direct* reduced recurrence in increasing reduced grade
+// w = l+a+q; no evaluation/interpolation scheme is used (that is unstable in
+// floating point).
 //
 //   slen(a,q) = q+1            if a = 0          (support {0..q})
 //             = a+q            if a >= 1         (support {0..a+q-1})

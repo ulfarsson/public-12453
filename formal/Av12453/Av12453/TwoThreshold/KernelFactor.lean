@@ -34,7 +34,9 @@ first-move partition that proves \cref{prop:kernel-recurrence}.
 ## The proof
 
 `Defs.H_eq_cons` (\eqref{eq:H}) and `Kernel.K_succ_eq` (\eqref{eq:K}) split the same first
-move into the same **four** groups, and the induction matches them group by group.  The
+move into the same **four** groups -- the early-band sum, the last-band sum, and the endpoint
+and interior terms into which the Lean development splits the third line of each display --
+and the induction matches them group by group.  The
 induction is on the *grade* `w = ‖𝐩‖₁ + ℓ` of `sec:algorithm`, the paper's topological
 order for the kernel dependencies, and it is generalized over the protected tail `L` (the
 split group needs the statement at the longer tail `(b)L`); the tail is not part of the
@@ -62,18 +64,17 @@ touch it.
 
 ## Main results
 
-* `H_factor` : **\eqref{eq:factorization}**, theorem 3 of the component-4b brief
-(development notes, in git history).
+* `H_factor` : **\eqref{eq:factorization}**.
 * `H_factor_zero` : the `ℓ = 0` reading `H_𝐩(L) = ∑_{𝐭 ∈ S 𝐩} K_0(𝐩, 𝐭) H_𝐭(L)`, i.e. that
-  the boundary kernel `K_0` is an identity.  Together with `H_factor` this covers every
+  the identity kernel `K_0` sums out.  Together with `H_factor` this covers every
   `ℓ ≥ 0`; it is the form \cref{cor:empty-stack-recurrence} uses for `δ_h = 0`.
 * `H_factor_ctrls` : the same with the paper's own unrestricted summation range, read
   finitarily as `ctrls M` for an arbitrary `M ≥ ‖𝐩‖₁`.
 * `K_eq_zero_of_fst_zero`, `K_fst_zero`, `K_layer_zero` : the cross-link with the `d = 1`
-  kernel of `Av12453.OneThreshold` (theorem 6 of the brief, the notes' layer identity
-  `R_{ℓ,0} = K_ℓ`): a source control with an empty early band reaches no terminal control
-  with a nonempty early band, and on the layer `p₀ = t₀ = 0` the `d = 2` kernel *is* the
-  `d = 1` kernel.
+  kernel of `Av12453.OneThreshold` (the identity `R_{ℓ,0} = K_ℓ` in the notation
+  `R_{ℓ,a}(q,s) = K_ℓ((a,q),(0,s))` of \eqref{eq:R-definition}): a source control with an
+  empty early band reaches no terminal control with a nonempty early band, and on the layer
+  `p₀ = t₀ = 0` the `d = 2` kernel *is* the `d = 1` kernel.
 -/
 
 namespace Av12453
@@ -195,8 +196,8 @@ theorem H_factor {ℓ : ℕ} (hℓ : 1 ≤ ℓ) (p : ℕ × ℕ) (L : List ℕ) 
     H p (ℓ :: L) = ∑ t ∈ S p, K ℓ p t * H t L :=
   H_factor_aux (p.1 + p.2 + ℓ) p ℓ L le_rfl hℓ
 
-/-- The `ℓ = 0` reading of \eqref{eq:factorization}: the boundary kernel
-`K_0(𝐩, ·) = 1_{𝐩 = ·}` is an identity, so the factorization at `ℓ = 0` is the tautology
+/-- The `ℓ = 0` reading of \eqref{eq:factorization}: the identity kernel
+`K_0(𝐩, ·) = 1_{𝐩 = ·}` sums out, so the factorization at `ℓ = 0` is the tautology
 `H_𝐩(L) = H_𝐩(L)`.  Together with `H_factor` this covers every `ℓ ≥ 0`, and it is the
 instance \cref{cor:empty-stack-recurrence} appeals to when `δ_h = 0`. -/
 theorem H_factor_zero (p : ℕ × ℕ) (L : List ℕ) :
@@ -220,9 +221,9 @@ theorem H_factor_zero_ctrls (p : ℕ × ℕ) (L : List ℕ) {M : ℕ} (hM : p.1 
 
 The controls `(0, q)` carry no early band (`T_{0,h}` ranges over `h < p₀ = 0`), so
 \eqref{eq:K} at such a control is literally the `d = 1` recurrence \eqref{eq:scalar-K} in
-the second coordinate.  This is theorem 6 of the component-4b brief (development notes,
-in git history) and the notes'
-layer identity `R_{ℓ,0} = K_ℓ`.  Two statements, proved by the same grade induction:
+the second coordinate.  In the notation `R_{ℓ,a}(q,s) = K_ℓ((a,q),(0,s))` of
+\eqref{eq:R-definition} this is the identity `R_{ℓ,0} = K_ℓ`.  Two statements, proved by
+the same grade induction:
 
 * `K_fst_zero` : `K_ℓ((0,q), (t₀+1, s)) = 0` — a source control with an empty early band
   reaches no terminal control with a nonempty early band.  (This is *not* a consequence of
@@ -279,7 +280,8 @@ theorem K_eq_zero_of_fst_zero {ℓ : ℕ} {p t : ℕ × ℕ} (hp : p.1 = 0) (ht 
     K ℓ p t = 0 :=
   K_eq_zero_of_fst_zero_aux (p.1 + p.2 + ℓ) ℓ p t le_rfl hp ht
 
-/-- **Theorem 6, second half**: `K_ℓ((0,q), (t₀+1, s)) = 0`. -/
+/-- A source control with an empty early band reaches no terminal control with a nonempty
+early band: `K_ℓ((0,q), (t₀+1, s)) = 0`. -/
 theorem K_fst_zero (ℓ q s t1 : ℕ) : K ℓ (0, q) (t1 + 1, s) = 0 :=
   K_eq_zero_of_fst_zero rfl (Nat.le_add_left 1 t1)
 
@@ -368,24 +370,23 @@ private theorem K_layer_zero_aux : ∀ N ℓ q s, q + ℓ ≤ N →
       rw [hK, OneThreshold.K_succ_eq (Nat.le_add_left 1 j) q s, Finset.range_zero,
         Finset.sum_empty, Nat.zero_add, e1, e2, Finset.sum_congr rfl e3]
 
-/-- **Theorem 6, first half** (the notes' layer identity `R_{ℓ,0} = K_ℓ`): on the layer
-`p₀ = t₀ = 0` the `d = 2` transfer kernel of \eqref{eq:K} *is* the `d = 1` scalar kernel of
-\eqref{eq:scalar-K}.  Both sides are defined by their own recurrences, so this is a proved
-identification of the two tables, not a definitional one. -/
+/-- **The layer identity `R_{ℓ,0} = K_ℓ`**: on the layer `p₀ = t₀ = 0` the `d = 2` transfer
+kernel of \eqref{eq:K} *is* the `d = 1` scalar kernel of \eqref{eq:scalar-K}.  Both sides
+are defined by their own recurrences, so this is a proved identification of the two tables,
+not a definitional one. -/
 theorem K_layer_zero (ℓ q s : ℕ) : K ℓ (0, q) (0, s) = OneThreshold.K ℓ q s :=
   K_layer_zero_aux (q + ℓ) ℓ q s le_rfl
 
-/-! ### Interface and sanity checks
+/-! ### Statement and sanity checks
 
 The first two `example`s fix the statements of `H_factor` and `H_factor_zero` at compile
-time: they are exactly the frozen statements of theorem 3 of
-the component-4b brief (development notes, in git history)
-(`TwoThreshold/KernelInterface.lean`), so any later drift in
+time, in the form of \eqref{eq:factorization} with the index set `S 𝐩`, so any later drift in
 the binders or in the index set is caught here.  The `decide` checks below evaluate both
 sides of \eqref{eq:factorization} in the kernel, on protected tails of length `0`, `1` and
 `2` and at four different source controls; they add no axiom. -/
 
-/-- Statement check: `H_factor` has exactly the frozen type of theorem 3 of the brief. -/
+/-- Statement check: `H_factor` has exactly the type of \eqref{eq:factorization} with the
+index set `S 𝐩`. -/
 example : ∀ {ℓ : ℕ}, 1 ≤ ℓ → ∀ (p : ℕ × ℕ) (L : List ℕ),
     H p (ℓ :: L) = ∑ t ∈ S p, K ℓ p t * H t L := @H_factor
 
@@ -393,7 +394,8 @@ example : ∀ {ℓ : ℕ}, 1 ≤ ℓ → ∀ (p : ℕ × ℕ) (L : List ℕ),
 example : ∀ (p : ℕ × ℕ) (L : List ℕ),
     H p L = ∑ t ∈ S p, K 0 p t * H t L := @H_factor_zero
 
-/-- Statement check: the two halves of theorem 6 of the brief, in the brief's own shape. -/
+/-- Statement check: `K_layer_zero` and (in the next `example`) `K_fst_zero`, in explicit
+form. -/
 example : ∀ (l q s : ℕ), K l (0, q) (0, s) = OneThreshold.K l q s := K_layer_zero
 
 example : ∀ (l q s t1 : ℕ), K l (0, q) (t1 + 1, s) = 0 := K_fst_zero

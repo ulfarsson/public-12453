@@ -2,12 +2,13 @@
 """Prime selection for the Av(12453) n=300 CRT reconstruction.
 
 1. Computes b_m = |Av_m(1342)| from Bona's series and B_N = sum_m C(N,m)^2 b_m
-   (bona_bound.py; own exact derivation, verified against the brief's
-   quoted b_0..b_8 and against B_150 = 558 bits).
+   (bona_bound.py; own exact derivation, checked against the known values
+   b_0..b_8 = 1, 1, 2, 6, 23, 103, 512, 2740, 15485 and against
+   B_150 = 558 bits).
 2. Sieves the primes below 2^16 (u16-storage build) and below 2^21
-   (u32-storage build; the brief's design (a) uses primes p < 2^21 stored as
-   u32, design (b) uses p < 2^16 stored as u16 -- file names below follow
-   that storage-width convention, not the primes' own bit length).
+   (u32-storage build: primes p < 2^21 stored as u32; the u16 build uses
+   p < 2^16 stored as u16 -- file names below follow that storage-width
+   convention, not the primes' own bit length).
 3. For N=300, finds the minimum count of each size whose product exceeds
    B_300 (greedy from the largest available prime down: for a target
    "count of factors needed to exceed a bound", taking the k largest
@@ -28,7 +29,7 @@ from pathlib import Path
 from bona_bound import av1342_counts, injection_bound, injection_bounds, self_check
 
 U16_LIMIT = 1 << 16
-U32_BUILD_LIMIT = 1 << 21  # design (a): p < 2^21, stored as u32
+U32_BUILD_LIMIT = 1 << 21  # u32-storage build: p < 2^21, stored as u32
 
 
 def sieve_primes_below(limit: int) -> list[int]:

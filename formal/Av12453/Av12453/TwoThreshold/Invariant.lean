@@ -10,16 +10,16 @@ public import Av12453.TwoThreshold.Defs
 @[expose] public section
 
 /-!
-# (A) The separation invariant of the two-threshold scan
+# The separation invariant of the two-threshold scan
 
-This file proves theorem (A) of component 3b: the separation criterion of
-\cref{cor:separators} (i) ⟺ (ii) at `d = 2` holds at every legal prefix.  For a legal prefix
-`σ`, adjacent unread values `u < v` above the second threshold `b₂` lie in different
-intervals of the interval stack if and only if some letter `z` with `u < z < v` was read
-after a `2`-trigger `c < u`.
+This file proves that the separation criterion of \cref{cor:separators} (i) ⟺ (ii) at
+`d = 2` holds at every legal prefix.  For a legal prefix `σ`, adjacent unread values
+`u < v` above the second threshold `b₂` lie in different intervals of the interval stack if
+and only if some letter `z` with `u < z < v` was read after a `2`-trigger `c < u`.
 
-The proof is the induction of the paper along the scan (`cor:separators`, the paragraph
-beginning "For (i) implies (ii)"), in the three cases of the two-threshold scan:
+The proof follows the induction along the legal moves that proves \cref{lem:separators}.
+Its three cases (non-trigger move, merger, split) are here the three kinds of move of the
+two-threshold scan:
 
 * **Early-band move** (`x < b₁`, the case with no `d = 1` analogue).  Neither threshold
   above `x` nor the stack changes, `x` is not a `2`-trigger of the extended prefix (nothing
@@ -42,8 +42,7 @@ beginning "For (i) implies (ii)"), in the three cases of the two-threshold scan:
 
 * `isTrigger_two_append_singleton` : the `2`-triggers of `τ ++ [x]`.
 * `sep_succ_iff` : how `Sep` changes when one more letter is read.
-* `sep_invariant` : theorem (A), the statement frozen for phase 2 of component 3b
-  during Phase 2.
+* `sep_invariant` : the separation criterion at every legal prefix.
 * `sepInvariant` : the same statement packaged as `SepInvariant n`, for the `_of` variants
   of the sibling modules.
 -/
@@ -338,19 +337,18 @@ private theorem sep_invariant_aux (n : ℕ) : ∀ (σ : List ℕ), Legal n σ �
           exact hihτ
 
 /--
-**(A) The separation invariant** (\cref{cor:separators} (i) ⟺ (ii) at `d = 2`).  For a legal
+**The separation invariant** (\cref{cor:separators} (i) ⟺ (ii) at `d = 2`).  For a legal
 prefix and adjacent unread values `u < v` above the second threshold `b₂`, `u` and `v` lie in
 different intervals of the stack if and only if some letter between them was read after a
 `2`-trigger below `u`.
-
-This is verbatim the statement frozen for the three phase-2 provers of component 3b.
 -/
 theorem sep_invariant (hleg : Legal n σ) (hadj : Adjacent n σ u v) (hu : b2 n σ < u) :
     DiffIntervals n σ u v ↔ Sep n σ u v :=
   sep_invariant_aux n σ hleg u v hadj hu
 
-/-- Theorem (A) packaged as the hypothesis `SepInvariant n` of `TwoThreshold/Defs.lean`, so
-that the `_of` variants of the sibling modules can be discharged with it. -/
+/-- The separation invariant packaged as the hypothesis `SepInvariant n` of
+`TwoThreshold/Defs.lean`, so that the `_of` variants of the later modules can be discharged
+with it. -/
 theorem sepInvariant (n : ℕ) : SepInvariant n :=
   fun hleg hadj hu => sep_invariant hleg hadj hu
 

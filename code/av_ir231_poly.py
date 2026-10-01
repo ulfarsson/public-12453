@@ -17,8 +17,8 @@ The literal states H_p(L) have exponentially many possible stacks.  This
 implementation eliminates the stack with sparse transfer kernels.  For
 ell>0, K[p,ell][t] counts the ways to process everything before a marked
 old stack tail, starting with control p and active head ell, and to expose
-that unchanged tail with control t.  All dependencies have total rank one
-less, where
+that unchanged tail with control t.  All dependencies have strictly smaller
+total rank, where
 
     rank(p,ell) = sum(p) + ell,
 
@@ -88,8 +88,10 @@ def count_avoiders(max_n: int, r: int) -> Tuple[list[int], int, int]:
 
     kernels: Dict[KernelKey, Row] = {}
 
-    # Every term on the right has rank one less.  For a fixed rank, ell and
-    # the weak composition p therefore may be visited in any order.
+    # Every term on the right has strictly smaller rank: one less for the
+    # band and endpoint terms, and possibly less by more than one for the two
+    # factors of a split.  For a fixed rank, ell and the weak composition p
+    # therefore may be visited in any order.
     for rank in range(1, max_n + 1):
         for ell in range(1, rank + 1):
             control_weight = rank - ell

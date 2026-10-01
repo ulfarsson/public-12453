@@ -16,7 +16,7 @@ This file proves \cref{lem:support} (*Kernel support*) of the section *The famil
 and its complexity* (`sec:algorithm`) of the paper *Protected tails and polynomial-time
 enumeration of permutations avoiding a direct sum of an increasing pattern and 231*,
 specialized to `d = 2`, together with the range-extension
-lemmas that the two phase-2 modules (`KernelFactor.lean`, `KernelCount.lean`) need in order
+lemmas that `KernelFactor.lean` and `KernelCount.lean` need in order
 to align the truncated index sets of `Kernel.lean` with each other and with the paper's
 unrestricted sums.
 
@@ -54,26 +54,27 @@ kernel source, the topological order of \eqref{eq:K} that `Kernel.lean` uses as 
   `‖𝐮‖₁ < ‖𝐩‖₁` the right factor vanishes by `K_eq_zero_of_mass_lt`, if `𝐮 = 𝐩` the right
   factor vanishes by the induction hypothesis, and otherwise (`𝐮 ≠ 𝐩` and `‖𝐩‖₁ ≤ ‖𝐮‖₁`)
   the left factor vanishes by the induction hypothesis.  That case split is exactly the
-  paper's "if no base move occurs the terminal control is `𝐩`, and if at least one base move
-  occurs the terminal control has mass at most `‖𝐩‖₁ - 1`", composed along a split.
+  dichotomy that a stopped path with no base move ends at `𝐩`, and one with at least one
+  base move ends at mass at most `‖𝐩‖₁ - 1`, composed along a split.
 
 ## Main results
 
-* `K_eq_zero_of_mass_lt`, `K_support` : \cref{lem:support}, theorems 1 and 2 of
-  the component-4b brief (development notes, in git history).
+* `K_eq_zero_of_mass_lt`, `K_support` : \cref{lem:support}, the mass half and the support
+  bound \eqref{eq:support}.
 * `K_eq_zero_of_not_mem_S`, `mem_S_of_K_ne_zero` : the same bound phrased through `S 𝐩`.
 * `K_sum_extend`, `K_sum_extend_left` and their `S`-to-`S` and general-`Finset` variants: a
   sum against the kernel row `K_ℓ(𝐩, ·)` may be taken over any finite set of controls
-  containing `S 𝐩`, because the omitted summands vanish.  These are what let a phase-2 proof
-  align a sum over `S 𝐩'` (for a control `𝐩'` of smaller mass, produced by a band move or by
-  a split) with a sum over `S 𝐩`.
+  containing `S 𝐩`, because the omitted summands vanish.  These are what let the proof of
+  the factorization align a sum over `S 𝐩'` (for a control `𝐩'` of smaller mass, produced by
+  a band move or by a split) with a sum over `S 𝐩`.
 * `self_mem_ctrls`, `self_mem_S`, `sum_S_ite`, `K_zero_sum`, `D_one_sum`, `sum_ctrls_ite`,
-  `K_zero_sum_ctrls` : the `Finset` facts about the index sets that phase 2 needs, in
-  particular that an indicator `1_{𝐩 = ·}` sums out of a sum over `S 𝐩` -- which is how the
-  boundary kernel `K_0` acts as the identity (\cref{cor:empty-stack-recurrence}'s "the
-  identity kernel `K_0` handles `δ_h = 0`", and the `ℓ = 0` reading of
-  \eqref{eq:factorization}) and how the endpoint term `D_1` acts in the endpoint group of
-  \eqref{eq:K}.
+  `K_zero_sum_ctrls` : the `Finset` facts about the index sets that the later modules need,
+  in particular that an indicator `1_{𝐩 = ·}` sums out of a sum over `S 𝐩` -- which is how
+  the identity kernel `K_0` acts (the remark in the proof of
+  \cref{cor:empty-stack-recurrence} that "`K_0` covers the case `δ_h = 0`", and the
+  `ℓ = 0` reading of \eqref{eq:factorization}) and how the endpoint term `D_1` acts.  The
+  endpoint terms `D` are the terms of the split sum of \eqref{eq:K} with `a = 0` or `b = 0`,
+  where `K_0` is the identity, collected into one term.
 * `K_succ_eq_ctrls`, `G_eq_ctrls` : \eqref{eq:K} and \eqref{eq:G} with their control sums
   taken over an arbitrary `ctrls M` large enough to contain the support -- the finitary
   reading of the paper's unrestricted `∑_𝐮` and `∑_𝐭`.
@@ -82,7 +83,7 @@ kernel source, the topological order of \eqref{eq:K} that `Kernel.lean` uses as 
 namespace Av12453
 namespace TwoThreshold
 
-/-! ### Theorem 1: a kernel row vanishes above the mass of its source control -/
+/-! ### A kernel row vanishes above the mass of its source control -/
 
 /-- The induction behind `K_eq_zero_of_mass_lt`, on the grade `w = ‖𝐩‖₁ + ℓ`. -/
 private theorem K_eq_zero_of_mass_lt_aux : ∀ N ℓ (p t : ℕ × ℕ),
@@ -141,7 +142,7 @@ theorem K_eq_zero_of_mass_lt {ℓ : ℕ} {p t : ℕ × ℕ} (h : p.1 + p.2 < t.1
     K ℓ p t = 0 :=
   K_eq_zero_of_mass_lt_aux (p.1 + p.2 + ℓ) ℓ p t le_rfl h
 
-/-! ### Theorem 2: the support bound \eqref{eq:support} -/
+/-! ### The support bound \eqref{eq:support} -/
 
 /-- The induction behind `K_support`, on the grade `w = ‖𝐩‖₁ + ℓ`, in contrapositive form:
 a row entry outside `{𝐩} ∪ {𝐭 : ‖𝐭‖₁ < ‖𝐩‖₁}` is zero. -/
@@ -154,7 +155,7 @@ private theorem K_support_aux : ∀ N ℓ (p t : ℕ × ℕ),
     obtain ⟨j, rfl⟩ : ∃ j, ℓ = j + 1 := ⟨ℓ - 1, by omega⟩
     rw [K_succ_eq (Nat.le_add_left 1 j) p t]
     /- Both band groups lower the source mass strictly below `‖𝐭‖₁`, so they vanish by
-    theorem 1 -- this is the paper's "at least one base move occurred". -/
+    `K_eq_zero_of_mass_lt` -- this is the case where at least one base move occurred. -/
     have hearly : (∑ h ∈ Finset.range p.1, K (j + 1) (h, p.2 + p.1 - 1 - h) t) = 0 := by
       refine Finset.sum_eq_zero fun h hh => ?_
       rw [Finset.mem_range] at hh
@@ -179,7 +180,7 @@ private theorem K_support_aux : ∀ N ℓ (p t : ℕ × ℕ),
       refine Finset.sum_eq_zero fun u hu => ?_
       rw [mem_S] at hu
       by_cases hum : u.1 + u.2 < p.1 + p.2
-      · -- the intermediate control already lost mass: the right factor vanishes (theorem 1)
+      · -- the intermediate control already lost mass, so the right factor vanishes
         rw [K_eq_zero_of_mass_lt (show u.1 + u.2 < t.1 + t.2 by omega), Nat.mul_zero]
       · by_cases hup : u = p
         · -- no mass was lost before the cut: the right factor is a row at `𝐩` again
@@ -207,9 +208,9 @@ theorem K_support {ℓ : ℕ} {p t : ℕ × ℕ} (hℓ : 1 ≤ ℓ) (h : K ℓ p
 `Kernel.lean` truncates the paper's sums over all controls to the finite sets
 `S 𝐩 = ctrls ‖𝐩‖₁` and `ctrls M`.  The lemmas below are the interface to that truncation:
 a kernel row vanishes off `S 𝐩` (`K_eq_zero_of_not_mem_S`), so a sum against it may be taken
-over any finite set of controls containing `S 𝐩` (`K_sum_extend*`).  Phase 2 uses this to
-align a sum over `S 𝐩'`, for a control `𝐩'` of smaller mass produced by a band move or by a
-split, with a sum over `S 𝐩`. -/
+over any finite set of controls containing `S 𝐩` (`K_sum_extend*`).  The proof of the
+factorization uses this to align a sum over `S 𝐩'`, for a control `𝐩'` of smaller mass
+produced by a band move or by a split, with a sum over `S 𝐩`. -/
 
 /-- A kernel row vanishes outside the index set `S 𝐩` attached to its source control. -/
 theorem K_eq_zero_of_not_mem_S {ℓ : ℕ} {p t : ℕ × ℕ} (h : t ∉ S p) : K ℓ p t = 0 :=
@@ -254,8 +255,8 @@ theorem K_sum_extend_left {p : ℕ × ℕ} {M : ℕ} (hM : p.1 + p.2 ≤ M) (ℓ
   K_sum_extend_subset_left (S_subset_ctrls hM) ℓ f
 
 /-- **Range extension** from one index set to another: a row at a control `𝐩` of mass at
-most `‖𝐪‖₁` may be summed over `S 𝐪`.  This is the form phase 2 uses, with `𝐩` a band or
-split successor of `𝐪`. -/
+most `‖𝐪‖₁` may be summed over `S 𝐪`.  This is the form used in the proof of `H_factor`,
+with `𝐩` a band or split successor of `𝐪`. -/
 theorem K_sum_extend_S {p q : ℕ × ℕ} (h : p.1 + p.2 ≤ q.1 + q.2) (ℓ : ℕ) (f : ℕ × ℕ → ℕ) :
     (∑ t ∈ S p, K ℓ p t * f t) = ∑ t ∈ S q, K ℓ p t * f t :=
   K_sum_extend_subset (S_mono h) ℓ f
@@ -265,7 +266,7 @@ theorem K_sum_extend_S_left {p q : ℕ × ℕ} (h : p.1 + p.2 ≤ q.1 + q.2) (�
     (f : ℕ × ℕ → ℕ) : (∑ t ∈ S p, f t * K ℓ p t) = ∑ t ∈ S q, f t * K ℓ p t :=
   K_sum_extend_subset_left (S_mono h) ℓ f
 
-/-! ### The boundary kernel as an identity
+/-! ### The identity kernel
 
 `K_0(𝐩, ·) = 1_{𝐩 = ·}` is the identity kernel of the paper, used in
 \cref{cor:empty-stack-recurrence} to cover `δ_h = 0` and in the `ℓ = 0` reading of
@@ -280,14 +281,15 @@ theorem sum_S_ite (p : ℕ × ℕ) (f : ℕ × ℕ → ℕ) :
       (fun hp => absurd (self_mem_S p) hp),
     if_pos rfl, Nat.one_mul]
 
-/-- **The boundary kernel is an identity against any sum over `S 𝐩`**:
+/-- **The identity kernel sums out of any sum over `S 𝐩`**:
 `∑_{𝐭 ∈ S 𝐩} K_0(𝐩, 𝐭) f(𝐭) = f(𝐩)`. -/
 theorem K_zero_sum (p : ℕ × ℕ) (f : ℕ × ℕ → ℕ) : (∑ t ∈ S p, K 0 p t * f t) = f p := by
   simp only [K_zero]
   exact sum_S_ite p f
 
 /-- **The endpoint term `D_1` is an identity against any sum over `S 𝐩`**, the shape in
-which the indicator occurs in the endpoint group of \eqref{eq:K} at `ℓ = 1`. -/
+which the indicator occurs in the endpoint terms `D` of \eqref{eq:K} (its split-sum terms
+with `a = 0` or `b = 0`) at `ℓ = 1`. -/
 theorem D_one_sum (p : ℕ × ℕ) (f : ℕ × ℕ → ℕ) : (∑ t ∈ S p, D 1 p t * f t) = f p := by
   simp only [D_one]
   exact sum_S_ite p f

@@ -29,11 +29,15 @@ kernel recurrence (eq:K, eq:G, eq:answer-G), i.e. the mathematical content of th
 polynomial-time algorithm.  Not formalized: any complexity bound (the Lean `K` and `G`
 are fuel-driven recursions, not the memoized sparse-row program), the two translation
 quotients of the paper's Section 7 that give `O(N^7)`/`O(N^4)` for `12453`, and the
-program `code/av12453_fast_rns.cpp` that produced the published `n = 150` and `n = 300`
-data.  See `AUDIT_2026-09-05.md` for the trusted base a referee must check by eye.
+programs that produced the published data (`code/av12453_fast_rns.cpp` for the `n = 150`
+certificate, the engine in `code/av12453_n300/` for the `n = 300` series).  What a reader
+must trust is described under *What must be trusted* below.
 
-Everything is `sorry`-free and uses only Lean's three standard axioms
-(`propext`, `Classical.choice`, `Quot.sound`).
+The two libraries and `Solution.lean` are `sorry`-free, and every theorem of the libraries
+uses only Lean's three standard axioms (`propext`, `Classical.choice`, `Quot.sound`); the
+comparator checks the same of the four theorems of `Solution.lean`.  The only `sorry`s are
+the four placeholders of `Challenge.lean`, which state the theorems that the comparator
+checks `Solution.lean` against (see below).
 
 ## The statement file (Palomar format)
 
@@ -51,7 +55,7 @@ the patterns `1342` and `12453` as products of transpositions, and the definitio
 
 stated with `sorry`.  `Solution.lean` proves them from the development (without importing
 `Challenge.lean`), `comparator.json` names them and the permitted axioms, and
-`formalization.yaml` is the registry metadata.  `sh ../comparator.sh` runs `lake
+`formalization.yaml` is the registry metadata.  `bash ../comparator.sh` runs `lake
 comparator`, which checks that each theorem of `Solution.lean` proves exactly the statement
 of `Challenge.lean` (with every definition it uses identical), uses only the permitted
 axioms, and is accepted by Lean's kernel and by the independent kernels nanoda and con-ron;
@@ -70,46 +74,47 @@ imports `PermPatterns` and the twenty below.  The tables list them in dependency
 
 | module | lines | contents |
 |---|---:|---|
-| `PermPatterns/Word.lean` | 381 | words on `ℕ`, `IsWordOn`, `IsPermOf`, `isPermOf_iff`, `OrderIsomorphic` and its lemmas incl. `reverse`, `Picks` |
-| `PermPatterns/Containment.lean` | 171 | `Contains`, `Avoids`, `AvoidsAll` over a finite basis, congruence under order isomorphism, `restrict` |
-| `PermPatterns/Standardize.lean` | 189 | local `rank`, `standardize`, and their invariance properties |
-| `PermPatterns/Patterns.lean` | 198 | `pat231`, `iota`, `orderIsomorphic_iota_iff`, `orderIsomorphic_triple_iff`, `contains_231_iff`, `IncrSubseq`, `IsTriggerAt`, `IsTrigger` |
-| `PermPatterns/Sums.lean` | 204 | `directSum`, `skewSum`, their `IsPermOf` and `OrderIsomorphic` congruence lemmas, `contains_directSum_left`/`_right`, `reverse_directSum`, `skewSum_eq_reverse` |
-| `PermPatterns/Decidable.lean` | 68 | `orderIsomorphic_iff_getD`, `contains_iff_sublists`, the `Decidable` instances for `IsPermOf`/ `OrderIsomorphic`/`Contains`/`Avoids`/`AvoidsAll` |
-| `PermPatterns/Avoiders.lean` | 60 | `perms`, `mem_perms`, `avoiders n B`, `mem_avoiders`, `mem_avoiders_singleton`, `avoiders_empty`, `avoiders_anti` |
-| `PermPatterns/Perm.lean` | 220 | the bridge to `Equiv.Perm (Fin n)`: `ofPerm`, `toPerm`, `permEquiv`, `PermContains`, `PermAvoids`, `permContains_iff_contains`, `card_avoiders_eq_fintypeCard` |
-| `PermPatterns/Symmetry.lean` | 350 | `complement`, `inverse`, `permReverse`, `permComplement`, the three containment transports, `card_avoiders_reverse`/`_complement`/`_inverse` |
-| `PermPatterns/FirstLetter.lean` | 352 | the first-letter lemma for `Av(231)` (`lem:first-letter`) |
+| `PermPatterns/Word.lean` | 385 | words on `ℕ`, `IsWordOn`, `IsPermOf`, `isPermOf_iff`, `OrderIsomorphic` and its lemmas incl. `reverse`, `Picks` |
+| `PermPatterns/Containment.lean` | 175 | `Contains`, `Avoids`, `AvoidsAll` over a finite basis, congruence under order isomorphism, `restrict` |
+| `PermPatterns/Standardize.lean` | 194 | local `rank`, `standardize`, and their invariance properties |
+| `PermPatterns/Patterns.lean` | 202 | `pat231`, `iota`, `orderIsomorphic_iota_iff`, `orderIsomorphic_triple_iff`, `contains_231_iff`, `IncrSubseq`, `IsTriggerAt`, `IsTrigger` |
+| `PermPatterns/Sums.lean` | 208 | `directSum`, `skewSum`, their `IsPermOf` and `OrderIsomorphic` congruence lemmas, `contains_directSum_left`/`_right`, `reverse_directSum`, `skewSum_eq_reverse` |
+| `PermPatterns/Decidable.lean` | 72 | `orderIsomorphic_iff_getD`, `contains_iff_sublists`, the `Decidable` instances for `IsPermOf`/ `OrderIsomorphic`/`Contains`/`Avoids`/`AvoidsAll` |
+| `PermPatterns/Avoiders.lean` | 64 | `perms`, `mem_perms`, `avoiders n B`, `mem_avoiders`, `mem_avoiders_singleton`, `avoiders_empty`, `avoiders_anti` |
+| `PermPatterns/Perm.lean` | 224 | the bridge to `Equiv.Perm (Fin n)`: `ofPerm`, `toPerm`, `permEquiv`, `PermContains`, `PermAvoids`, `permContains_iff_contains`, `card_avoiders_eq_fintypeCard` |
+| `PermPatterns/Symmetry.lean` | 354 | `complement`, `inverse`, `permReverse`, `permComplement`, the three containment transports, `card_avoiders_reverse`/`_complement`/`_inverse` |
+| `PermPatterns/FirstLetter.lean` | 356 | the first-letter lemma for `Av(231)` (`lem:first-letter`) |
 
 ### `Av12453` — the paper-specific development
 
-| component | module | lines | headline results (paper) |
-|---|---|---:|---|
-| 1–2 | `Av12453/Basic.lean` | 215 | `beta`, `beta_eq_directSum`, `contains_beta_iff`, `contains_12453_iff` |
-| 1–2 | `Av12453/Trigger.lean` | 282 | `avoids_beta_iff_forall_trigger` — the trigger lemma (`lem:trigger`) |
-| 3a | `Av12453/OneThreshold/Defs.lean` | 1249 | the `d = 1` scan, the state `(p, L)`, the literal recurrence `W` (`eq:W`) |
-| 3a | `…/OneThreshold/Invariant.lean` | 358 | (A) the separation invariant (`lem:separators`) |
-| 3a | `…/OneThreshold/Semantics.lean` | 405 | (B) deferred letters have no completion; (C) legal complete words avoid `1342` |
-| 3a | `…/OneThreshold/Counting.lean` | 455 | (D) `A_eq_W`, and **`av1342_count`** (`thm:literal` at `d = 1`) |
-| 4a | `…/OneThreshold/Kernel.lean` | 299 | `K`, `D`, `G` and `K_zero`/`K_succ_eq`/`D_one`/`D_succ`/`G_eq` (`eq:scalar-K`–`eq:scalar-G`) |
-| 4a | `…/OneThreshold/KernelSupport.lean` | 297 | `K_support_eq` (`eq:scalar-support`), `K_diag_eq_catalan`, range extension |
-| 4a | `…/OneThreshold/KernelFactor.lean` | 232 | `W_factor` (`eq:scalar-factorization`) |
-| 4a | `…/OneThreshold/KernelCount.lean` | 252 | `G_eq_W`, **`av1342_count_kernel`** (`thm:scalar-algorithm`, correctness half) |
-| 3b | `…/TwoThreshold/Thresholds.lean` | 751 | the threshold API `b₁ < b₂`, bands, control, `eq:bd-q` |
-| 3b | `…/TwoThreshold/Defs.lean` | 1254 | the `d = 2` scan and the literal recurrence `H` (`eq:H`, `eq:initial-terminal`) |
-| 3b | `…/TwoThreshold/Invariant.lean` | 457 | (A) the separation invariant at `d = 2` (`cor:separators`) |
-| 3b | `…/TwoThreshold/Semantics.lean` | 402 | (B) and (C) at `d = 2` |
-| 3b | `…/TwoThreshold/Counting.lean` | 591 | (D) `A_eq_H`, and **`av12453_count`** (`thm:literal` at `d = 2`) |
-| 4b | `…/TwoThreshold/Kernel.lean` | 455 | `ctrls`/`S`, `K`, `D`, `G` and their equations (`eq:K`, `eq:G`) |
-| 4b | `…/TwoThreshold/KernelSupport.lean` | 366 | `K_eq_zero_of_mass_lt`, `K_support` (`lem:support`, `eq:support`), range extension |
-| 4b | `…/TwoThreshold/KernelFactor.lean` | 436 | `H_factor` (`eq:factorization`), the layer identity `K_ℓ((0,q),(0,s)) = K^{(1)}_ℓ(q,s)` |
-| 4b | `…/TwoThreshold/KernelCount.lean` | 312 | `G_eq_H`, **`av12453_count_kernel`** (`eq:answer-G` at `d = 2`) |
-| 4a, 4b | `Av12453/Perm.lean` | 110 | `beta1Perm`, `beta2Perm`, **`av1342_count_perm`**, **`av12453_count_perm`** — the two kernel theorems on `Equiv.Perm (Fin n)` |
+| module | lines | headline results (paper) |
+|---|---:|---|
+| `Av12453/Basic.lean` | 219 | `beta`, `beta_eq_directSum`, `contains_beta_iff`, `contains_12453_iff` |
+| `Av12453/Trigger.lean` | 285 | `avoids_beta_iff_forall_trigger` — the trigger lemma (`lem:trigger`) |
+| `Av12453/OneThreshold/Defs.lean` | 1255 | the `d = 1` scan, the state `(p, L)`, the literal recurrence `W` (`eq:W`) |
+| `…/OneThreshold/Invariant.lean` | 359 | the separation invariant (`lem:separators`) |
+| `…/OneThreshold/Semantics.lean` | 407 | deferred letters have no completion; legal complete words avoid `1342` |
+| `…/OneThreshold/Counting.lean` | 462 | `A_eq_W`, and **`av1342_count`** (`thm:literal` at `d = 1`) |
+| `…/OneThreshold/Kernel.lean` | 335 | `K`, `D`, `G` and `K_zero`/`K_succ_eq`/`D_one`/`D_succ`/`G_eq` (`eq:scalar-K`–`eq:scalar-G`) |
+| `…/OneThreshold/KernelSupport.lean` | 302 | `K_support_eq` (`eq:scalar-support`), `K_diag_eq_catalan`, range extension |
+| `…/OneThreshold/KernelFactor.lean` | 225 | `W_factor` (`eq:scalar-factorization`) |
+| `…/OneThreshold/KernelCount.lean` | 287 | `G_eq_W`, **`av1342_count_kernel`** (`thm:scalar-algorithm`, correctness half) |
+| `…/TwoThreshold/Thresholds.lean` | 755 | the threshold API `b₁ < b₂`, bands, control, `eq:bd-q` |
+| `…/TwoThreshold/Defs.lean` | 1266 | the `d = 2` scan and the literal recurrence `H` (`eq:H`, `eq:initial-terminal`) |
+| `…/TwoThreshold/Invariant.lean` | 459 | the separation invariant at `d = 2` (`lem:separators`, `cor:separators`) |
+| `…/TwoThreshold/Semantics.lean` | 400 | the same two statements at `d = 2` |
+| `…/TwoThreshold/Counting.lean` | 598 | `A_eq_H`, and **`av12453_count`** (`thm:literal` at `d = 2`) |
+| `…/TwoThreshold/Kernel.lean` | 469 | `ctrls`/`S`, `K`, `D`, `G` and their equations (`eq:K`, `eq:G`) |
+| `…/TwoThreshold/KernelSupport.lean` | 372 | `K_eq_zero_of_mass_lt`, `K_support` (`lem:support`, `eq:support`), range extension |
+| `…/TwoThreshold/KernelFactor.lean` | 442 | `H_factor` (`eq:factorization`), the layer identity `K_ℓ((0,q),(0,s)) = K^{(1)}_ℓ(q,s)` |
+| `…/TwoThreshold/KernelCount.lean` | 308 | `G_eq_H`, **`av12453_count_kernel`** (`eq:answer-G` at `d = 2`) |
+| `Av12453/Perm.lean` | 119 | `beta1Perm`, `beta2Perm`, **`av1342_count_perm`**, **`av12453_count_perm`** — the two kernel theorems on `Equiv.Perm (Fin n)` |
 
-11 371 lines of Lean in the thirty modules of the two libraries — 2 193 in `PermPatterns`
-and 9 178 in `Av12453` — plus the two root modules `PermPatterns.lean` (110 lines) and
-`Av12453.lean` (21 lines), which only import, and 63 lines of `Av12453/Axioms.lean`, which
-belongs to neither library: **11 565** lines of Lean in all.
+11 558 lines of Lean in the thirty modules of the two libraries — 2 234 in `PermPatterns`
+and 9 324 in `Av12453` — plus the two root modules `PermPatterns.lean` (114 lines) and
+`Av12453.lean` (23 lines), which only import, and 96 lines of `Av12453/Axioms.lean`, which
+belongs to neither library: **11 791** lines of Lean in all, besides `Challenge.lean` (180 lines)
+and `Solution.lean` (62 lines).
 
 ### Imports
 
@@ -124,12 +129,28 @@ The whole list is `Mathlib.Data.Finset.Card`, `.Dedup` and `.Insert`,
 deliberately *not* minimised: `Av12453/Basic.lean` imports `Mathlib` and every module of that
 library is downstream of it, so the paper-specific development is unaffected.
 
-## Reports and briefs
+## What must be trusted
 
-The per-component development briefs and reports that guided the development were removed on
-2026-09-06 (they remain in git history).  The closing assessment of the whole `d = 2`
-certificate, the trusted base a referee must check by eye, and the audit findings are in
-`AUDIT_2026-09-05.md`.
+To know what is proved, read `Challenge.lean`.  It imports only Mathlib and contains the four
+statements and every definition they use: pattern containment `PermContains` for
+`Equiv.Perm (Fin n)`, the patterns `1342` and `12453` as products of transpositions, and the
+recurrences `W`, `H`, `K` and `G` for `d = 1, 2`.  Comparing these definitions with the
+paper's displays (`eq:W`, `eq:H`, `eq:scalar-K`–`eq:scalar-G`, `eq:K`–`eq:G`) takes three
+facts, which Appendix B of the paper explains.  The recurrences are written with a recursion
+bound, and the development proves that every sufficient bound gives the same value.  In the
+kernel recurrences every sum over intermediate or terminal controls is restricted to the
+controls of mass at most that of the source control, which the paper's Lemmas 2.17 and 6.1
+show loses nothing.  The terms of the split sums with `a = 0` or `b = 0` are written as a
+separate endpoint term `D`.  No natural-number subtraction in the definitions truncates: each
+is guarded by its range (for example `h < p₀` in `p₁ + p₀ - 1 - h`).
+
+Beyond `Challenge.lean`, the trusted base is Lean's kernel, the Mathlib definitions that
+`Challenge.lean` uses (`Equiv.Perm`, `Fin`, `Nat.card`, finite sums), and the pinned
+toolchain.  The proofs, `Solution.lean` and the two libraries need not be read:
+`comparator.sh` checks that each theorem of `Solution.lean` has exactly the statement of
+`Challenge.lean`, with every definition it uses identical, that it uses only the three
+standard axioms, and that Lean's kernel and the independent kernels nanoda and con-ron accept
+it.
 
 ## Building and auditing
 
@@ -140,8 +161,8 @@ lake exe cache get                      # once: Mathlib's prebuilt files
 lake build                              # both libraries and Challenge/Solution; seconds warm
 lake build PermPatterns                 # the generic core alone
 lake env lean Av12453/Axioms.lean       # axiom sweep over both libraries
-sh ../check.sh                          # build, sweep, sweep coverage and a token scan
-sh ../comparator.sh                     # Palomar's check of Solution against Challenge
+bash ../check.sh                        # build, sweep, sweep coverage and a token scan
+bash ../comparator.sh                   # Palomar's check of Solution against Challenge
 ```
 
 Every file uses Lean's module system (`module`, `public import`, an exposed public
@@ -149,7 +170,10 @@ section), as Palomar requires.  The toolchain is pinned to Lean and Mathlib `v4.
 the same sources also build unchanged on Lean `v4.33.1` with Mathlib `0df444a3`, the
 default environment of Prove2Me.
 
-`lake build` must finish with no errors and no warnings.  `Axioms.lean` is **self-checking**:
+`lake build PermPatterns Av12453 Solution` must finish with no errors and no warnings;
+`lake build Challenge` (and so a plain `lake build`, whose default targets include it) gives
+exactly four warnings, `declaration uses 'sorry'`, one for each placeholder of
+`Challenge.lean`.  `Axioms.lean` is **self-checking**:
 instead of reading a hand-maintained list of modules it discovers, from the environment,
 every imported module whose name begins with `PermPatterns` or with `Av12453`, and it aborts
 if either prefix matches no module — so a module that is added, renamed or moved between the
@@ -166,9 +190,11 @@ modules and the two roots.
 make about itself: it compares the number of modules the sweep reports with the number of
 `.lean` files in the tree, so a module that no root imports — and that the sweep would
 therefore never see — fails the check; it prints `sweep covered all 32 modules` when they
-agree.  It also greps the sources for `sorry`,
-`native_decide` and `admit`.  The same sweep runs in CI as the named step *Axiom and sorry
-sweep* in `.github/workflows/lean_action_ci.yml`.
+agree.  It also greps the sources of the two libraries for `sorry`, `native_decide` and
+`admit`; `Challenge.lean` is not scanned, since its four placeholders are `sorry` by design,
+and `Solution.lean` is covered by its warning-free build and by the comparator.  In the
+public repository, the workflow `.github/workflows/lean.yml` runs `check.sh` and
+`comparator.sh` on GitHub's servers on every push.
 
 Never run `lake update`, and do not touch `.lake/packages`: the toolchain
 (`lean-toolchain`) and the Mathlib revision (`lake-manifest.json`) are pinned.

@@ -190,7 +190,7 @@ w = word("11 10 14 12 13 15")  # the projection of the running example's first l
 print("w        =", show(w))
 print("st(w)    =", show(standardize(w)))
 print("w|_{>12} =", show(restrict(w, {v for v in w if v > 12})))
-example = P("316829574")  # the paper's example after the least-trigger lemma (Section 3)
+example = P("316829574")  # the paper's example after display eq:bd-q (Section 3)
 print("pi =", show(example))
 for d in (1, 2, 3):
     print(f"  {d}-triggers (position, value):", triggers(example, d))
@@ -455,8 +455,7 @@ for k in range(len(proj_positions) + 1):
 #     unchanged (impossible for d = 1).
 # Every other letter is *illegal*.  A word is *legal* if it is reached from
 # the initial state (empty prefix, empty stack) by legal moves; its stack S is
-# then determined by sigma and written S(sigma), and R(sigma) is the set of
-# permutations with prefix sigma all of whose prefixes are legal.  For a
+# then determined by sigma and written S(sigma).  For a
 # scan state an illegal letter is exactly a letter of a deferred interval
 # I_2, ..., I_s (Lemma 2.5).  `legal_move` implements the three
 # cases, `scan` reads a prefix move by move, and `S` returns the stack of a
@@ -687,9 +686,9 @@ for d in (1, 2):
 # (a) sigma avoids beta_d as a word (this includes incomplete prefixes);
 # (b) if reading the unread letter x from sigma is illegal, then no
 #     beta_d-avoiding permutation has the prefix sigma x;
-# (c) R(sigma) is the set of beta_d-avoiding permutations of [n] with prefix
-#     sigma; in particular R(empty) = Av_n(beta_d), and a word is legal if and
-#     only if it is a prefix of a beta_d-avoiding permutation.
+# (c) a word is legal if and only if it is a prefix of a beta_d-avoiding
+#     permutation; in particular Av_n(beta_d) is the set of legal permutations
+#     of [n].
 # The next cell checks (a) along the running example for d = 1 and d = 2: at
 # every prefix, standardizing it and testing avoidance of beta_d directly (the
 # "as a word" avoidance of part (a)) holds throughout, including at every
@@ -707,7 +706,7 @@ for d in (1, 2):
 # %% [markdown]
 # Parts (b) and (c): for every permutation of length n <= 7 and d = 1, 2, 3,
 # all prefixes are legal exactly when the permutation avoids beta_d, so that
-# R(empty) = Av_n(beta_d).  For n = 6 and d = 1, 2 the legal words over [6] are
+# Av_n(beta_d) is the set of legal permutations.  For n = 6 and d = 1, 2 the legal words over [6] are
 # exactly the prefixes of avoiders: 'legal implies prefix of an avoider' is the
 # second half of (c), and its converse gives (b), since a letter extending a
 # legal prefix to a word that is a prefix of no avoider is illegal.
@@ -718,7 +717,7 @@ for d in (1, 2, 3):
         readable = {show(sigma) for sigma in Perm.of_length(n) if is_legal([v + 1 for v in sigma], n, d)}
         avoiders = {show(sigma) for sigma in Av([beta(d)]).of_length(n)}
         assert readable == avoiders, (d, n)
-    print(f"d = {d}: R(empty) = Av_n(beta_{d}) for all n <= 7"
+    print(f"d = {d}: the legal permutations are Av_n(beta_{d}) for all n <= 7"
           f" (|Av_7| = {len(readable)})")
 n = 6
 for d in (1, 2):

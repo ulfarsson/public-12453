@@ -13,11 +13,11 @@ Two ways to get the per-prime time for a scenario:
     (--primes defaults to the line count of primes_u16.txt / primes_u32.txt
     in --primes-dir if present, else must be given).
 
-Also prints the mandatory benchmark table (wall time at N=100,150,200,300,
+Also prints a benchmark table (wall time at N=100,150,200,300,
 single-thread and all-threads, peak RSS, multiply-adds) -- filled from
---bench-csv if given (columns: N,threads,wall_s,peak_rss_mib,madds), else
-left as TBD placeholders, since at harness-build time the GEMM engine has
-not been benchmarked yet.
+--bench-csv if given (columns: N,threads,wall_s,peak_rss_mib,madds), with
+TBD placeholders for the rows it does not supply.  The measured values are
+in ../engine/README.md, section 8.
 
 Usage:
   pypy3 plan.py --per-prime-seconds 130 --primes 61 --threads 8

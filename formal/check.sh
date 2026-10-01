@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
-# Full check of the Lean certificate: build must be warning-free, the axiom
-# sweep must pass and cover every module of both libraries, and no
-# `sorry`/`native_decide`/`admit` may occur in code.
+# Full check of the Lean certificate: the two libraries and Solution.lean must
+# build warning-free and Challenge.lean with exactly its four `sorry` warnings
+# (the placeholders of the statement file), the axiom sweep must pass and cover
+# every module of both libraries, and no `sorry`/`native_decide`/`admit` may
+# occur in the code of the libraries.
 set -euo pipefail
 cd "$(dirname "$0")/Av12453"
 export PATH="$HOME/.elan/bin:$PATH"

@@ -1,0 +1,37 @@
+# Lean certificate check, run by GitHub Actions on every push and pull request.
+# tools/export_public.py copies this file to .github/workflows/lean.yml in the public
+# repository.  It installs the pinned Lean toolchain, fetches Mathlib's prebuilt files for
+# the pinned revision, and runs the two scripts a reader would run (formal/README.md).
+name: Lean certificate
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lean:
+    name: check.sh and comparator.sh
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install Lean and fetch the Mathlib cache
+        uses: leanprover/lean-action@v1
+        with:
+          lake-package-directory: formal/Av12453
+          auto-config: false
+          build: false
+          test: false
+          lint: false
+          use-mathlib-cache: true
+
+      - name: Certificate check (formal/check.sh)
+        run: bash formal/check.sh
+
+      - name: Comparator (formal/comparator.sh)
+        run: bash formal/comparator.sh

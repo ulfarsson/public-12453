@@ -10,10 +10,9 @@ public import Av12453.OneThreshold.Defs
 @[expose] public section
 
 /-!
-# (A) The separation invariant of the one-threshold scan
+# The separation invariant of the one-threshold scan
 
-This file proves theorem (A) of component 3a: the separation criterion of
-\cref{lem:separators} (at `d = 1`) holds at
+This file proves that the separation criterion of \cref{lem:separators} (at `d = 1`) holds at
 every legal prefix.  For a legal prefix `σ`, adjacent unread values `u < v` above the
 threshold `m` lie in different intervals of the interval stack if and only if some letter
 `z` with `u < z < v` was read after a letter `c < u`.
@@ -37,7 +36,7 @@ The proof is the induction of the paper along the scan, in the three cases of
 ## Main results
 
 * `sep_succ_iff` : how `Sep` changes when one more letter is read.
-* `sep_invariant` : theorem (A), the statement frozen in `Defs.lean` during Phase 2.
+* `sep_invariant` : the separation criterion at every legal prefix.
 -/
 
 namespace Av12453
@@ -280,12 +279,10 @@ private theorem sep_invariant_aux (n : ℕ) : ∀ (σ : List ℕ), Legal n σ �
           exact hihτ
 
 /--
-**(A) The separation invariant** (\cref{lem:separators}, both directions; the case
+**The separation invariant** (\cref{lem:separators}, both directions; the case
 `d = 1` of \cref{cor:separators} (i) ⟺ (ii)).  For a legal prefix and adjacent unread values
 `u < v` above the threshold, `u` and `v` lie in different intervals of the stack if and only
 if some letter between them was read after a smaller letter.
-
-This is verbatim the statement frozen as a placeholder in `Defs.lean` during Phase 2.
 -/
 theorem sep_invariant (hleg : Legal n σ) (hadj : Adjacent n σ u v) (hu : m n σ < u) :
     DiffIntervals n σ u v ↔ Sep n σ u v :=

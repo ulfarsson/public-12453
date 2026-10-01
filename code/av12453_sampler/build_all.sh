@@ -1,5 +1,5 @@
 #!/bin/sh
-# build_all.sh -- build every table the validation of SCALING_BRIEF.md needs.
+# build_all.sh -- build every table that validate_scaling.sh needs.
 #
 #   sh build_all.sh            # N = 40, 60, 100, 150 (scaled + unscaled), 200 scaled
 #   sh build_all.sh 250        # add the N = 250 scaled table (56 min on 8 threads, 2.6 GB)

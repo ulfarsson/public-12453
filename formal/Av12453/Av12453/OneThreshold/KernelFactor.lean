@@ -14,8 +14,8 @@ public import Av12453.OneThreshold.Counting
 /-!
 # The protected-tail factorization of the literal recurrence for `Av(1342)`
 
-This file proves \eqref{eq:scalar-factorization} of the subsection *The scalar kernel
-algorithm* of Section 2 of the paper *Protected tails and polynomial-time enumeration of
+This file proves \eqref{eq:scalar-factorization} of the subsection *Protected-tail
+factorization* of Section 2 of the paper *Protected tails and polynomial-time enumeration of
 permutations avoiding a direct sum of an increasing pattern and 231*, for `d = 1`: the
 literal recurrence `W` of `Av12453.OneThreshold.Defs` factors
 through the scalar transfer kernel `K` of `Av12453.OneThreshold.Kernel`,
@@ -53,22 +53,11 @@ protected tail `L` (the split term needs the statement for the longer tail `(b) 
 
 * `W_factor_of` : the factorization from an explicit support hypothesis
   `∀ ℓ p t, p < t → K ℓ p t = 0` (the upper half of \cref{lem:scalar-support}).
-* `W_factor` : **\eqref{eq:scalar-factorization}**, with the support hypothesis discharged.
-* `W_factor_range` : the same with the paper's unrestricted summation range (added at
-  integration).
+* `W_factor` : **\eqref{eq:scalar-factorization}**, with the support hypothesis discharged by
+  `KernelSupport.K_eq_zero_of_lt` (the upper half of \cref{lem:scalar-support}).
+* `W_factor_range` : the same with the paper's unrestricted summation range.
 * `W_factor_zero` : the `ℓ = 0` reading `W_p(L) = ∑_{t ≤ p} K_0(p, t) W_t(L)`, i.e. that
   `K_0` is the identity kernel.
-
-## Integration (phase 3)
-
-The support hypothesis of `W_factor_of` is discharged by `KernelSupport.K_eq_zero_of_lt`
-(theorem 1 of the component-4a brief (development notes, in git history), the upper half of
-\cref{lem:scalar-support}).
-While `KernelSupport.lean` was being written in a parallel workspace, this file carried a
-`private` copy of that induction; at integration the copy was deleted and the last line of
-`W_factor` became `W_factor_of (fun _ _ _ h => K_eq_zero_of_lt h) hℓ p L`.  Nothing else
-changed: `W_factor_aux`, `W_factor_of`, `sum_range_extend` and every proof body are as
-delivered.
 -/
 
 namespace Av12453
@@ -171,8 +160,8 @@ private theorem W_factor_aux (hK0 : ∀ ℓ p t, p < t → K ℓ p t = 0) :
 
 /-- **\eqref{eq:scalar-factorization}**, relative to the upper half of
 \cref{lem:scalar-support}: with `hK0` the statement that a kernel row `K_ℓ(p, ·)` vanishes
-above `p`, the literal recurrence factors through the scalar kernel.  This is the
-hypothesis-parametric form, so that it is independent of `KernelSupport.lean`. -/
+above `p`, the literal recurrence factors through the scalar kernel.  This is the form with
+the support bound as an explicit hypothesis, which `W_factor` discharges. -/
 theorem W_factor_of (hK0 : ∀ ℓ p t, p < t → K ℓ p t = 0) {ℓ : ℕ} (hℓ : 1 ≤ ℓ) (p : ℕ)
     (L : List ℕ) : W p (ℓ :: L) = ∑ t ∈ Finset.range (p + 1), K ℓ p t * W t L :=
   W_factor_aux hK0 (p + ℓ) p ℓ L le_rfl hℓ
@@ -187,7 +176,7 @@ theorem W_factor {ℓ : ℕ} (hℓ : 1 ≤ ℓ) (p : ℕ) (L : List ℕ) :
 /-- **\eqref{eq:scalar-factorization} with the paper's summation range**: the factorization
 may be summed over any `Finset.range N` with `N ≥ p + 1`, because the row `K_ℓ(p, ·)`
 vanishes above `p` (`KernelSupport.K_eq_zero_of_lt`).  This is the paper's `∑_{t ≥ 0}`,
-read finitarily.  (Added at integration, phase 3.) -/
+read finitarily. -/
 theorem W_factor_range {ℓ : ℕ} (hℓ : 1 ≤ ℓ) (p : ℕ) (L : List ℕ) {N : ℕ} (hN : p + 1 ≤ N) :
     W p (ℓ :: L) = ∑ t ∈ Finset.range N, K ℓ p t * W t L := by
   rw [W_factor hℓ p L, K_sum_extend hN ℓ (fun t => W t L)]
@@ -199,16 +188,16 @@ theorem W_factor_zero (p : ℕ) (L : List ℕ) :
     W p L = ∑ t ∈ Finset.range (p + 1), K 0 p t * W t L := by
   simp [K_zero, Finset.sum_ite_eq]
 
-/-! ### Interface and sanity checks
+/-! ### Statement and sanity checks
 
-The first `example` fixes the statement of `W_factor` at compile time: it is exactly the
-frozen statement of theorem 4 of the component-4a brief (development notes, in git history), so
-any later drift in the
-binders or in the summation range is caught here.  The `decide` checks below evaluate both
-sides of \eqref{eq:scalar-factorization} in the kernel, on tails of length `0`, `1` and `2`;
-they add no axiom. -/
+The first `example` fixes the statement of `W_factor` at compile time: it is exactly
+\eqref{eq:scalar-factorization} with the summation range `{0, …, p}`, so any later drift in
+the binders or in the summation range is caught here.  The `decide` checks below evaluate
+both sides of \eqref{eq:scalar-factorization} in the kernel, on tails of length `0`, `1` and
+`2`; they add no axiom. -/
 
-/-- Statement check: `W_factor` has exactly the frozen type of theorem 4 of the brief. -/
+/-- Statement check: `W_factor` has exactly the type of \eqref{eq:scalar-factorization} with
+the summation range `{0, …, p}`. -/
 example : ∀ {ℓ : ℕ}, 1 ≤ ℓ → ∀ (p : ℕ) (L : List ℕ),
     W p (ℓ :: L) = ∑ t ∈ Finset.range (p + 1), K ℓ p t * W t L := @W_factor
 

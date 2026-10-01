@@ -92,8 +92,8 @@ review:
   reviewers:
     - "none"
   notes: >-
-    The statement file was compared by hand with the paper's displays; an
-    agent-assisted audit of the trusted base is in AUDIT_2026-09-05.md; the
+    The statement file was compared by hand with the paper's displays
+    (Appendix B of the paper explains the correspondence), and the
     recurrences evaluated by kernel computation reproduce the paper's worked
     examples and the first terms of both counting sequences.
 

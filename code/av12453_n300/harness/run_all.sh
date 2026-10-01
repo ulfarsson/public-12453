@@ -4,18 +4,18 @@
 # residue_io.py), with a log of wall time per prime.  Resumable: an existing
 # residue file that passes the quick structural sanity check is skipped.
 #
-# BINARY CONTRACT (documented assumption -- the GEMM engine that runs this
-# is a separate build; see REPORT.md "assumptions" section):
-#   Each prime gets its own compiled binary (primes are a compile-time
-#   -DMODP constant, following the existing av12453_homog_split.cpp
-#   pattern), named by substituting {bindir} and {prime} into --pattern
-#   (default '{bindir}/av12453_gemm_{prime}').  The binary is invoked as:
-#     BIN --n N --threads K --out OUTFILE
-#   writes "# prime P N" then "n residue" lines to OUTFILE, and exits 0 iff
-#   every built-in check (CERTIFY, support check, ...) passed.  If your
-#   actual engine's CLI differs, adjust --pattern and/or the invocation
-#   line marked "ENGINE INVOCATION" below, or use --dry-run to see the
-#   planned commands without needing a real binary at all.
+# BINARY CONTRACT (what this script assumes of the engine binaries; those
+# built from ../engine/ meet it):
+#   One compiled binary per prime (the modulus is the compile-time -DMODP
+#   constant of the engine), named by substituting {bindir} and {prime}
+#   into --pattern (default '{bindir}/av12453_gemm_{prime}'), invoked as
+#     BIN --n N --threads K --out OUTFILE [EXTRA_ARGS]
+#   it writes "# prime P N" then "n residue" lines to OUTFILE and exits 0
+#   iff every built-in check (CERTIFY, support check, ...) passed.  If your
+#   engine's CLI differs, adjust --pattern and/or the invocation line marked
+#   "ENGINE INVOCATION" below; --dry-run shows the planned commands without
+#   needing a real binary.  Outside the repository root pass the engine's
+#   --truth path in --extra-args (its default is relative to the root).
 #
 # Usage:
 #   run_all.sh --bindir DIR --primes FILE --n N --threads K

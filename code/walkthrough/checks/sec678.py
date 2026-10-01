@@ -130,7 +130,7 @@ def kernel_table(d, N):
                     delta = p[d - 1] - 1 - h
                     for t, v in K[(ell + delta, U(h, p))].items():
                         row[t] += v
-                if ell == 1:                                 # eq:D
+                if ell == 1:                                 # endpoint terms (a = 0 or b = 0) of eq:K
                     row[p] += 1
                 else:
                     for t, v in K[(ell - 1, p)].items():
@@ -178,7 +178,8 @@ def family_counts(d, N):
 # ======================================================================
 #
 # A kernel state is (p, M) where M lists the block sizes *before* the marked
-# tail.  The moves are exactly the four groups of eq:H, acting on the blocks
+# tail.  The moves are exactly those of eq:H (early band, last band, and a letter of
+# the active head, split here into endpoint and interior letters), acting on the blocks
 # before the marker; the path stops when M is empty (the tail is exposed) and
 # reports the control reached there.  K_ell(p,t) is by definition
 # (cor:protected-tail) the number of such labelled paths with terminal
@@ -866,7 +867,8 @@ def _binom(n, k):
 
 
 def check_exact_150(nmax, verbose=False):
-    """Table 1 (tab:terms-150) and the steps of the computation behind it.
+    """Table 1 (tab:terms-150), which prints a selection of the 151 terms, and the
+    steps of the computation behind it.
 
     "The file av12453_terms_0_150.txt contains the exact values |Av_n(12453)|
     for every 0 <= n <= 150."
@@ -1240,7 +1242,7 @@ def run(nmax=8, verbose=False):
         "formulas hold for N <= 12",
         check_d2_complexity(nmax, verbose))
 
-    add("Table 1 (the first 151 terms)", "tab:terms-150",
+    add("Table 1 and the 151 terms of code/data/av12453_terms_0_150.txt", "tab:terms-150",
         "the multi-prime computation is not reproduced here; finite content "
         "checked: the 151 entries of code/data/av12453_terms_0_150.txt against "
         "permuta for n <= 10 and eq:first-terms for n <= 11; the left-to-right "

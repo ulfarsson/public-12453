@@ -1,7 +1,11 @@
 # prefix_law.py -- exact probability of a PREFIX of a uniform Av_n(12453)
-# element, from my own re-implementation of the eq:H state machine plus the
+# element, from an independent re-implementation of the eq:H state machine plus the
 # protected-tail factorization H_{(p,q)}((l)L') = sum_{c,t} R_{l,p-c}(q,t)
-# H_{(c,t)}(L').  Independent of sampler_core.hpp.
+# H_{(c,t)}(L').  Independent of sampler_core.hpp; it reads an AVR1 or AVR2
+# table through the independent reader avr_mine.py (unscaled values).
+#
+#     pypy3 prefix_law.py TABLE.avr n m LAW_OUT.txt      # law of the first m letters
+#     pypy3 law_test.py LAW_OUT.txt SAMPLES.txt          # chi-square against samples
 import sys, itertools
 from avr_mine import Avr, slen
 

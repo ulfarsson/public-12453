@@ -1,5 +1,9 @@
 # pair_law.py -- exact law of (pi_1, pi_2) for a uniform Av_n(12453) element,
-# computed from the AVR1 tables with my own reader, from eq:G directly.
+# computed from eq:G directly, reading an AVR1 or AVR2 table through the
+# independent reader avr_mine.py (which returns unscaled values).
+#
+#     pypy3 pair_law.py TABLE.avr n LAW_OUT.txt
+#     pypy3 law_test.py LAW_OUT.txt SAMPLES.txt          # chi-square against samples
 #
 # After pi_1 = k the control is (p,q) = (k-1, n-k) with empty stack, band0 =
 # {1..k-1} (so early-band index h reads the letter h+1) and band1 = {k+1..n}

@@ -1,7 +1,7 @@
 // av12453_gemm_split_v2.cpp -- GEMM realization of the homogeneous split scheme
 // for the reduced d=2 protected-tail kernel recurrence of Av(12453).
 //
-// v2 (2026-09-02) changes with respect to av12453_gemm_split.cpp -- see README_v2.md:
+// v2 (2026-09-02) changes with respect to av12453_gemm_split_v1.cpp -- see README.md:
 //   (1) the empty-stack extraction phase terms() is parallelized over the
 //       independent output cells (p, q) of one mass; every cell reads only cells
 //       of strictly smaller mass, and each cell's own accumulation order is

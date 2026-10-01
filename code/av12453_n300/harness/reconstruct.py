@@ -6,7 +6,8 @@ Pipeline:
      residue_io.read_residue_file; every file must have the same N (equal
      to --n) and a distinct prime.
   2. Verify residues for n <= 150 against the certified data file
-     (--data-file, default repo/code/data/av12453_terms_0_150.txt),
+     (--data-file, default code/data/av12453_terms_0_150.txt, found from
+     this script's location),
      reduced modulo each prime -- for EVERY prime supplied, not just the
      ones later chosen as primary.
   3. Compute B_N = sum_m C(N,m)^2 |Av_m(1342)| exactly (bona_bound.py).

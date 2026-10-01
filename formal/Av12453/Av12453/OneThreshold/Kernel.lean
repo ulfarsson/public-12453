@@ -319,12 +319,11 @@ example : G 5 = 103 := by decide
 set_option maxRecDepth 100000 in
 /-- The first nine terms of `G` (Bona's sequence `|Av_n(1342)|`; the paper's
 \eqref{eq:first-terms} is the `d = 2` sequence of `Av(12453)`, not this one).  These are the
-same numbers that `Defs.W` produces (`Counting.av1342_count`), as `KernelCount.G_eq_W` will
-say. -/
+same numbers that `Defs.W` produces (`Counting.av1342_count`), as `KernelCount.G_eq_W`
+says. -/
 example : (List.range 9).map G = [1, 1, 2, 6, 23, 103, 512, 2740, 15485] := by decide
 
-/-! The same nine values, printed rather than checked (the brief's `#eval`): the next line
-reports
+/-! The same nine values, printed rather than checked.  The next line reports
 
     [1, 1, 2, 6, 23, 103, 512, 2740, 15485]
 

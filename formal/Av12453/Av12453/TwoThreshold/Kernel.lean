@@ -34,7 +34,7 @@ is not formalized.  The factorization \eqref{eq:factorization},
 only that `K`, `D` and `G` satisfy the paper's defining equations \eqref{eq:K}
 and \eqref{eq:G}, in the form
 
-* `K_zero`  : `K 0 𝐩 𝐭 = 1_{𝐩 = 𝐭}` (the boundary kernel `K_0`);
+* `K_zero`  : `K 0 𝐩 𝐭 = 1_{𝐩 = 𝐭}` (the identity kernel `K_0`);
 * `K_succ_eq` (`1 ≤ ℓ`) : `K ℓ 𝐩 𝐭` is the sum of the early-band terms
   `∑_{h < p₀} K_ℓ(T_{0,h}(𝐩), 𝐭)`, the last-band terms
   `∑_{h < p₁} K_{ℓ+δ_h}(U_h(𝐩), 𝐭)`, the endpoint term `D ℓ 𝐩 𝐭`, and the split terms
@@ -50,8 +50,9 @@ Here, by \eqref{eq:T} and \eqref{eq:U} at `d = 2`,
     T_{0,h}(p₀, p₁) = (h, p₁ + p₀ - 1 - h),     U_h(p₀, p₁) = (p₀, h),
     δ_h = p₁ - 1 - h,
 
-exactly as in the four groups of \eqref{eq:H} (early band, last band,
-endpoints, interior) formalized by `TwoThreshold.Defs.H_eq_cons`.
+exactly as in the three groups of \eqref{eq:H} (early band, last band, active head).
+`TwoThreshold.Defs.H_eq_cons` formalizes them with the active-head group split into its
+endpoint terms (`a = 0` or `b = 0`) and its interior terms, which gives four groups.
 
 Two deviations from the paper's display, both harmless and both recorded here:
 
@@ -78,9 +79,9 @@ verifies is a topological order for the kernel dependencies of \eqref{eq:K}:
   the index set `S 𝐩` truncates `𝐮` to mass at most `‖𝐩‖₁`.
 
 `Kaux_congr` shows that any fuel exceeding the grade gives the same value.  `G 𝐩` evaluates
-`Gaux` with fuel `‖𝐩‖₁ + 1`, and every `G 𝐭` it uses has `‖𝐭‖₁ ≤ p₀ + h < ‖𝐩‖₁`; this is
-the paper's "in the empty-stack phase every terminal control used at mass `m` has smaller
-mass, including `U_h(𝐩)` when `K_0` occurs".
+`Gaux` with fuel `‖𝐩‖₁ + 1`, and every `G 𝐭` it uses has `‖𝐭‖₁ ≤ p₀ + h < ‖𝐩‖₁`.  This is
+the paper's argument for the empty-stack phase: the terminal controls `𝐭` of
+`K_{δ_h}(U_h(𝐩), ·)` have `‖𝐭‖₁ ≤ ‖U_h(𝐩)‖₁ = ‖𝐩‖₁ - 1 - δ_h`, trivially when `δ_h = 0`.
 
 ## Main definitions
 
@@ -208,7 +209,7 @@ private theorem Kaux_congr : ∀ k k' ℓ (p t : ℕ × ℕ),
 /--
 `K ℓ 𝐩 𝐭` is the paper's `K_ℓ(𝐩, 𝐭)`, defined by its recurrence \eqref{eq:K} (the paper's
 path reading, stopped paths of `H` from control `𝐩` and active head of size `ℓ` to control
-`𝐭`, is not formalized).  `K 0` is the boundary kernel `K_0`.
+`𝐭`, is not formalized).  `K 0` is the identity kernel `K_0`.
 -/
 def K (ℓ : ℕ) (p t : ℕ × ℕ) : ℕ := Kaux (p.1 + p.2 + ℓ + 1) ℓ p t
 
@@ -216,7 +217,7 @@ private theorem K_eq_Kaux {ℓ : ℕ} {p t : ℕ × ℕ} {k : ℕ} (hk : p.1 + p
     K ℓ p t = Kaux k ℓ p t :=
   Kaux_congr _ _ _ _ _ (by omega) hk
 
-/-- **The boundary kernel**: `K_0(𝐩, 𝐭) = 1_{𝐩 = 𝐭}`. -/
+/-- **The identity kernel**: `K_0(𝐩, 𝐭) = 1_{𝐩 = 𝐭}`. -/
 theorem K_zero (p t : ℕ × ℕ) : K 0 p t = if p = t then 1 else 0 := rfl
 
 /-- The paper's `D_ℓ(𝐩, 𝐭)` of \eqref{eq:K} (its terms `a = 0` and `b = 0`): the endpoint term of
@@ -404,7 +405,7 @@ example : (K 3 (1, 2) (2, 2), K 3 (1, 2) (0, 4), K 1 (4, 0) (0, 4), K 1 (4, 0) (
     = (0, 0, 0, 0) := by decide
 
 set_option maxRecDepth 10000 in
-/-- The boundary kernel `K_0 = 1_{𝐩 = 𝐭}`. -/
+/-- The identity kernel `K_0 = 1_{𝐩 = 𝐭}`. -/
 example : (K 0 (1, 2) (1, 2), K 0 (1, 2) (2, 1)) = (1, 0) := by decide
 
 set_option maxRecDepth 400000 in
@@ -416,9 +417,10 @@ example : (List.range 7).map (fun n => G (n, 0)) = [1, 1, 2, 6, 24, 119, 694] :=
 /-! ### The cross-link with the `d = 1` kernel
 
 The controls `(0, q)` carry no early band, so \eqref{eq:K} at such a control is literally the
-`d = 1` recurrence \eqref{eq:scalar-K} in the second coordinate.  This is the notes' layer
-identity `R_{ℓ,0} = K_ℓ`, proved in general as `K_layer_zero` in `KernelFactor.lean`; the two
-`decide`s below check it on small values. -/
+`d = 1` recurrence \eqref{eq:scalar-K} in the second coordinate.  In the notation
+`R_{ℓ,a}(q,s) = K_ℓ((a,q),(0,s))` of \eqref{eq:R-definition} this says
+`R_{ℓ,0}(q,s) = K_ℓ(q,s)`, with the `d = 1` kernel on the right.  It is proved in general as
+`K_layer_zero` in `KernelFactor.lean`; the two `decide`s below check it on small values. -/
 
 set_option maxRecDepth 20000 in
 /-- `K_ℓ((0,q), (0,s))` is the `d = 1` kernel `K_ℓ(q, s)` of `Av12453.OneThreshold`. -/
@@ -444,7 +446,7 @@ set_option linter.hashCommand false in
 #guard_msgs in
 #eval (List.range 10).map (fun n => G (n, 0))
 
-/-! The instance of \eqref{eq:factorization} promised by the brief: at the source control
+/-! An instance of \eqref{eq:factorization}: at the source control
 `𝐩 = (1,2)`, active head `ℓ = 3` and protected tail `L = (1)`,
 
     H_{(1,2)}((3)(1)) = ∑_{𝐭} K_3((1,2), 𝐭) H_𝐭((1)) = 882.

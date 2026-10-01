@@ -18,7 +18,7 @@ Statements checked (paper numbering):
     Cor. 4.4       cor:separators
     Prop. 4.5      prop:exponential
     Cor. 5.1       cor:protected-tail             (eq:factorization, eq:matrix-product)
-    Prop. 5.2      prop:kernel-recurrence         (eq:K, eq:D)
+    Prop. 5.2      prop:kernel-recurrence         (eq:K)
     Cor. 5.3       cor:empty-stack-recurrence     (eq:G)
 
 Run with PyPy:   pypy3 code/walkthrough/checks/sec345.py
@@ -355,7 +355,7 @@ def enumeration(d, n):
 #  The checks
 # =====================================================================
 
-def check_lemma_31(nmax, dims, verbose=False):
+def check_bd_q(nmax, dims, verbose=False):
     """Display eq:bd-q (Section 3).  'Since a d-trigger is the last entry of
     an increasing d-subsequence, b_d is the least d-trigger of the prefix when
     it is nonvirtual, and a virtual b_d = n + d means that the prefix has no
@@ -635,7 +635,7 @@ def check_thm43_counts(d, nmax, verbose=False):
 
 
 def move_label(sigma, x, n, d):
-    """The label used in the tables of Examples 2.12 and 4.2 for reading x:
+    """The label used in the tables of Examples 2.9 and 4.2 for reading x:
     'early band', 'last band' (+ ', merger' when the head grows), 'interior
     choice', 'endpoint choice', 'head exhausted'."""
     B, _b = bands(sigma, n, d)
@@ -824,9 +824,10 @@ def check_prop45(d, nmax, verbose=False):
     """Proposition 4.5.  'For fixed d >= 1 and n >= d+1, literal memoization of
     eq:H has at least F_{n-d} distinct composition arguments when computing
     a_n^{(d)}, where F_{n-d} is the (n-d)th Fibonacci number, F_1 = F_2 = 1.'  Its proof
-    asserts that from H_{(n,0,...,0)}(empty) one reaches H_0((n-d)) and from
-    there every positive composition L with |L| + len(L) = n - d + 1, of which
-    there are sum_s binom(n-d-s, s-1) = F_{n-d}.
+    reaches H_0((n-d)) from H_{(n,0,...,0)}(empty) and then applies the
+    construction of the proof of Proposition 2.13 with n replaced by n-d+1:
+    every positive composition L with |L| + len(L) = n - d + 1 is reached, and
+    there are sum_s binom(n-d-s, s-1) = F_{n-d} of them.
 
     Compared: the reachable states are enumerated explicitly by closing the
     right-hand side of eq:H under H_children from H_{(n,0,...,0)}(empty); the
@@ -990,13 +991,16 @@ def _controls(d, w):
 
 
 def check_prop52(d, wmax, verbose=False):
-    """Proposition 5.2 (compressed kernel recurrence), eq:K and eq:D.
+    """Proposition 5.2 (compressed kernel recurrence), eq:K.
 
     Compared: K_l(p, .) from the literal recurrence eq:K against K_l(p, .)
     computed by brute-force enumeration of stopped paths in the graph of eq:H,
-    for every source of grade ||p||_1 + l <= wmax.  Also checked: the side
-    condition a, b >= 1 in the split term and the coefficient 2 in eq:D are both
-    load-bearing (mutating either makes the recurrence disagree).
+    for every source of grade ||p||_1 + l <= wmax.  The implementation writes
+    the terms of the split sum of eq:K with a = 0 or b = 0 (the two endpoint
+    terms, 2 K_{l-1}(p, .) for l >= 2 and the identity for l = 1) separately from
+    the interior terms a, b >= 1, which is the same sum.  Also checked: the
+    endpoint terms are load-bearing (counting them twice, or only one of the two,
+    makes the recurrence disagree).
     """
     t0 = time.time()
     checks = 0
@@ -1010,19 +1014,22 @@ def check_prop52(d, wmax, verbose=False):
             if K(l, p) != brute:
                 return False, "K_%d(%s,.): eq:K gives %s, stopped paths give %s" % (
                     l, p, K(l, p), brute), checks, time.time() - t0
-    # the side condition and the coefficient 2 must matter
+    # the endpoint terms must matter: count them twice, or only one of the two
     bad1 = _K_variant(d, wmax, allow_zero_parts=True)
     bad2 = _K_variant(d, wmax, endpoint_coeff=1)
     checks += 2
-    detail = ("eq:K vs. brute-force stopped paths; dropping 'a,b >= 1' changes %d rows, "
-              "using coefficient 1 instead of 2 changes %d rows" % (bad1, bad2))
+    detail = ("eq:K vs. brute-force stopped paths; counting the endpoint terms twice "
+              "changes %d rows, keeping only one of the two changes %d rows" % (bad1, bad2))
     if bad1 == 0 or bad2 == 0:
         return False, "a mutation of eq:K left every kernel row unchanged: " + detail, checks, time.time() - t0
     return True, detail, checks, time.time() - t0
 
 
 def _K_variant(d, wmax, allow_zero_parts=False, endpoint_coeff=2):
-    """A deliberately mutated eq:K; returns the number of rows it gets wrong."""
+    """A deliberately mutated eq:K; returns the number of rows it gets wrong.
+    allow_zero_parts adds the endpoint terms a = 0 or b = 0 to the interior
+    split sum as well (so they are counted twice); endpoint_coeff = 1 keeps only
+    one of the two endpoint terms."""
     memo = {}
 
     def KV(l, p):
@@ -1129,7 +1136,7 @@ def run(nmax=8, verbose=False):
     record("Display b_d = q (least-trigger threshold, Section 3)", "eq:bd-q",
            "all %d prefixes of all permutations of length <= %d, every unread letter, d = 1, 2, 3"
            % (sum(_nprefixes(m) for m in range(1, n + 1)), n),
-           check_lemma_31(n, (1, 2, 3), verbose))
+           check_bd_q(n, (1, 2, 3), verbose))
 
     for d, pat in ((2, "12453"), (3, "123564")):
         record("Proposition 4.1(a) (state invariant: layout), d = %d" % d,

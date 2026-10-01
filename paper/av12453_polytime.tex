@@ -1478,26 +1478,15 @@ $L=(\ell_1,\ldots,\ell_s)$.
 values above $b_d$ by \cref{lem:legal-moves}(a), while the unread values
 below $b_d$ form the bands by definition.  This is \eqref{eq:ordered-layout}.
 
-(b) We classify the unread letters by \cref{def:scan-state}.  Let
-$x\in B_i$ with $i<d-1$, and let $h$ be the number of unread values of $B_i$
-below $x$.  As observed before \eqref{eq:bd-q}, $x$ ends
-an increasing subsequence of length $i+1$ but none of length $i+2\leq d$, so
-$x$ is not a $d$-trigger of $\sigma x$: reading it is a non-trigger move, and
-the stack is unchanged.  Replacing $b_{i+1}$ by $x$ leaves $h$ values in
-band $i$ and moves the other $p_i-1-h$ values into band $i+1$, giving
-$T_{i,h}(\mathbf p)$.  Next let $x\in B_{d-1}$, with $h$ unread values of
-$B_{d-1}$ below it.  As observed before \eqref{eq:bd-q} with $i=d-1$, the
-letter $x$ ends an increasing $d$-subsequence (for $d=1$, $x$ is itself one)
-and changes only $b_d$.  Since $x<b_d=q$, reading it is a merger, and $E$,
-the set of unread values strictly between $x$ and $b_d$, has
-$\delta_h=p_{d-1}-1-h$ elements.  The letter $x$ becomes the new $b_d$ with
-$h$ values left in the last band,
-and the stack becomes $\nz(\ell_1+\delta_h,\ell_2,\ldots)$ by
-\cref{def:scan-state}(a).  Finally let $x\in I_1$ have local rank $r$.  As noted after \cref{def:scan-state}, $x$ is a $d$-trigger of
-$\sigma x$ exceeding $b_d$, so reading it is a split.  No threshold changes,
-since $x>b_d$, and the stack becomes $\nz(r-1,\ell_1-r,\ell_2,\ldots)$ by
-\cref{def:scan-state}(b).  Every other unread letter lies in a deferred
-interval and is illegal by \cref{lem:legal-moves}(b).
+(b) We classify the unread letters by \cref{def:scan-state}.  As observed
+before \eqref{eq:bd-q}, a letter $x\in B_i$ changes only $b_{i+1}$, and it
+is a non-trigger move if $i<d-1$ and a merger if $i=d-1$, since then
+$x<b_d=q$.  A letter of $I_1$ exceeds $b_d$, so it changes no threshold, and
+it is a split, as noted after \cref{def:scan-state}.  The new controls are
+described after \eqref{eq:T} and \eqref{eq:U}, the set $E$ of a merger has
+$\delta_h$ elements, and the new stacks follow from \cref{def:scan-state}.
+Every other unread letter lies in a deferred interval and is illegal by
+\cref{lem:legal-moves}(b).
 \end{proof}
 
 For a control $\mathbf p$ and a list $L$ of positive integers with
@@ -1700,18 +1689,9 @@ $F_1=F_2=1$.
 \begin{proof}
 Reading $1,2,\ldots,d$ first reaches the state $(\mathbf0,(n-d))$: the
 first $d-1$ letters are early-band moves, and $d$ is a last-band move whose
-$n-d$ larger unread values form the head.  The interior moves are
-then exactly those used in the proof of \cref{prop:scalar-exponential}, with
-$n$ there replaced by $n-d+1$.  They reach every positive composition $L$
-satisfying
-\[
- |L|+\operatorname{len}(L)=n-d+1,
-\]
-and their number is
-\[
- \sum_{s=1}^{\lfloor(n-d+1)/2\rfloor}
- \binom{n-d-s}{s-1}=F_{n-d}.\qedhere
-\]
+$n-d$ larger unread values form the head.  From there the interior choices
+in the proof of \cref{prop:scalar-exponential}, with $n$ replaced by
+$n-d+1$, reach $F_{n-d}$ distinct compositions.
 \end{proof}
 
 The literal state space is therefore exponential in $n$.
@@ -2048,51 +2028,53 @@ For $\ell\geq1$ and $a,q,s\geq0$, whenever $s\geq a-1$,
 \end{lemma}
 
 \begin{proof}
-Let $\gamma=\ell+a+q+1$ be the reduced grade of the left-hand side.  We argue
-by induction on $\gamma$, assuming the claim at every smaller reduced grade.  The $h$th term of the first sum on the left is
-$R_{\ell,h}(a+q-h,s+1)$.  Since $s\geq a-1\geq h-1$, induction translates
-this to $R_{\ell,h}(a+q-h-1,s)$, the corresponding term on the right.
+We label the unread values.  In a state with stack $U\mid L$, give the
+values of band~$0$, of band~$1$, and of the intervals of $U$ distinct
+labels, ordered as the values are.  The transitions of
+\eqref{eq:H} from such a state correspond to the labels of the two bands and
+of the active head.  An early-band move with parameter $h$ reads the label
+of band~$0$ with $h$ labels of band~$0$ below it, and the labels of
+band~$0$ above it join band~$1$, below its labels.  A last-band move with
+parameter $h$ reads the label of band~$1$ with $h$ labels of band~$1$ below
+it, and the labels of band~$1$ above it join the active head, below its
+labels.  A letter of the active head of local rank $r$ reads the head
+label with $r-1$ head labels below it, and the head is replaced by its labels
+below and above that label, in this order.  So a stopped path from a
+labeled state is determined by the sequence of labels it reads.
 
-In the second sum, the $r=0$ term on the left vanishes: at second source
-coordinate zero the largest possible terminal coordinate is $0$ if $a=0$,
-and $a-1$
-otherwise, while the terminal coordinate satisfies $s+1\geq1$ and
-$s+1\geq a$.  Put $r=j+1$ in the remaining terms.
-Induction gives
-\[
- R_{\ell+q-j-1,a}(j+1,s+1)
- =R_{\ell+q-j-1,a}(j,s),
-\]
-which gives exactly the terms $0\leq j<q$ on the right.  The $D$ terms also
-match: for $\ell=1$ both are $\one_{a=0,\,q=s}$, while for $\ell>1$ the
-claim follows from induction applied to $2R_{\ell-1,a}$.
+Consider a stopped path counted by $R_{\ell,a}(q+1,s+1)$, and let $z$ be the
+least label of the initial band~$1$.  Suppose that $z$ leaves band~$1$, by
+being read or by joining the head.  This happens in a last-band move that
+reads $z$ or a label below it, and every label of the initial band~$1$ still
+in band~$1$ joins the head or is read in the same move.  Afterwards labels
+enter band~$1$ only from band~$0$, so the $s+1$ labels of the terminal
+band~$1$ belong to the initial band~$0$.  Band~$0$ loses labels only through
+early-band moves, each of which reads one of its labels, and it ends empty.
+So at most $\max(a-1,0)$ labels of the initial band~$0$ remain unread, while
+$s+1\geq\max(a,1)$ since $s\geq a-1$.  This contradiction shows that $z$
+stays unread in band~$1$.  In particular every last-band move reads a label
+above $z$.  Deleting $z$ from every state leaves the early-band parameters
+and the local ranks of head letters unchanged, and lowers each last-band
+parameter and the
+size of band~$1$ by one, which leaves each head enlargement $\delta_h$
+unchanged.  Since $z$ never enters the stack, the stacks are unchanged and
+$L$ is exposed at the same step.  This gives a stopped path counted by
+$R_{\ell,a}(q,s)$ that reads the same labels.
 
-We now compare one split with $a=a_1+a_2$.  On the left it contributes
-\[
- \sum_{m\geq0}R_{\ell_1,a_1}(q+1,m)
-                  R_{\ell_2,a_2}(m,s+1).
-\]
-The $m=0$ term vanishes by the support of the second factor.  Put $m=k+1$.
-If that second factor is nonzero, then $k\geq a_1-1$: when $a_2=0$,
-support gives $k\geq s\geq a_1-1$, while for $a_2>0$ it gives
-$k\geq s+1-a_2\geq a_1$.  Also $s\geq a-1\geq a_2-1$.  Thus the induction
-hypothesis applies to both factors.
-
-Both induction calls are at smaller reduced grade.  The first has grade
-$\ell_1+a_1+q+1<\gamma$.  Nonvanishing of that factor also gives
-\[
- k\leq q\quad\text{if }a_1=0,
- \qquad
- k\leq a_1+q-1\quad\text{if }a_1>0,
-\]
-by \eqref{eq:support-d2}.  Therefore the second factor has reduced grade
-$\ell_2+a_2+k+1<\gamma$.  Induction then gives
-\[
- R_{\ell_1,a_1}(q+1,k+1)R_{\ell_2,a_2}(k+1,s+1)
- =R_{\ell_1,a_1}(q,k)R_{\ell_2,a_2}(k,s).
-\]
-The same upper and lower support bounds hold for every nonzero term on the
-right, so this is a bijective reindexing of the split sum.
+Conversely, consider a stopped path counted by $R_{\ell,a}(q,s)$.  No
+last-band move of it reads a label $y$ of the initial band~$0$.  Indeed, $y$
+entered band~$1$ through an early-band move, which read another label of the
+initial band~$0$, and reading $y$ sends every label of the initial band~$1$
+still in band~$1$ into the head.  The terminal band~$1$ would then consist of
+at most $a-2$ labels of the initial band~$0$, contradicting $s\geq a-1$.  So
+every last-band move reads a label of the initial band~$1$.  Insert a label
+$z$ into the initial band~$1$ below its labels.  The same labels can then be
+read, with each last-band parameter and the size of band~$1$ raised by one
+and the head enlargements unchanged.  Since every last-band move reads a
+label above $z$, the label $z$ stays unread in band~$1$, so the stacks are
+unchanged and $L$ is exposed at the same step.  This gives a stopped path
+counted by $R_{\ell,a}(q+1,s+1)$.  The two operations
+are inverse.
 \end{proof}
 
 The hypothesis $s\geq a-1$ cannot be weakened: equation
@@ -2352,11 +2334,14 @@ $\Av_n(12453)$.
 
 A reader who wants to verify this needs to do two things.  The first
 is to run the scripts \path{check.sh} and \path{comparator.sh}.  The first
-builds the development and checks that it contains no unproved statement and
-that every theorem depends only on Lean's three standard axioms.  The second
+builds the development and checks that its proof libraries and the file
+\path{Solution.lean} contain no unproved statement and that every theorem of
+the libraries depends only on Lean's three standard axioms.  The second
 checks, with Lean's kernel and two independent kernels, that the proofs in
 \path{Solution.lean} prove exactly the statements of the file
-\path{Challenge.lean}.  The second task is to read \path{Challenge.lean}, about
+\path{Challenge.lean} and use no other axioms.  In \path{Challenge.lean} each
+of the four statements has the placeholder \texttt{sorry} in place of its
+proof.  The second task is to read \path{Challenge.lean}, about
 180 lines that import only Mathlib and contain the four statements together
 with every definition they use: pattern containment, the patterns $1342$ and
 $12453$, and the recurrences.  The proofs need not be read.
@@ -2561,11 +2546,18 @@ $\lambda\leq N$.  Every band term and every $D$ term has one letter fewer.
 The two factors of a split term together have $\lambda-1$ letters, since the
 split reads one letter itself, and the same holds for the two factors of a
 term of the last sum of \eqref{eq:G-reduced}.  Put $\nu=3\,352\,801$.
-Counting the summands of \eqref{eq:R-recurrence} for fixed $s$, and of
-\eqref{eq:G-reduced}, with every index in the support of
-\cref{lem:d2-exact-support}, shows that no value has more than $\nu-1$ summands
-and no letter choice has more than $\nu-1$ candidates.  The maximum is
-attained by $G_{(149,151)}$.
+We count the summands of \eqref{eq:G-reduced}, and of
+\eqref{eq:R-recurrence} for fixed $s$, with every index in the support of
+\cref{lem:d2-exact-support}, counting $D_{\ell,a}$ with $\ell\geq2$ twice,
+once for each endpoint.  For $G_{(p,q)}$ with $n=p+q$ there are $n$ of them
+if $q=0$, and $n+(n-2)(p+1)(q-1)/2\leq N+N^2(N-2)/8=\nu-1$ if $q\geq1$,
+since $(p+1)+(q-1)=n$, with equality at $(149,151)$.  For $R_{\ell,a}(q,s)$
+with $t=a+q$ there are at most $t+1$ if $\ell=1$, and at most
+$t+\ell+(\ell-2)t(t+1)/2\leq N+N(N-2)^2/8<\nu-1$ if $\ell\geq2$.  Indeed,
+the band and $D$ terms number at most $t+2$, the split terms with fixed
+$\ell_1$ at most $(a+1)q+a(a+1)/2+1\leq t(t+1)/2+1$, while $t+\ell\leq N$
+and $(\ell-2)t\leq(N-2)^2/4$.  So no value has more than $\nu-1$ summands and no
+letter choice has more than $\nu-1$ candidates.
 
 \begin{lemma}[Accuracy of the tables]\label{lem:float-tables}
 Every stored value is its scaled exact value times $1+\theta$ with
@@ -2664,7 +2656,7 @@ with probability $F(\beta_{i-1})-F(\beta_i)$.  By \eqref{eq:float-draw},
 replacing $F$ by $f$ changes the sum over $i$ of these probabilities by at
 most $4.02ku$ in total.  The differences $f(\beta_{i-1})-f(\beta_i)$ equal
 $(\beta_i-\beta_{i-1})/\hat T$ except above $\hat T$, which changes the sum
-by at most $(\hat A-\hat T)/\hat T\leq2.01\nu u$.  By
+by at most $\max(\hat A-\hat T,0)/\hat T\leq2.01\nu u$.  By
 \eqref{eq:float-scan}, replacing $\beta_i-\beta_{i-1}$ by $\hat w_i$ changes
 it by at most $4.03ku$.  A rescan happens with probability
 $F(\hat A)\leq f(\hat A)+2.01u\leq2.01\nu u+2.01u$.  Since $k<\nu$,
@@ -2721,23 +2713,14 @@ The Lean project \path{formal/Av12453/} builds two libraries from one
 source tree.  The library \path{PermPatterns/} holds the generic apparatus
 (words, containment and avoidance, standardization, the patterns $231$ and
 $\iota_d$, sums, symmetries, and the passage to Mathlib's permutations of
-$\{0,\ldots,n-1\}$) in ten modules, and nothing in it refers to the family
-$\beta_d$.  The library \path{Av12453/} holds the development specific to
-this paper in twenty modules, eight for $d=1$ in \path{OneThreshold/} and
-nine for $d=2$ in \path{TwoThreshold/}.  The file \path{README.md} lists the
-modules and their headline theorems, and an audit report describes the
-trusted base.  \Cref{lem:trigger,lem:first-letter} are formalized, but the
-four main theorems do not use them.  The module \path{Axioms.lean} walks
-every constant declared in every module of the two libraries and fails if
-any depends on \texttt{sorryAx} or on an axiom other than propositional
-extensionality, choice, and quotient soundness.  It finds its list of
-modules in the environment rather than in a hand-written list, so a module
-cannot drop out of it silently.  The script \path{check.sh} builds the
-project, requires the build to be free of warnings, runs the axiom sweep,
-rejects any occurrence of \texttt{sorry} or \texttt{native\_decide} in the
-sources, and ends with the line \texttt{CERTIFICATE CHECK PASSED}.  Every
-file uses Lean's module system.  The Lean toolchain (version 4.35.0-rc2) and
-the Mathlib revision are pinned in the project files.
+$\{0,\ldots,n-1\}$), and nothing in it refers to the family $\beta_d$.  The
+library \path{Av12453/} holds the development specific to this paper.  Its
+module \path{Axioms.lean} checks that every declaration of the two
+libraries depends only on propositional extensionality, choice, and quotient
+soundness.  The file \path{formal/README.md} describes the modules, the
+checks run by \path{check.sh}, and the trusted base.  The
+Lean toolchain (version 4.35.0-rc2) and the Mathlib revision are pinned in
+the project files.
 
 \subsection{What must be read}
 
@@ -2746,22 +2729,8 @@ permutations of $\{0,\ldots,n-1\}$, with pattern containment
 \texttt{PermContains} and the patterns written as products of transpositions,
 together with the definitions of \texttt{W}, \texttt{H}, \texttt{K}, and
 \texttt{G}, and \path{comparator.sh} checks that these definitions are identical
-to those of the development.  The development states the theorems for the
-finite sets \texttt{avoiders n \{beta d\}}, and the definitions they use are the
-following, listed by file.  In the library \path{PermPatterns/}, the module
-\path{Word.lean} defines \texttt{IsPermOf} and \texttt{OrderIsomorphic},
-\path{Containment.lean} defines \texttt{Contains}, \texttt{Avoids}, and
-\texttt{AvoidsAll},
-\path{Patterns.lean} defines \texttt{iota}, and \path{Avoiders.lean}
-defines \texttt{perms} and \texttt{avoiders}.  In the library
-\path{Av12453/}, the module \path{Basic.lean} defines \texttt{beta}, so
-that \texttt{beta 2} is the $0$-based word $0,1,3,4,2$ of $12453$, the
-module \path{OneThreshold/Defs.lean} defines \texttt{nz} and \texttt{W},
-and \path{TwoThreshold/Defs.lean} defines \texttt{H}.  The module
-\path{OneThreshold/Kernel.lean} defines \texttt{K}, \texttt{D}, and
-\texttt{G} for $d=1$, and \path{TwoThreshold/Kernel.lean} defines the control
-sets \texttt{ctrls} and \texttt{S} and \texttt{K}, \texttt{D}, and \texttt{G}
-for $d=2$.  The recurrences are written with a recursion bound.  The definitions
+to those of the development.  The recurrences are written with a recursion
+bound.  The definitions
 \texttt{W}, \texttt{H}, \texttt{K}, and \texttt{G} evaluate an auxiliary
 function at a bound exceeding, respectively, the number of unread values,
 the number of unread values, the grade, and the control mass of the
@@ -2786,8 +2755,9 @@ increasing subsequences, and the interval stack by the moves of
 \cref{prop:state-invariant}(b), which classify a letter by the band or
 interval containing it, so \cref{lem:separators} and
 \cref{prop:scan-states}(a) and (b) are proved for this notion of legal
-prefix.  Since the kernels are defined by their recurrences,
-\cref{prop:kernel-recurrence} is not needed.  The restriction of the
+prefix.  \Cref{lem:trigger,lem:first-letter} are formalized, but the four
+main theorems do not use them.  Since the kernels are defined by their
+recurrences, \cref{prop:kernel-recurrence} is not needed.  The restriction of the
 control sums is proved lossless, and it is also what makes the grade a
 well-founded order for \eqref{eq:K} read as a definition.
 

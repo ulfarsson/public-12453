@@ -4,7 +4,7 @@
 (2) |Av_n(1342)| = 1,1,2,6,23,103,512,2740 (Bona / OEIS A022558).
 (3) |Av_n(12345)| computed by RSK (sum of (f^lambda)^2 over shapes with at
     most 4 rows, hook-length formula) -- an entirely different method -- and
-    compared with the same brute force.  At n = 7 it separates 12345 (4550)
+    compared with the same brute force.  At n = 7 it separates 12345 (4582)
     from 12453 (4581), so the test is not merely counting 'contains an
     increasing 5-subsequence'.
 """

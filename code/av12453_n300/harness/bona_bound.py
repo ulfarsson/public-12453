@@ -1,7 +1,7 @@
 """Exact computation of |Av_m(1342)| and the CRT injection bound B_N.
 
-Independent, from-scratch derivation (no reliance on
-repo/code/reconstruct_av12453_rns.py's recurrence): expand Bona's algebraic
+Independent, from-scratch derivation (no reliance on the recurrence in
+code/reconstruct_av12453_rns.py): expand Bona's algebraic
 identity
 
     2 (1+x)^3 * sum_m b_m x^m  =  (1-8x)^(3/2) + 1 + 20x - 8x^2
@@ -88,7 +88,7 @@ _KNOWN_B0_8 = [1, 1, 2, 6, 23, 103, 512, 2740, 15485]
 
 
 def self_check() -> None:
-    """Verify b_0..b_8 against the values quoted in the task brief."""
+    """Verify b_0..b_8 against the known values of |Av_m(1342)| (OEIS A022558)."""
     b = av1342_counts(8)
     if b != _KNOWN_B0_8:
         raise AssertionError(f"b_0..b_8 = {b}, expected {_KNOWN_B0_8}")

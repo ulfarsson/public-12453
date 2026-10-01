@@ -1,16 +1,23 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""check_terms.py -- compare an AVR1 table's G(n,0) with the exact terms.
+"""check_terms.py -- compare an AVR1 or AVR2 table's G(n,0) with the exact terms.
 
     python3 check_terms.py TABLE.avr [--terms FILE] [--tol 1e-11] [--top K]
 
 FILE defaults to repo/code/data/av12453_terms_0_300.txt (lines "n a_n").
 Prints the maximum relative error |G(n,0) - a_n| / a_n over all n <= N and the
 worst offenders.  Exit status 0 iff every relative error is below --tol.
+
+The comparison is done in exact rational arithmetic: G_exact() unscales the
+stored double by the exact power of two of an AVR2 table, and the difference
+and the quotient are formed as Fractions before the relative error is
+converted to a float.  This works for every n <= 300, including n >= 277,
+where a_n exceeds the binary64 range.
 """
 import os
 import sys
 import argparse
+from fractions import Fraction
 from avr_table import AvrTable
 
 DEFAULT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "data", "av12453_terms_0_300.txt")
@@ -45,20 +52,21 @@ def main(argv):
     for n in range(0, T.N + 1):
         if n not in exact:
             continue
-        got = T.G(n, 0)
+        got = T.G_exact(n, 0)                    # unscaled, exact
         e = exact[n]
-        rel = 0.0 if e == 0 else abs(got - e) / e
-        rows.append((rel, n, got, e))
+        rel = 0.0 if e == 0 else float(abs(got - e) / e)
+        rows.append((rel, n, T.G(n, 0)))
         if rel > maxrel:
             maxrel, where = rel, n
     rows.sort(reverse=True)
-    print("table            %s (N=%d)" % (args.table, T.N))
+    print("table            %s (N=%d, %s)" % (args.table, T.N,
+          "AVR2, stored = true * 2^{-%d*grade}" % T.scale if T.scale else "AVR1, unscaled"))
     print("terms            %s" % args.terms)
     print("n compared       %d  (n = 0..%d)" % (len(rows), T.N))
     print("max relative err %.6e  at n = %s   (tolerance %g)" % (maxrel, where, args.tol))
     print("verdict          %s" % ("PASS" if maxrel < args.tol else "FAIL"))
     for r in rows[:args.top]:
-        print("  n=%3d rel=%.4e  table=%.17g" % (r[1], r[0], r[2]))
+        print("  n=%3d rel=%.4e  stored=%.17g" % (r[1], r[0], r[2]))
     return 0 if maxrel < args.tol else 1
 
 

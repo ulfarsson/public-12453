@@ -54,8 +54,9 @@ def beta2Perm : Equiv.Perm (Fin 5) := toPerm (beta 2) (by decide)
 namespace OneThreshold
 
 /--
-**The goal of component 4a, on `Equiv.Perm (Fin n)`**: the number `G n` computed from the
-scalar kernel table is the number of permutations of `Fin n` avoiding `β_1 = 1342`.  This is
+**`|Av_n(1342)|` by the kernel algorithm, on `Equiv.Perm (Fin n)`**: the number `G n`
+computed from the scalar kernel table is the number of permutations of `Fin n` avoiding
+`β_1 = 1342`.  This is
 `Av12453.OneThreshold.av1342_count_kernel` read through
 `PermPatterns.card_avoiders_singleton_eq_fintypeCard`.
 -/
@@ -68,8 +69,9 @@ end OneThreshold
 namespace TwoThreshold
 
 /--
-**The goal of component 4b, on `Equiv.Perm (Fin n)`**: the number `G (n, 0)` computed from
-the two-threshold kernel table is the number of permutations of `Fin n` avoiding
+**`|Av_n(12453)|` by the kernel algorithm, on `Equiv.Perm (Fin n)`**: the number
+`G (n, 0)` computed from the two-threshold kernel table is the number of permutations of
+`Fin n` avoiding
 `β_2 = 12453`.  This is `Av12453.TwoThreshold.av12453_count_kernel` read through
 `PermPatterns.card_avoiders_singleton_eq_fintypeCard`.
 -/

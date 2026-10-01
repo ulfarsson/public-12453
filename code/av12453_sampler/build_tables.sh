@@ -1,6 +1,7 @@
 #!/bin/sh
-# build.sh -- build the AVR1 table generator and the C++ reader/checker.
-#   sh build.sh                 # default: -O3 -march=native -fopenmp
+# build_tables.sh -- build the table generator (AVR1, or AVR2 with --scaled) and the
+# C++ reader/checker.
+#   sh build_tables.sh                 # default: -O3 -march=native -fopenmp
 #   CXX=clang++ sh build.sh
 # Produces ./tables and ./avr_check next to this script.
 set -e

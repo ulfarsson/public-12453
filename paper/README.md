@@ -1,8 +1,11 @@
 # Paper
 
-`av12453_polytime.tex` is the authoritative manuscript source; the checked-in
-PDF is generated from it.  The BibTeX database is `av12453_polytime.bib`; keep
-the two files together for local builds and journal source bundles.
+`av12453_polytime.tex` is the source of the paper, `av12453_polytime.bib` its
+BibTeX database, and `av12453_polytime.pdf` the PDF built from them.  The
+figures are in `figures/`: the heatmap of Figure 4 (the PermPAL rendering of
+`../code/av12453_sampler/examples/ex_n300_1M.csv`, enlarged three times) and
+the TikZ dot plot generated from
+`../code/av12453_sampler/examples/perm_n300.txt`.
 
 Build from this directory with
 
@@ -10,15 +13,5 @@ Build from this directory with
 latexmk -pdf -interaction=nonstopmode -halt-on-error av12453_polytime.tex
 ```
 
-Before committing a regenerated PDF, inspect the log for undefined references
-or citations and overfull boxes, and run the companion-code checks in
-`../code/README.md`.  Build products are ignored by git.
-
-The current PDF is the named development master, deliberately not the doubly
-anonymous Combinatorial Theory review copy.  Create that derivative only when
-submission preparation begins; do not remove identifying metadata from the
-authoritative source.
-
-The computational supplement cited in the data-availability section is
-regenerated from `../code/`, `../notes/` and `../formal/` at submission time,
-and its SHA-256 digest in the manuscript is updated then.
+The paper is distributed on arXiv (arXiv:2609.15642) under the Creative
+Commons Attribution 4.0 International license (CC BY 4.0).

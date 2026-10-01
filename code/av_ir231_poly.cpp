@@ -225,7 +225,8 @@ int main(int argc, char** argv) {
     std::size_t nonzero_entries = 0;
 
     // K_ell(p,-), in increasing rank sum(p)+ell.  Every referenced kernel
-    // has rank exactly one less (or less in the composed second transfer).
+    // has strictly smaller rank: exactly one less for a band or endpoint
+    // term, and possibly less by more than one for the two factors of a split.
     for (int rank = 1; rank <= max_n; ++rank) {
         for (int ell = 1; ell <= rank; ++ell) {
             const int weight = rank - ell;

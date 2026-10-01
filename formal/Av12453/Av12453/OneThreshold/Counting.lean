@@ -10,15 +10,15 @@ public import Av12453.OneThreshold.Semantics
 @[expose] public section
 
 /-!
-# Component 3a, theorem (D): the recurrence counts the completions
+# The recurrence counts the completions
 
 This module proves the counting half of the one-threshold construction: for every legal
 prefix `σ`, the number `A n σ` of `1342`-avoiding permutations of `{0, …, n-1}` beginning
 with `σ` equals `W (p n σ) (L n σ)`, the paper's `W_p(L)` evaluated at the abstract state of
-`σ`.  Specializing to `σ = []` gives `W n ∅ = |Av_n(1342)|`, the goal of component 3a.
+`σ`.  Specializing to `σ = []` gives `W n ∅ = |Av_n(1342)|`.
 
-The proof is the induction of \cref{prop:scalar-literal} (and of \cref{cor:separators}'s
-`d = 1` specialization), run on the measure `ρ₁ = p + |L| = |unread|` of
+The proof is the induction of \cref{prop:scalar-literal}, which uses
+\cref{prop:scan-states}(a) and (b), run on the measure `ρ₁ = p + |L| = |unread|` of
 \eqref{eq:rho-scalar}, which drops by one at every move (`card_unread_succ`).  The prefix
 partition `A_succ` writes `A n σ` as a sum over the unread values, and that sum is
 regrouped exactly as the paper's proof regroups it:
@@ -30,21 +30,22 @@ regrouped exactly as the paper's proof regroups it:
   (`sum_rank_eq`); the two endpoints `r = 0` and `r = ℓ₁-1` give the endpoint term
   `E_{ℓ₁}(p, L')` of \eqref{eq:W} (its terms `a = 0` and `b = 0`) (two letters when `ℓ₁ ≥ 2`, one
   when `ℓ₁ = 1`),
-  and each interior rank gives one term of the last line of \eqref{eq:W};
-* the **deferred letters**, which contribute `0` by theorem (B).
+  and each interior rank gives one term of the split sum of \eqref{eq:W}, with `a, b ≥ 1`;
+* the **deferred letters**, which contribute `0` by `deferred_no_completion` (B).
 
-Theorems (B) and (C) of the component enter only through the two hypotheses `DeferredHyp`
-and `CompleteHyp`; `A_eq_W_of` is stated relative to them, so that it is axiom-clean, and
-`A_eq_W`/`av1342_count` discharge them with the theorems of the same name proved in
-`Av12453.OneThreshold.Semantics`.
+The two statements (B) `deferred_no_completion` and (C) `legal_complete_avoids` of
+`Av12453.OneThreshold.Semantics` enter only through the two hypotheses `DeferredHyp` and
+`CompleteHyp`.  `A_eq_W_of` is stated relative to them, and `A_eq_W` and `av1342_count`
+discharge them with the theorems of the same name proved in `Av12453.OneThreshold.Semantics`.
 
 ## Main results
 
 * `sum_rank_split` : the local-rank sum over the active head is the endpoint term plus the
-  interior terms, i.e. the last two lines of \eqref{eq:W}.
-* `A_eq_W_of` : **(D-iii)**, relative to (B) and (C).
-* `A_eq_W` : **(D-iii)** with (B) and (C) discharged.
-* `av1342_count` : **the goal of component 3a**, `W n ∅ = |Av_n(1342)|`.
+  interior terms, which together are the split sum of \eqref{eq:W} (its terms with `a = 0` or
+  `b = 0` are the endpoints).
+* `A_eq_W_of` : `A n σ = W (p n σ) (L n σ)` for every legal prefix, relative to (B) and (C).
+* `A_eq_W` : the same with (B) and (C) discharged.
+* `av1342_count` : `W n ∅ = |Av_n(1342)|`.
 
 ## Numerical check
 
@@ -121,9 +122,9 @@ theorem sum_rank_split (q : ℕ) (T : List ℕ) :
 
 /-! ### The two inputs from the other modules
 
-Theorems (B) and (C) of component 3a are `deferred_no_completion` and
-`legal_complete_avoids` in `Av12453.OneThreshold.Semantics`; the counting argument uses
-nothing else about them, so it is stated relative to the two hypotheses below. -/
+Statements (B) and (C) are `deferred_no_completion` and `legal_complete_avoids` in
+`Av12453.OneThreshold.Semantics`; the counting argument uses nothing else about them, so it
+is stated relative to the two hypotheses below. -/
 
 /-- **Hypothesis (B)**: a letter of a deferred interval has no `1342`-avoiding completion.
 This is the statement of `deferred_no_completion`. -/
@@ -166,11 +167,11 @@ theorem A_eq_W_base (hCplt : CompleteHyp) (hleg : Legal n σ)
   rw [A_complete n σ hw hlen, if_pos (hCplt n σ hleg hlen), hp0, hLnil, W_eq_nil]
   simp
 
-/-! ### (D-iii): the recurrence counts the completions -/
+/-! ### The recurrence counts the completions -/
 
 /--
-**(D-iii)** relative to theorems (B) and (C).  For every legal prefix `σ` the number of
-`1342`-avoiding permutations extending `σ` is `W (p n σ) (L n σ)`.
+**The recurrence counts the completions**, relative to (B) and (C).  For every legal prefix
+`σ` the number of `1342`-avoiding permutations extending `σ` is `W (p n σ) (L n σ)`.
 
 The induction runs on `(unread n σ).card = p n σ + (L n σ).sum`, the paper's `ρ₁` of
 \eqref{eq:rho-scalar}.  In the inductive step the prefix partition `A_succ` splits the
@@ -309,12 +310,13 @@ theorem A_eq_W_of (hDef : DeferredHyp) (hCplt : CompleteHyp) {n : ℕ} :
         W_eq_cons hℓpos]
       omega
 
-/-- **(D-iii)**, with theorems (B) and (C) supplied by `Av12453.OneThreshold.Semantics`. -/
+/-- **The recurrence counts the completions**, with (B) and (C) supplied by
+`Av12453.OneThreshold.Semantics`. -/
 theorem A_eq_W (hleg : Legal n σ) : A n σ = W (p n σ) (L n σ) :=
   A_eq_W_of (fun _ _ _ h _ hI hx _ hw hpre => deferred_no_completion h hI hx hw hpre)
     (fun _ _ h hl => legal_complete_avoids h hl) σ hleg
 
-/-- **The goal of component 3a**: the recurrence `W` counts `1342`-avoiding permutations. -/
+/-- **The recurrence `W` counts the `1342`-avoiding permutations.** -/
 theorem av1342_count (n : ℕ) : W n [] = (avoiders n {beta 1}).card := by
   have h := A_eq_W (n := n) (σ := []) Legal_nil
   rw [p_nil, L_nil] at h
@@ -322,11 +324,11 @@ theorem av1342_count (n : ℕ) : W n [] = (avoiders n {beta 1}).card := by
 
 /-! ### Legality is exactly "prefix of a `1342`-avoiding permutation"
 
-Theorems (A)--(D) are stated for a *legal* prefix, as \cref{lem:separators} and
-\cref{cor:separators} are; the paper identifies the legal prefixes with the prefixes of
+Like \cref{lem:separators} and \cref{cor:separators}, the statements of this development
+concern a *legal* prefix; the paper identifies the legal prefixes with the prefixes of
 `1342`-avoiding permutations in \cref{prop:scan-states}(c).  This section reproves that
-identification (`legal_iff_prefix_avoider`): one direction is theorem (B), the other follows
-from (D-iii) once `W` is known to be positive at every composition with positive parts. -/
+identification (`legal_iff_prefix_avoider`): one direction is (B), the other follows from
+`A_eq_W` once `W` is known to be positive at every composition with positive parts. -/
 
 private theorem W_pos_aux : ∀ (k q : ℕ) (l : List ℕ), q + l.sum ≤ k → (∀ a ∈ l, 0 < a) →
     0 < W q l := by

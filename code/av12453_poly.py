@@ -20,7 +20,7 @@ part l, process everything before the marked old tail (including material
 later fused into the head), and expose that unchanged tail with control
 (u,v).
 
-All dependencies have rank one less, where rank = j + (sum of stack parts),
+All dependencies have strictly smaller rank, where rank = j + (sum of stack parts),
 so the kernels can be filled in increasing order of j+l.  If max_n=N, the
 implementation stores the convenient padded region j+l <= N+2 (the tight
 cutoff is N+1).  The final empty-stack values G(i,j)

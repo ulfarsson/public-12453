@@ -1,9 +1,7 @@
 # Exact coefficients of `Av(12453)` through length 300
 
 Date: 3 September 2026.  Status: computation only; not part of the paper,
-whose series ends at n = 150 (Table 1 and Section 8).  Author decision
-(2 September 2026): extend the series with the fast engine, nothing to be
-added to the manuscript.
+whose series ends at n = 150 (Table 1 and Section 8).
 
 ## Result
 
@@ -35,7 +33,8 @@ and the integers were recovered by the Chinese remainder theorem
 
 The engine evaluates the proved reduced d = 2 recurrence (paper Section 7)
 with the proved homogeneous split (`notes/av12453_speedup_proofs.tex`), as
-the certified single-modulus engine `code/av12453_homog_split.cpp` does.
+an earlier certified single-modulus engine, `av12453_homog_split.cpp` (not
+part of the published repository), does.
 Two changes make it fast: (i) for each grade `W` and evaluation point `y_j`,
 the split contributions are dense matrix products `A B` where `A` collects
 all evaluated slices of one grade and `B` those of one offset grade, so the
@@ -50,7 +49,7 @@ recent grades plus a copy for the empty-stack phase.
 Bound and primes.  With `b_m = |Av_m(1342)|` from Bona's algebraic series,
 `B_300 = sum_m C(300,m)^2 b_m` has 1136 bits (B_150 has 558, as in the
 paper).  The product of the 71 largest primes below 2^16 has 1136 bits and
-exceeds `B_300`; the six next primes (`64703, 64693, 64689, 64679, 64667,
+exceeds `B_300`; the six next primes (`64709, 64693, 64679, 64667, 64663,
 64661`) were withheld from reconstruction and agree with every reconstructed
 value.
 
@@ -59,23 +58,25 @@ value.
 - Every residue file passes CERTIFY: residues for n <= 150 equal the
   certified terms modulo the prime (77 x 151 checks, by the engine and by
   two independent comparators).  Every run also passed the built-in support
-  check, degree check (`deg_y Phi_W(.;q,.) <= W-q-3`), evaluation check
-  (unused evaluation points reproduce the interpolant) and the binary64
-  reduction self-test.
+  check and the binary64 reduction self-test.  The degree check
+  (`deg_y Phi_W(.;q,.) <= W-q-3`) and the evaluation check (unused
+  evaluation points reproduce the interpolant) run only without `--prune`,
+  which the sweep used; they pass in unpruned runs (for example the smoke
+  test of `engine/build_primes.sh` at N = 30).
 - Full kernel tables at N = 40 and N = 60 are byte-identical to
-  `code/av12453_homog_split.cpp` built with the same modulus and to the
+  that earlier engine built with the same modulus and to the
   independent pure-Python implementation `code/av12453_n300/pyref/ref.py`
   written from the printed equations; the exact-integer tables of `ref.py`
   reduce modulo p to the engine's tables (224,680 and 1,117,520 entries).
 - All 201 residues at N = 200 agree between the new engine and
-  `code/av12453_homog_split.cpp` at p = 65521; the N = 300 residues restrict
+  the earlier one at p = 65521; the N = 300 residues restrict
   exactly to the N = 200 and N = 150 runs.
 - The reconstruction was repeated with an independent CRT script; identical
   output, bound exceeded, six withheld primes in agreement, certified prefix
   reproduced exactly.
-- Frozen asymptotic fit of the paper (Conjecture 10.2 (numbered 10.1 since 2026-09-13), parameters fixed on
+- Frozen asymptotic fit of the paper (Conjecture 10.1, parameters fixed on
   n <= 100): the maximum of `|log a_n - model|` is 4.3e-7 on 101 <= n <= 150
-  (the paper reports below 4.2e-7 from the exact fit parameters) and grows
+  (the paper states the bound 4.3e-7) and grows
   smoothly to 3.0e-4 at n = 300 (6.0e-6 at 175, 2.3e-5 at 200, 1.1e-4 at
   250).  The drift is monotone and slow, consistent with the neglected
   `O(n^{-2/3})` correction, and does not contradict the conjectured form;
@@ -86,25 +87,27 @@ value.
 Machine: Lima VM on an Apple Silicon laptop, aarch64, 8-CPU quota, 16 GiB.
 Sweep of 77 primes, 8 threads, one prime at a time: started 20:35 UTC on
 2 September, finished 00:45 UTC on 3 September (4 h 10 min); per prime
-185 to 215 s, mean 199 s; peak RSS 6.5 GiB.  Split work per prime
+185.0 to 218.5 s, mean 194.9 s; peak RSS 6.5 GiB.  Split work per prime
 1.56e13 structural multiply-adds (1.88e13 issued), 2.2e10 issued
-multiply-adds per second per thread.  For comparison, the certified engine
-`av12453_homog_split.cpp` at N = 200 on the same machine and prime took
-116 s and 2.6 GiB against 25 s and 1.3 GiB for the new engine, and its own
-N = 300 estimate was about 2 hours and 12.7 GiB per prime.
+multiply-adds per second per thread.  For comparison, the earlier engine
+at N = 200, 8 threads, on the same machine and prime took 154.04 s and
+2.6 GiB against 23.53 s and 1.3 GiB for the new engine
+(`code/av12453_n300/engine/README.md`, section 8.4); scaled to N = 300 that
+is about 29 minutes and 12.7 GiB per prime.
 
 Engine v2 (`av12453_gemm_split_v2.cpp`, bit-identical output, parallel
 empty-stack phase), measured after the sweep on the idle machine: N = 300,
 p = 65521, 8 threads, 150.0 s wall (empty-stack phase 10.4 s instead of
 63.5 s), peak RSS 6.5 GiB, residues identical to the campaign file.  A
-future sweep of 77 primes with v2 would take about 3.2 hours here.
+future sweep of 77 primes with v2 would take about 3.2 hours on that machine.
 
 ## Files
 
 - `code/data/av12453_terms_0_300.txt`: the result.
-- `code/certificates/av12453_residues_300/`: the 77 residue files and the
-  sweep log.
+- `code/certificates/av12453_residues_300/`: the 77 residue files (the
+  sweep log, with the wall time of every prime, is not part of the
+  repository).
 - `code/av12453_n300/`: engines v1 and v2, build and run scripts, harness,
-  pure-Python reference, project brief; `README.md` there describes the
-  layout and how to reproduce, `engine/RUN_ON_LAPTOP.md` the laptop
-  pipeline.
+  pure-Python reference; `README.md` there describes the layout and how to
+  reproduce, `engine/README.md` the engine, `engine/RUN_ON_LAPTOP.md` the
+  laptop pipeline.
