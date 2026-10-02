@@ -2438,7 +2438,11 @@ of the four statements has the placeholder \texttt{sorry} in place of its
 proof.  The second thing to do is to read \path{Challenge.lean}, about
 180 lines that import only Mathlib and contain the four statements together
 with every definition they use: pattern containment, the patterns $1342$ and
-$12453$, and the recurrences.  The proofs need not be read.
+$12453$, and the recurrences.  The proofs need not be read.  The Palomar
+registry of Lean-verified mathematics ran the same comparison
+independently, with Lean's kernel and nanoda, on commit d613307 of the
+repository, and records the development as entry
+PALOMAR-2026-10-01-000014~\cite{PalomarEntry2026}.
 
 The proofs follow the paper.  The interval stack of a scanned prefix is
 computed from the prefix by the moves of \cref{prop:state-invariant}(b) and
@@ -2538,8 +2542,9 @@ public repository
 \end{center}
 \noindent
 in its release v1.4.0, which is the supplement referred to throughout the
-paper.  The code, data, and Lean development are released under the Apache
-License 2.0.  The heatmap of \cref{fig:heatmap} was drawn from the count
+paper.  The Lean development is also registered in the Palomar registry as
+entry PALOMAR-2026-10-01-000014~\cite{PalomarEntry2026}.  The code, data, and
+Lean development are released under the Apache License 2.0.  The heatmap of \cref{fig:heatmap} was drawn from the count
 matrix in the repository by the heatmap script of the PermPAL database,
 written by Jay Pantone and Vince Vatter, which is not part of the
 repository.  The repository's

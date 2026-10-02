@@ -9,6 +9,10 @@ paper *Protected tails and polynomial-time enumeration of permutations avoiding 
 | 1 | `Av(1342)` | `OneThreshold.av1342_count : W n [] = (avoiders n {beta 1}).card` | `OneThreshold.av1342_count_kernel : G n = (avoiders n {beta 1}).card` |
 | 2 | `Av(12453)` | `TwoThreshold.av12453_count : H (n, 0) [] = (avoiders n {beta 2}).card` | `TwoThreshold.av12453_count_kernel : G (n, 0) = (avoiders n {beta 2}).card` |
 
+The development is registered in the Palomar registry of Lean-verified mathematics, at commit
+`d613307` of the public repository, as
+[PALOMAR-2026-10-01-000014](https://palomar-registry.org/entry.html?id=PALOMAR-2026-10-01-000014&version=1).
+
 `Av12453/Perm.lean` restates the two kernel theorems on Mathlib's model of a permutation, an
 element of `Equiv.Perm (Fin n)`:
 

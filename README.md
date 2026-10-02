@@ -159,7 +159,9 @@ proves the four theorems from the development, and `formal/comparator.sh` runs `
 comparator`, which checks that each proof proves exactly the statement of
 `Challenge.lean` and is accepted by Lean's kernel and by the independent kernels nanoda
 and con-ron; it ends with `Your solution is okay!`.  The project follows the format of the
-Palomar registry (`comparator.json`, `formalization.yaml`, Lean's module system).
+Palomar registry (`comparator.json`, `formalization.yaml`, Lean's module system), and it is
+registered there, at commit `d613307` of this repository, as
+[PALOMAR-2026-10-01-000014](https://palomar-registry.org/entry.html?id=PALOMAR-2026-10-01-000014&version=1).
 
 `check.sh` builds the two libraries, `PermPatterns` (the reusable pattern core,
 ten modules) and `Av12453` (the paper-specific development, twenty
